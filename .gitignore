@@ -1,0 +1,13 @@
+.playwright_profile/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Data and Artifacts
+Input/*.pdf
+Output/
+Eval/
+.agent/prompts/*_Prompt.txt
+.agent/prompts/*_RepairPrompt.txt

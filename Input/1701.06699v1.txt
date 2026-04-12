@@ -1,0 +1,469 @@
+arXiv:1701.06699v1  [cs.AI]  24 Jan 2017
+
+
+
+
+
+
+
+
+
+
+   Imitating Driver Behavior with Generative Adversarial Networks
+
+Alex Kuefler1, Jeremy Morton2, Tim Wheeler2, and Mykel Kochenderfer2
+
+
+  Abstract— The ability to accurately predict and simulate turning actions. Recent advances in computing and deep
+human driving behavior is critical for the development of intelli- learning have allowed this approach to scale to realistic
+gent transportation systems. Traditional modeling methods have scenarios, such as parking lot, highway, and markerless
+employed simple parametric models and behavioral cloning.
+This paper adopts a method for overcoming the problem of road conditions [10]. These BC approaches are conceptually
+cascading errors inherent in prior approaches, resulting in sound [11], but tend to fail in practice as small inaccuracies
+realistic behavior that is robust to trajectory perturbations. compound during simulation. Inaccuracies lead the policy to
+We extend Generative Adversarial Imitation Learning to the states that are underrepresented in the training data (e.g., an
+training of recurrent policies, and we demonstrate that our ego-vehicle edging towards the side of the road), which leads
+model outperforms rule-based controllers and maximum likeli-
+hood models in realistic highway simulations. Our model both to yet poorer predictions, and ultimately to invalid or unseen
+reproduces emergent behavior of human drivers, such as lane situations (e.g., off-road driving). This problem of cascading
+change rate, while maintaining realistic control over long time errors [12] is well-known in the sequential decision making
+    horizons.                                                                  literature and has motivated work on alternative IL methods,
+                                I. INTRODUCTION                                such as inverse reinforcement learning (IRL) [14].
+        Inverse reinforcement learning assumes that the expert
+  Accurate human driver models are critical for realistic follows an optimal policy with respect to an unknown reward
+simulation of driving scenarios, and have the potential to function. If the reward function is recovered, one can simply
+significantly advance research in automotive safety. Tradi- use RL to find a policy that behaves identically to the
+tionally, human driver modeling has been the subject of both expert. This imitation extends to unseen states; in highway
+rule-based and data-driven approaches. Early rule-based at- driving a vehicle that is perturbed toward the lane boundaries
+tempts include parametric models of car following behavior, should know to return toward the lane center. IRL thus
+with strong built-in assumptions about road conditions [1] or generalizes much more effectively and does not suffer from
+driver behavior [2]. The Intelligent Driver Model (IDM) [3] many of the problems of BC. Because of these benefits, some
+extended this work by capturing asymmetries between accel- recent efforts in human driver modeling emphasize IRL [15,
+eration and deceleration, preferred free road and bumper-to- 16]. However, IRL approaches are typically computationally
+bumper headways, and realistic braking behavior. Such car- expensive in their recovery of an expert cost function.
+following models were later extended to multilane conditions Instead, recent work has attempted to imitate expert behavior
+with controllers like MOBIL [4], which maintains a utility through direct policy optimization, without first learning
+function and “politeness parameter” to capture intelligent a cost function [13, 17]. Generative Adversarial Imitation
+driver behavior in both acceleration and turning. These Learning (GAIL) [17] in particular has performed well on a
+controllers are all largely characterized by smooth, collision- number of benchmark tasks, leveraging the insight that expert
+free driving, but rely on assumptions about driver behavior behavior can be imitated by training a policy to produce
+and a small set of parameters that may not generalize well actions that a binary classier mistakes for those of an expert.
+    to diverse driving scenarios.                                                       In this work, we apply GAIL to the task of modeling
+                In contrast, imitation learning (IL) approaches rely on data   human highway driving behavior. Our major contributions
+    typically provided through human demonstration in order to                 are twofold. First, we extend GAIL to the optimization
+    learn a policy that behaves similarly to an expert. These                  of recurrent neural networks, showing that such policies
+    policies can be represented with expressive models, such                   perform with greater fidelity to expert behavior than feed-
+    as neural networks, with less interpretable parameters than                forward counterparts. Second, we apply our models to a
+    those used by rule-based methods. Prior human behavior                     realistic highway simulator, where expert demonstrations
+    models for highway driving have relied on behavioral cloning               are given by real-world driver trajectories included in the
+    (BC), which treats IL as a supervised learning problem,                    NGSIM dataset [18, 19]. We demonstrate that policy net-
+    fitting a model to a fixed dataset of expert state-action pairs            works optimized by GAIL capture many desirable properties
+    [5–8]. ALVINN [9], an early BC approach, trained a neural                  of earlier IL models, such as reproducing emergent driver
+    network to map raw images and rangefinder inputs to discrete               behavior and assigning high likelihood to expert actions,
+                                                                               while simultaneously reducing collision and off-road rates
+    1Alex Kuefler is in the Symbolic Systems Program at Stanford University,   necessary for long horizon highway simulations. Unlike past
+    Stanford, CA 94305, USA2    akuefler@stanford.edu                          work, our model learns to map raw LIDAR readings and
+   Are in the department of Aeronautics and Astronautics at Stanford
+University, Stanford, CA 94305, USA {jmorton2, wheelert, simple, hand-picked road features to continuous actions,
+    mykel}@stanford.edu                                                        adjusting only turn-rate and acceleration each time step.
+
+        II. PROBLEM FORMULATION                                              establish preferences between mildly undesirable behavior
+            We regard highway driving as a sequential decision mak-          (e.g., hard braking) and extremely undesirable behavioral
+    ing task in which the driver obeys a stochastic policy π(a | s)      (e.g., collisions). And finally, RL maximizes the global, ex-
+    mapping observed road conditions s to a distribution over        pected return on a trajectory, rather than local instructions for
+    driving actions a. Given a class of policies πθ parameterized         each observation. Once preferences are learned, a policy may
+    by θ, we seek to find the policy that best mimics human                take mildly undesirable actions now in order to avoid awful
+    driving behavior. We adopt an IL approach to infer this policy        situations later. As such, reinforcement learning algorithms
+    from a dataset consisting of a sequence of state-action tuples   provide robustness against cascading errors.
+    (st, at). IL can be performed using BC or reinforcement                  III. POLICY REPRESENTATION
+    learning.                                                                 Our learned policy must be able to capture human driving
+    A. Behavioral Cloning                                            behavior, which involves:
+            Behavioral cloning solves a regression problem in which   •  Non-linearity           in the desired mapping from states to
+    the policy parameterization is obtained by maximizing the            actions (e.g.,  large corrections   in steering to      avoid
+    likelihood of the actions taken in the training data. BC works           collisions caused by small changes in the current state).
+    well for states adequately covered by the training data. It       •         High-dimensionality of the state representation, which
+    is forced to generalize when predicting actions for states                must describe properties of the ego-vehicle, in addition
+    with little or no data coverage, which can lead to poor              to surrounding cars and road conditions.
+    behavior. Unfortunately, even if simulations are initialized      •        Stochasticity because humans may take different actions
+    in common states, the stochastic nature of the policies allow        each time they encounter a given traffic scene.
+    small errors in action predictions to compound over time,                 To address the first and second points, we represent all
+eventually leading to states that human drivers infrequently learned policies πθ using neural networks. To address the
+visit and are not adequately covered by the training data. third point, we interpret the network’s real-valued outputs
+Poorer predictions can cause a feedback cycle known as given input st as the mean μt and logarithm of the diagonal
+    cascading errors [20].                                              covariance log νt of a Gaussian distribution. Actions are cho-
+            In a highway driving context, cascading errors can lead           sen by sampling at ∼ πθ(at | st). An example feedforward
+    to off-road driving and collisions. Datasets rarely contain             model is shown in Fig. 2. We evaluate both feedforward and
+    information about how human drivers behave in these situ-        recurrent network architectures.
+    ations, which can lead BC policies to act erratically when                 Feedforward neural networks directly map inputs to out-
+    they encounter such states.                                             puts. The most common architecture, multilayer perceptrons
+           Behavioral cloning has been successfully used to produce       (MLPs), consist of alternating layers of tunable weights and
+    driving policies for simple behaviors such as car-following               element-wise nonlinearities. Neural networks have gained
+    on freeways, in which the state and action space can be                 widespread popularity due to their ability to learn robust
+    adequately covered by the training set. When applied to                hierarchical features from complicated inputs [22, 23], and
+    learning general driving models with nuanced behavior and                 have been used in automotive behavioral modeling for ac-
+    the potential to drive out of lane, BC only produces accurate        tion prediction in car-following contexts [6, 24–27], lateral
+    predictions up to a few seconds [5, 6].                          position prediction [28], and maneuver classification [29].
+                                                                           The feedforward MLP is limited in its ability to adequately
+    B. Reinforcement Learning                                           address partially observable environments. In real world driv-
+  Reinforcement learning (RL) instead assumes that drivers ing, sensor error and occlusions may prevent the driver from
+in the real world follow an expert policy πE whose actions seeing all relevant parts of the driving state. By maintaining
+    maximize the expected, global return                               sufficient statistics of past observations in memory, recurrent
+        [∑T      ]                                                       policies [30, 31] disambiguate perceptually similar states by
+        R(π, r) = Eπ     γtr(st, at)                            (1)       acting with respect to histories of, rather than individual,
+                                                                           observations. In this work, we represent recurrent policies
+        t=0                                                                     using Gated Recurrent Unit (GRU) networks due to their
+weighted by a discount factor γ ∈ [0, 1). The local reward comparable performance with fewer parameters than other
+function r(st, at) may be unknown, but fully characterizes architectures [32].
+    expert behavior such that any policy optimizing R(π, r) will      We use    similar   architectures for the   feedforward      and
+    perform indistinguishably from πE.                               recurrent policies.  The  recurrent  policies consist of     five
+  Learning with respect to R(π, r) has several advantages feedforward layers that decrease in size from 256 to 32
+over maximum likelihood BC in the context of sequential neurons, with an additional GRU layer consisting of 32
+decision making [21]. First, r(st, at) is defined for all state- neurons. Exponential linear units (ELU) were used through-
+action pairs, allowing an agent to receive a learning signal out the network, which have been shown to combat the
+even from unusual states. In contrast, BC only receives a vanishing gradient problem while supporting a zero-centered
+learning signal for those states represented in a labeled, finite distribution of activation vectors [33]. The MLP policies
+dataset. Second, unlike labels, rewards allow a learner to have the same architecture, except the GRU layer is replaced
+
+with an additional feedforward layer. For each network neural network Dψ parameterized by ψ, the GAIL objective
+architecture, one policy is trained through BC and one policy is given by:
+is trained through GAIL. In all, we trained four neural
+    network policies: GAIL GRU, GAIL MLP, BC GRU, and                   max min V (θ, ψ) =          E     [log Dψ (s, a)]+
+    BC MLP.                                                             ψ     θ                    (s,a)∼XE                   (2)
+                 IV. POLICY OPTIMIZATION                                                           E  [log(1 − Dψ (s, a))].
+                                                                                             (s,a)∼Xθ
+           Contrary to BC, which is trained with traditional regres-    When fitting ψ, Equation (2) can simply be interpreted as
+sion techniques, reinforcement learning policies do not have a sigmoid cross entropy objective, maximized by minibatch
+training labels for individual actions. Controller performance gradient ascent. Positive examples are sampled from XE and
+is instead evaluated by expected return. This approach is negative examples are sampled from rollouts generated by
+problematic in modeling human drivers, as the reward func- interactions of πθ with the simulation environment. However,
+tion r(st, at) is unknown. We first discuss a method for V (θ, ψ) is non-differentiable with respect to θ, requiring
+training a policy with a known reward function and then optimization via RL.
+    provide a method for learning the reward function.                  In order to fit    πθ, a surrogate reward function can be
+                                                                        formulated from Eq. (2) as:
+    A. Trust Region Policy Optimization
+    Policy       gradient algorithms are  a particularly   effective        r˜(st, at; ψ) = − log(1 − Dψ (st, at)),           (3)
+class of reinforcement learning techniques for optimizing
+differentiable policies, including neural networks. As with which approaches infinity as tuples (st, at) drawn from Xθ
+standard backpropagation, network parameters are optimized become indistinguishable from elements of XE based on the
+using gradient-based updates, but the gradient can only be predictions of Dψ . After performing rollouts with a given
+approximated using simulated rollouts of the policy interact- set of policy parameters θ, surrogate rewards r˜(st, at; ψ) are
+    ing with the environment.                                           calculated and TRPO is used to perform a policy update.
+  This empirical gradient estimate typically exhibits a high Although r˜(st, at; ψ) may be quite different from the true
+amount of variance. In practice, this variance can cause reward function optimized by experts, it can be used to drive
+parameter updates that do not improve or even reduce perfor- πθ into regions of the state-action space similar to those
+mance. In this work, we use Trust Region Policy Optimiza- explored by πE.
+    tion (TRPO) to learn our human driving policies [34]. TRPO              V. DATASET
+    updates policy parameters through a constrained optimization
+    procedure that enforces that a policy cannot change too much             We use the public Next-Generation Simulation (NGSIM)
+    in a single update, and hence limits the damage that can be         datasets for US Highway 101 [19] and Interstate 80 [18].
+    caused by noisy gradient estimates.                                 NGSIM provides 45 minutes of driving at 10 Hz for each
+              Although the true reward function that governs the be-    roadway. The US Highway 101 dataset covers an area in Los
+    havior of any particular human driver is unknown, domain            Angeles approximately 640 m in length with five mainline
+    knowledge can be used to craft a surrogate reward function          lanes and a sixth auxiliary lane for highway entrance and
+    such that a policy maximizing this quantity will realize a          exit. The Interstate 80 dataset covers an area in the San
+    similar stochastic state-action mapping as πE. Drivers avoid        Francisco Bay Area approximately 500 m in length with six
+    collisions and going off road, while also favoring smooth           mainline lanes, including a high-occupancy vehicle lane and
+    driving and minimizing lane-offset. If such features can            an onramp.
+    be combined into a reward function that closely approxi-             Traffic density in both datasets transitions from uncon-
+    mates the true reward function for human driving r(st, at),         gested to full congestion and exhibits a high degree of
+    then modeling driver behavior reduces to RL. However,               vehicle interaction as vehicles merge on and off the high-
+    handcrafting an accurate reward function is often difficult,        way and must navigate in congested flow. The diversity of
+    which motivates the use of Generative Adversarial Imitation         driving conditions and the forced interaction of traffic partic-
+    Learning.                                                           ipants makes these sources particularly useful for behavioral
+                                                                        studies. The trajectories were smoothed using an extended
+    B. Generative Adversarial Imitation Learning                        Kalman filter [35] on a bicycle model and projected to lanes
+  Although r(st, at) is unknown, a surrogate reward using centerlines extracted from the NGSIM CAD files. Cars,
+r˜(st, at) may be learned directly from data, without making trucks, buses, and motorcycles are in the dataset, but only
+use of domain knowledge. GAIL [17] trains a policy to car trajectories were used for model training.
+    perform expert-like behavior by rewarding it for “deceiving”            VI. EXPERIMENTS
+    a classifier trained to discriminate between policy and expert
+    state-action pairs. Consider a set of simulated state-action        In this work, we use GAIL and BC to learn policies for
+pairs Xθ = {(s1, a1), (s2, a2), ..., (sT , aT )} sampled from two-dimensional highway driving. The performance of these
+πθ and a set of expert pairs XE sampled from πE. For a policies is subsequently evaluated relative to baseline models.
+
+    features
+
+
+
+
+
+            :        :
+                                                                                                |
+
+       Fig. 1: GAIL diagram. Circles represent values, rect- Fig. 2: Architecture for the feedforward multilayer
+       angles represent operations, and dotted arrows rep- perceptron driving policy. The network output μ and
+       resent recurrence relations. Whereas policy πθ states covariance parameters ν are used to construct a Gaus-
+       st and actions at are evaluated by discriminator Dψ sian distribution over driver actions.
+       during both training of πθ and Dψ , expert pairs
+       (boxed) are sampled only while training Dψ .
+
+    A. Environment                                                      TABLE I: Core features used by the neural networks.
+            All experiments were conducted with the rllab reinforce-    Feature                 Units   Description
+            ment learning framework [36]. The simulation environment
+                is a driving simulation on the NGSIM 80 and 101 road    Speed                   m s−1   longitudinal speed
+          networks. Simulations are initialized to match frames from    Vehicle Length          m       bounding box length
+              the NGSIM data, and the ego vehicle is randomly chosen    Vehicle Width           m       bounding box width
+       from among the traffic participants in the frame. Simulations    Lane Offset             m       lateral centerline offset
+         are run for 100 steps at 10 Hz and are ended prematurely if    Lane-Relative Heading   rad     heading angle in the Frenet frame
+     the ego vehicle is involved in a collision, drives off road, or
+    drives in reverse.                                                  Lane Curvature          m−1     curvature of closest centerline point
+              The ego vehicle is driven according to a bicycle model    Marker Dist. (L)        m       lat. dist. to left lane marking
+        with acceleration and turn-rate sampled from the policy net-    Marker Dist. (R)        m       lat. dist. to right lane marking
+     work. All other traffic participants are replayed directly from
+            the NGSIM data, but are augmented with emergency braking
+         in the event of an imminent rear-end collision with the ego   restrict the model to a subset of vehicle relationships, we
+         vehicle. Specifically, if the acceleration predicted by the   introduce a more general and flexible feature representation.
+       Intelligent Driver Model (IDM) [3] is less than an activation                    In addition to the core features, a set of LIDAR-like
+        threshold of −2 m/s2, the vehicle then accelerates according   beams emanating from the vehicle are used to gather infor-
+          to the IDM while tracking the closest lane centerline. The   mation about its surroundings. These beams measure both
+              IDM is parameterized with a desired speed equal to the   the distance and range rate of the first vehicle struck by
+            vehicle’s speed at transition, a minimum spacing of 1 m,   them, up to a maximum range. Our work used a maximum
+          a desired time headway of 0.5 s, a nominal acceleration of
+    3 m/s2, and a comfortable braking deceleration of 2.5 m/s2.        range of 100 m, with 20 range and range rate beams, each
+                                                                       spaced uniformly in complete 360° coverage around the ego
+    B. Features                                                        vehicle’s center, as shown in Fig. 3.
+    All experiments     use the same set of features.          These          Finally, a set of three indicator features are used to identify
+features can be decomposed into three sets. The first set, when the ego vehicle encounters undesirable states. These
+the core features, are eight scalar values that provide basic ~~ features take on a value of one whenever the ego vehicle is
+information about the vehicle’s odometry, dimensions, and involved in a collision, drives off road, or travels in reverse,
+    the lane-relative ego state. These are listed in Table I.          and are zero otherwise. All features were concatenated into
+            The core features alone are insufficient to describe the   a single 51-element vector and fed into each model.
+           local context. Information about neighboring vehicles and    The     previous  action     taken by the  ego    vehicle     is  not
+      the local road structure must be incorporated as well. Several   included in the set of features provided to the policies. We
+             approaches exist for encoding such information in hand-   found that policies can develop an over-reliance on previous
+    selected features relevant to the driving task [37]. Rather than   actions at the expense of relying on the other features con-
+
+                                                                     by sampling n = 20 simulated traces per recorded trajectory:
+                                                                                  √
+                                                                                  √
+                                                                                  √ 1         ∑
+                                                                                 RWSEH = √ mn m ∑n (v(i) − vˆ(i,j))2,             (4)
+                                                                                                  H     H
+                                        ZR                                                    i=1 j=1
+                          \ NO                                       where v(i)  is the true value in the      ith trajectory at time
+                                                                           H
+                          -                                          horizon H and vˆ(i,j) is the simulated variable under sample
+                                                                     j  for the       H
+                                                                               ith trajectory at time horizon      H . We extract the
+    Fig. 3: LIDAR-like beams used for measuring range and            RWSE in predictions of global position, centerline offset,
+    range rate.                                                      and speed over time horizons up to 5 s.
+        2) Kullback-Leibler Divergence: Driver models should
+        produce distributions over emergent quantities that match
+tained in their input. To counteract this problem, we studied those observed in real-world data. For each model, empirical
+the effect of replacing the previous actions with random noise ~~ distributions were computed over speed, acceleration, turn-
+early in the training process. However, it was found that even ~~ rate, jerk, and inverse time-to-collision (iTTC) over simu-
+with these mitigations the inclusion of previous actions had lated trajectories. The closeness between the simulated and
+    a detrimental effect on policy performance.                      real-world distributions was quantified using the Kullback-
+    C. Baseline Models                                               Leibler (KL) divergence. Piecewise uniform distributions
+                                                                     with 100 evenly spaced bins were used.
+            The first baseline that we used to compare against our      3) Emergent Behavior:        We also extracted a set of emer-
+    deep policies is a static Gaussian (SG) model, which is an       gent metrics that indicate model imitation performance in
+    unchanging Gaussian distribution π(a | s) = N (a | μ, Σ) fit     relation to the NGSIM dataset. These additional metrics are
+    using maximum likelihood.                                        the lane change rate, the offroad duration, the collision rate,
+          The second baseline model is a BC approach using mixture   and the hard brake rate.
+    regression (MR) [6]. The model has been used for model-                     The lane change rate is the average number of times a
+    predictive control and has been shown to work well in            vehicle makes a lane change within a 10-second trajectory.
+    simulation and in real-world drive tests. Our MR model is        Offroad duration is the average number of time steps per
+    a Gaussian mixture over the joint space of the actions and       trajectory that a vehicle spends more than 1 m outside the
+    features, trained using expectation maximization [38]. The       closest outer road marker. The collision rate is the fraction
+    stochastic policy is formed from the weighted combination        of trajectories where the ego vehicle intersects with another
+    of the Gaussian components conditioned on the features.          traffic participant. The hard brake rate captures the frequency
+    Greedy feature selection is used during training to select a     at which a model chooses to brake harder than −3 m/s2.
+    subset of predictors up to a maximum feature count threshold           The environment in which validation occurs is not entirely
+    while minimizing the Bayesian information criterion [39].        realistic, as the non-ego vehicles have pre-recorded trajecto-
+  The final baseline model uses a rule-based controller to ries and do not always properly respond to deviations of
+govern the lateral and longitudinal motion of the ego vehicle. the ego vehicle from its original trajectory, leading to an
+The longitudinal motion is controlled by the Intelligent artificially high number of collisions. Hence, we also extract
+Driver Model with the same parameters as the emergency the hard brake rate to help quantify how often dangerous
+braking controller used in the simulation environment. For driving situations occur.
+    the lateral motion, MOBIL [4] is used to select the desired                   VII. RESULTS
+    lane, with a proportional controller used to track the lane
+    centerline. A small amount of noise is added to both the              Validation results for root-weighted square error are given
+lateral and longitudinal accelerations to make the controller in Fig. 4. The root-weighted square error results show
+    nondeterministic.                                                that the feedforward BC model has the best short-horizon
+    D. Validation                                                    performance, but then begins to accumulate error for longer
+                                                                     time horizons. GAIL produces more stable trajectories and
+             To evaluate the relative performance of each model, a   it short term predictions perform well. One can clearly see
+    systematic validation procedure was performed. For each          the controller adhere to the lane-centerline, so its lane offset
+    model, 1,000 ten-second scenes were simulated 20 times           error is close to a constant 0.5, which demonstrates that
+    each in an environment identical to the one used to train        human drivers do not always closely track the nearest lane-
+    the GAIL policies. As these rollouts were performed, several     centerline.
+    metrics were extracted to quantify the ability of each model              KL divergence scores are given in Fig. 5. The KL diver-
+    to simulate human driver behavior.                               gence results show very good tracking for SG in everything
+  1) Root-Weighted Square Error: The root-weighted but jerk. SG cannot overfit, and always takes the average
+square error (RWSE) captures the deviation of a model’s action. Its performance in other metrics is poor. GAIL
+probability mass from real-world trajectories [40]. For pre- GRU performs well on the iTTC, speed, and acceleration
+dicted variable v over m trajectories, we estimate the RWSE metrics. It does poorly with respect to turn-rate and jerk.
+
+            1.5
+                                                                                                             IDM+MOBIL
+              1                                                                                              SG
+                                                                                                             MR
+                                                                                                             BC MLP
+            0.5                                                                                              BC GRU
+                                                                                                             GAIL MLP
+                                                                                                             GAIL GRU
+              0
+                        iTTC      Speed         Acceleration         Turn-rate                  Jerk
+                        Fig. 5: The KL divergence for various emergent metrics pulled from 10 s trajectories.
+
+            1.5
+                                                                                                             NGSIM
+                                                                                                             IDM+MOBIL
+              1                                                                                              SG
+                                                                                                             MR
+                                                                                                             BC MLP
+            0.5                                                                                              BC GRU
+                                                                                                             GAIL MLP
+                                                                                                             GAIL GRU
+              0
+                        Lane Change Rate   Offroad Duration          Collision Rate  Hard Brake Rate
+                                           Fig. 6: Emergent values for each model.
+
+       6                                                                    mostly due to its accelerations being generally small in
+       4                                                                magnitude, but does reasonably well with turn-rate and jerk.
+       2                                                             Validation     results for emergent     variables are given  in
+       0                                                                 Fig. 6. The emergent values show that GAIL policies outper-
+                                                                           form the BC policies. The GAIL GRU policy has the closest
+     0.8                                                              match to the data everywhere except for hard brakes (it rarely
+     0.6                                                                 takes extreme actions). Mixture regression largely performs
+     0.4                                                             better than SG and is on par with the BC policies, but is still
+    0.20                                                                susceptible to cascading errors. Offroad duration is perhaps
+                                                                         the most striking statistic; only GAIL (and of course IDM +
+       2                                                                 MOBIL) are able to stay on the road for extended stretches.
+                                                                        SG never brakes hard because it only drives straight, and it
+       1                                                               has a high collision rate as a consequence. It is interesting
+    0 0     1            2        3        4      5                      that the collision rate for IDM + MOBIL is roughly the same
+                                                                       as the collision rate for GAIL GRU, despite the fact that IDM
+                         Horizon (s)                                     + MOBIL should not collide. The inability of other vehicles
+            IDM+MOBIL         SG            MR                          within the simulation environment to fully react to the ego-
+            BC MLP            BC GRU        GAIL MLP                 vehicle may explain this phenomenon.
+            GAIL GRU                                                          The results demonstrate that GAIL-based models capture
+Fig. 4: The root weighted square error for each candidate model vs. many desirable properties of both rule-based and machine
+    prediction horizon. Deep policies outperform the other methods.           learning methods, while avoiding common pitfalls. With
+                                                                           the exception of the hand-coded controller, GAIL policies
+                                                                       achieve the lowest collision and off-road driving rates, con-
+    This poor performance is likely due to the fact that, on            siderably outperforming baseline and similarly structured BC
+    average, the GAIL GRU policy takes similar actions to                     models. However, GAIL also achieves a lane change rate
+    humans, but oscillates between actions more than humans.              closer to real human driving than any other method against
+    For instance, rather than outputting a turn-rate of zero on      which it is compared.
+    straight road stretches, it will alternate between outputting         Furthermore, extending GAIL to recurrent policies leads to
+    small positive and negative turn-rates. In comparison with          improved performance. This result is an interesting contrast
+    the GAIL policies, the BC policies are worse with iTTC. The       with the BC policies, where the addition of recurrence largely
+    GRU version has the largest KL divergence in acceleration,        does not lead to better results. Thus, we find that recurrence
+
+
+
+
+
+
+
+
+
+
+Speed (m/s) Lane Offset (m) Position (m)
+
+
+                                           Emergent Value            KL divergence
+
+    by itself is insufficient for addressing the detrimental effects  [4]   A. Kesting, M. Treiber, and D. Helbing, “General
+    that cascading errors can have on BC policies.                          lane-changing model mobil for car-following models”,
+                        VIII. CONCLUSIONS                             [5]   Journal of the Transportation Research Board, 2007.
+              This paper demonstrates the effectiveness of deep imi-        T. A. Wheeler, P. Robbel, and M.        Kochenderfer,
+           tation learning as a means of training driver models that        “Analysis of microscopic behavior models for prob-
+         perform realistically over long time horizons, while simul-        abilistic modeling of driver behavior”, in   IEEE In-
+           taneously capturing microscopic, human-like behavior. Our        ternational Conference on Intelligent Transportation
+        contributions have been to (1) extend Generative Adversarial  [6]   Systems (ITSC), 2016.
+       Imitation Learning to the optimization of recurrent policies,        S. Lef`evre, C. Sun, R. Bajcsy, and C. Laugier, “Com-
+    and to (2) apply this technique to the creation of a new, intel-        parison of parametric and non-parametric approaches
+          ligent model of highway driving that outperforms the state        for vehicle speed prediction”, American Control Con-
+          of the art on several metrics. Although behavioral cloning  [7]   ference (ACC), pp. 3494–3499, 2014.
+         still outperforms Generative Adversarial Imitation Learning        T. Gindele, S. Brechtel, and R. Dillmann, “Learning
+      on short (∼2 s) horizons, its greedy behavior prevents it from        context sensitive behavior models from observations
+        achieving realistic driving over an extended period. The use        for predicting traffic situations”, in  IEEE Interna-
+    of    policy optimization    by Generative Adversarial Imitation        tional Conference on Intelligent Transportation Sys-
+           Learning enables us to overcome this problem of cascading  [8]   tems (ITSC), 2013.
+      errors to produce long-term, stable trajectories. Furthermore,        G. Agamennoni, J. Nieto, and E. Nebot, “Estimation
+    the use of policy representation       by deep, recurrent neural        of multivehicle dynamics by considering contextual
+           networks enables us to learn directly from general sensor        information”, IEEE Transactions on Robotics, vol. 28,
+       inputs (i.e., LIDAR distance and range rate) that can capture  [9]   no. 4, pp. 855–870, 2012.
+    arbitrary traffic states and simulate partial observability.            D. A. Pomerleau, “ALVINN: an autonomous land
+              We have argued that reinforcement learning schemes in-        vehicle in a neural network”, DTIC Document, Tech.
+corporating surrogate reward functions overcome problems [10] Rep. AIP-77, 1989.
+        arising from supervised learning in highway driver modeling.        M. Bojarski, D. Del Testa, D. Dworakowski, B. Firner,
+          As such, future work may wish to explore ways of combining        B. Flepp, P. Goyal, L. Jackel, M. Monfort, U. Muller,
+               other reward signals with our own. Whereas Generative        J. Zhang, X. Zhang, and J. Zhao, “End to end learning
+         Adversarial Imitation Learning captures human-like behavior        for self-driving cars”,    IEEE Computer Society Con-
+         present in the dataset, simulators may also wish to enforce        ference on Computer Vision and Pattern Recognition
+certain behaviors (e.g., explicitly modeling driver style) by [11] (CVPR), 2016.
+    combining  the learned, surrogate  reward with    a       reward        U. Syed and R. E. Schapire, “A game-theoretic ap-
+           function crafted from hand-picked features. An engineered        proach to apprenticeship learning”, in    Advances in
+reward function could also be used to penalize the oscil- [12] Neural Information Processing Systems (NIPS), 2007.
+          lations in acceleration and turn-rate produced by the GAIL        S. Ross and J. Bagnell,  “Efficient    reductions for
+          GRU. Finally, we offer our model of human driving behavior        imitation learning”, in   International Conference on
+as an important element for simulating realistic highway con- [13] Artificial Intelligence and Statistics, 2010.
+        ditions. Future work will apply our model to decision making        J. Ho, J. K. Gupta, and S. Ermon, “Model-free imita-
+      and safety validation. The code associated with this paper can        tion learning with policy optimization”, arXiv preprint
+    be found at https://github.com/sisl/gail-driver.                 [14]   arXiv:1605.08478, 2016.
+                                                                            P. Abbeel and A. Y. Ng, “Apprenticeship learning
+                          ACKNOWLEDGMENT                                    via inverse reinforcement learning”, in International
+              This material is based upon work supported by the Ford        Conference on Machine Learning (ICML), 2004.
+Motor Company, Robert Bosch LLC, and the National [15] D. S. Gonz´alez, J. Dibangoye, and C. Laugier, “High-
+             Science Foundation Graduate Research Fellowship Program        speed highway scene prediction based on driver mod-
+    under Grant No. DGE-114747.                                             els learned from demonstrations”, in    IEEE Interna-
+                            REFERENCES                                      tional Conference on Intelligent Transportation Sys-
+        tems (ITSC), 2016.
+ [1] P. A. Seddon, “A program for simulating the disper- [16] D. Sadigh, S. Sastry, S. A. Seshia, and A. D. Dragan,
+          sion of platoons of road traffic”,    Simulation, vol. 18,        “Planning for autonomous cars that leverages effects
+          no. 3, pp. 81–90, 1972.                                           on human actions”, in Robotics: Science and Systems,
+     [2]         P. G. Gipps, “A behavioural car-following model for        2016.
+      computer simulation”, Transportation Research Part [17] J. Ho and S. Ermon, “Generative adversarial imitation
+               B: Methodological, vol. 15, no. 2, pp. 105–111, 1981.        learning”, arXiv preprint arXiv:1606.03476, 2016.
+ [3] M. Treiber, A. Hennecke, and D. Helbing, “Congested [18] J. Colyar and J. Halkias, “US highway 80 dataset”,
+          traffic states in empirical  observations   and     micro-        Federal Highway Administration (FHWA), Tech. Rep.
+                scopic simulations”, Physical Review E, vol. 62, no.        FHWA-HRT-06-137, 2006.
+          2, p. 1805, 2000.
+
+[19] J. Colyar and J. Halkias, “US highway 101 dataset”, [29] P. Boyraz, M. Acar, and D. Kerr, “Signal modelling
+           Federal Highway Administration (FHWA), Tech. Rep.              and hidden Markov models for driving manoeuvre
+           FHWA-HRT-07-030, 2007.                                         recognition and driver fault diagnosis in an urban road
+    [20]   J. A. Bagnell, “An invitation to imitation”, DTIC              scenario”, in    IEEE Intelligent Vehicles Symposium,
+           Document, Tech. Rep. CMU-RI-TR-15-08, 2015.                    2007.
+[21] R. S. Sutton and A. G. Barto, Reinforcement Learning: [30] D. Wierstra, A. F¨orster, J. Peters, and J. Schmidhuber,
+           An Introduction, 1. MIT Press, 1998.                           “Recurrent policy gradients”, Logic Journal of IGPL,
+    [22]   H. Lee, R. Grosse, R. Ranganath, and A. Y. Ng,                 vol. 18, no. 5, pp. 620–634, 2010.
+      “Convolutional deep belief networks for scalable un- [31] N. Heess, J. J. Hunt, T. P. Lillicrap, and D. Silver,
+           supervised learning of hierarchical representations”,          “Memory-based control  with     recurrent neural net-
+           in International Conference     on Machine    Learning         works”, arXiv preprint arXiv:1512.04455, 2015.
+           (ICML), 2009.                                           [32]   J.  Chung, C. Gulcehre, K.     Cho, and   Y.     Ben-
+    [23]   A. Krizhevsky, I. Sutskever, and G. E. Hinton, “Im-            gio, “Empirical evaluation of gated recurrent neu-
+           agenet classification with deep convolutional neural           ral networks on sequence modeling”, arXiv preprint
+           networks”, in      Advances in Neural Information Pro-         arXiv:1412.3555, 2014.
+           cessing Systems (NIPS), 2012.                           [33]   D.-A. Clevert, T. Unterthiner, and S. Hochreiter, “Fast
+    [24]   J. Hongfei, J. Zhicai, and N. Anning, “Develop a               and accurate deep network learning by exponential lin-
+           car-following model using data collected by ”five-             ear units (ELUs)”, arXiv preprint arXiv:1511.07289,
+           wheel system””, in       IEEE International Conference         2015.
+      on Intelligent Transportation Systems (ITSC), vol. 1, [34] J. Schulman, S. Levine, P. Abbeel, M. I. Jordan, and
+           2003.                                                          P. Moritz, “Trust region policy optimization”, in In-
+    [25]   S. Panwai and H. Dia, “Neural agent car-following              ternational Conference on Machine Learning (ICML),
+           models”, IEEE    Transactions    on Intelligent Trans-         2015.
+           portation Systems, vol. 8, no. 1, pp. 60–70, 2007.      [35]   R. E. Kalman, “A new approach to linear filtering and
+    [26]   A. Khodayari, A. Ghaffari, R. Kazemi, and R. Braun-            prediction problems”,   Journal of Basic Engineering,
+           stingl, “A modified car-following model based on a             vol. 82, no. 1, pp. 35–45, 1960.
+      neural network model of the human driver effects”, [36] Y. Duan, X. Chen, R. Houthooft, J. Schulman,
+           IEEE Transactions on Systems, Man, and Cybernetics,            and P. Abbeel, “Benchmarking deep reinforcement
+           vol. 42, no. 6, pp. 1440–1449, 2012.                           learning for  continuous control”, arXiv     preprint
+    [27]   J. Morton, T. A. Wheeler, and M. J. Kochenderfer,              arXiv:1604.06778, 2016.
+      “Analysis of recurrent neural networks for probabilis- [37] C. Chen, A. Seff, A. Kornhauser, and J. Xiao, “Deep-
+           tic modeling of driver behavior”, IEEE Transactions            Driving: Learning affordance for direct perception in
+           on Intelligent Transportation Systems, 2016.                   autonomous driving”, in IEEE International Confer-
+    [28]   Q. Liu, B. Lathrop, and V. Butakov, “Vehicle lateral           ence on Computer Vision (ICCV), 2015.
+      position prediction: a small step towards a compre- [38] J. Friedman, T. Hastie, and R. Tibshirani, The Ele-
+           hensive risk assessment system”, in      IEEE Interna-         ments of Statistical Learning. Springer, 2001.
+      tional Conference on Intelligent Transportation Sys- [39] G. Schwarz, “Estimating the dimension of a model”,
+           tems (ITSC), 2014.                                             The Annals of Statistics, vol. 6, no. 2, pp. 461–464,
+                                                                          1978.
+                                                                   [40]   J. Cox and M. J. Kochenderfer, “Probabilistic airport
+                                                                          acceptance rate prediction”, in     AIAA Modeling and
+                                                                          Simulation Conference, 2016.
+
