@@ -1,0 +1,553 @@
+                                       UNECE
+                  All you need to know about
+                          Automated Vehicles
+Technical progress and regulatory activities
+         =?
+  om)             2
+
+  -|  |        =  -
+        .
+
+         ~~
+        0
+
+        |-|       -
+          -       -
+
+
+    7/7
+
+
+
+    UNECE
+                  All you need to know about
+                          Automated Vehicles
+Technical progress and regulatory activities
+
+
+
+
+
+
+
+
+
+
+    UNITED NATIONS
+
+
+
+    |    (=  |
+  Jf     Em = hel
+\
+
+   Table of Contents
+
+
+
+1. | Overview
+2. | Technical developments in the field of
+      assisted and automated driving systems
+3. | The role of the World Forum for
+      Harmonization of Vehicle Regulations
+      (WP.29) on assisted and automated driving
+4. | Myths and reality
+
+
+
+
+
+    3
+
+E— |= =
+ —                                                                     )   .\
+                                                                       4
+                                                                       7
+            3
+
+            \                                                                  A
+.         | 2
+a      2     B=      =A                                                     —
+             y     /     /
+
+     [     7     i                                                    Pmt      ——
+
+     /                                                    N           PP
+                                                         Ro           can
+
+ 1. Overview
+
+ The motor industry’s 125-year history is an impressive succession    UNECE, through the World Forum for Harmonization of Vehicle
+ of innovation. Today, the industry faces the challenging task to     Regulations (WP.29) and the UN Road Safety Instruments, is
+ massively electrify vehicles over the next 5 to 10 years, at least   the platform where countries from all around the world gather
+ in developed markets.                                                to develop jointly the regulatory frameworks governing these
+                                                                      vehicles. It has therefore embarked since 2014 in adapting
+ At the same time, with the rise and promises associated to           existing legal instruments and developing new ones to facilitate
+ automated driving, we are standing before what will be the           the gradual introduction of automated driving functionalities.
+ biggest quantum leap forward in automotive technology in
+ history.                                                             In an effort to focus its activities on automation, UNECE
+                                                                      established the Working Party on Automated/Autonomous and
+ Automated vehicles have the potential to change the life             Connected Vehicles (GRVA) in 2018.
+ of billions of people and fundamentally change how road              Since the establishment of GRVA, the Working Party has created
+ transportation works. This will be made possible by the global       a global scheme to develop requirements and guidelines for
+ automotive industry, which employs some 50 million people and        automated and connected vehicles, namely the Framework
+ represents a turnover of almost $2 trillion per year.                on Automated/Autonomous and Connected Vehicles (FDAV),
+ Since it is widely acknowledged that up to 90 per cent of road       which largely guides GRVA’s work. This Framework was
+ crashes are at least partially due to human error, assisted and      drafted by China, the European Union, Japan, and the United
+ automated driving systems could reduce the human factor from         States of America and endorsed by the World Forum for
+ the road safety equation, leading to a significant decrease in       Harmonization of Vehicle Regulations and the UNECE Inland
+ road crashes, and therefore could significantly reduce deaths        Transport Committee. The document defines a safety vision,
+ and injuries on roads.                                               key safety elements, guidance to the Working Parties of
+                                                                      WP.29 as well as a programme of activities. These activities,
+ Automated driving could also support existing policies that          at the intergovernmental level, form a novel initiative aimed at
+ otherwise would have no clear path to implementation, such as        harmonizing globally automated driving regulations and creating
+ intelligent transport systems and mobility as a service.             a more productive environment for innovation.
+ Yet, all these benefits will not come at once and will not come      GRVA achieved some initial results under the 1958 Agreement,
+ by themselves. Conditions in some developing countries will          with the adoption of amendments to UN Regulation No. 79
+ be such that it will be difficult to accommodate autonomous          (Steering) as well as of new UN Regulations Nos. 157 (Automated
+ driving for decades. In addition, automated vehicles raise           Lane Keeping System), 155 (Cyber Security and Cyber Security
+ as many questions as they offer potential benefits. These            Management System) and 156 (Software Update and Software
+ include: responsibility, safety standards, software reliability,     Update Management System).
+ environmental performance and cybersecurity, to name just a          This brochure focuses on the automotive sector developments
+ few.                                                                 and governmental responses, as well as provides insights on
+                                                                      the activities’ development performed by intergovernmental
+ Providing an appropriate and balanced regulatory answer to           bodies of UNECE to enable assisted and automated driving as
+ these questions is a prerequisite to the mass introduction of        of September 2021. It further includes a short section aimed at
+ these vehicles on the road.                                          providing clarity about various myths.
+     4
+
+    v
+    J
+
+
+                     —
+
+                   ~~]
+
+ (    2 NN
+ \    3        \&4
+   =        {
+
+  |fr  ot 1  |  |    i
+      2. Technical developments in the field of
+      assisted and automated driving systems
+
+
+    The technical progress in the field of assisted and automated         In Europe alone, a considerable number of vehicles were
+    driving, for the last seven years, is impressive. A Japanese          equipped with assisted driving features of Level 2 already in
+    vehicle manufacturer launched a model in March 2021, which is        ~~ 2018. A year later, this amount increased significantly, reaching
+    the first series vehicle equipped with a Level 3 technology. At the   about 10 per cent of the cars sold.
+    time of drafting this brochure, a German vehicle manufacturer         Technological progress in the field of Artificial Intelligence,
+    was also equipping its flagship vehicle with an automated             especially with the growing use of Machine Learning and Deep
+    driving system.                                                       Learning, increased possibilities in the field of Object and
+A ride hailing system using vehicles equipped with automated ~~ Event Detection and Response (OEDR). Light Detection and
+driving systems is currently providing hundreds of trips per week ~~ Ranging systems (LIDARs), radars and cameras as well as
+to the public in East Valley of Phoenix, Arizona. These vehicles ~~ Deep Learning related technologies provide opportunities for
+    are not operated by human drivers, but are supervised by a            developing the highest levels of automation. These sensing and
+    remote operator monitoring the rides. In addition, Automated          automation technologies can also be utilized for “simpler” use
+    Shuttle manufacturers are experimenting     with automated            cases, such as safety features that provide assistance to drivers
+    shuttles in many locations around the globe.                          when a potential crash is detected. These “simpler” technologies
+    These industrial achievements find their technical origin in the      include AEBS and steering assistance at low speed, Emergency
+    early developments related to warning and assistance systems,         Steering Function (ESF) and Risk Mitigation Functions (RMF).
+    which were closely linked to safety systems. Anti-lock Braking
+    Systems (ABS), in the seventies, and Electronic Stability
+    Systems (ESC) in 1995, were the first systems that interfered
+    with driving tasks and were sold across the series vehicle
+    model ranges. At a later stage, Adaptive Cruise Control (ACC),
+    Lane Departure Warnings Systems (LDWS) and Advanced
+    Emergency Braking Systems (AEBS) for trucks and coaches
+    were implemented. These were the first systems using sensors
+    to monitor both, the road and other vehicles ahead of the subject
+    vehicle.
+    Since 2014, further developments in the field of assisted driving
+    have occurred thanks to technical progress and industrial
+    competition. For instance, an announcement by a search engine
+    company as well as market pressure created by an electric
+    vehicles manufacturer, offered a Level 2 assistance system for
+    sale.
+                                                                         5
+
+         =                    y           3     a        SRₐ                      &           =              a>                  Ss
+                  AW ey                                                        =          NE
+   N              A 7                                                                         PCN:                               Hy
+                                                                                          =     9            ir                      =
+         A=                           =                      ./¢                          a                               \
+                                      IN                 4     iinᵃ
+         ¥,                                                                                              = oo
+J             =     N                     1                  —                                       Nay      Eegl
+-
+   i
+
+                                          |
+
+        3. The role of the World Forum for Harmonization
+              of Vehicle Regulations (WP.29) on assisted and
+              automated driving
+        Early responses                                                        UN Regulation No. 79 (Steering), established under the 1958
+        The emergence of safety features in the automotive sector led          Agreement, contained the  provisions     for the  approval      of
+        WP.29 to establish, in 2002, the Informal Working Group on             Automatically Commanded Steering Functions (ACSF) limited
+        Intelligent Transport Systems (IWG on ITS).                            to 10 km/h and Corrective Steering Functions (CSF) for two
+                                                                               decades. This speed limit prevented the type approval of
+        From 2002-2013, the ITS group focused on driver-assistance             driver assistance systems to achieve higher velocity. Some
+        technologies entering     the market        and     human-machine      manufacturers developed lane keeping functions that were
+        interaction issues resulting in guidelines for high-priority/safety-   using the Electronic Stability Control (ESC) in order to cope with
+        critical warning and on Advanced Driver Assistance Systems             this limitation.
+        (ADAS). These developments coincided with ESC’s and AEBS’              In 2014, activity began to develop the regulatory provisions under
+        market entry for trucks and coaches. As these technologies and         which the 10 km/h limitation could be exceeded. This produced
+        systems advanced, the ITS group shifted its attention toward           the regulatory basis under which vehicle manufacturers could
+        automated driving systems.                                             enter the market with ADAS, namely Levels 1 and 2 technologies.
+        From 2014-2018, the group, renamed IWG on Intelligent
+        Transport Systems/    Automated        Driving,  considered   the      Automated Driving Systems
+        intersection between automated driving and traffic rules. It
+        developed definitions, terms and concepts, as well as proposed         The Word Forum felt that regulatory activities on assisted and
+        recommendations on cyber security and software integrity. It           automated vehicles would require more of its resources and
+       received presentations on the classification of automated driving ~~ established the Working Party on Automated/Autonomous
+        technologies from Germany (BASt), United States of America             and Connected Vehicles (GRVA – French abbreviation for the
+        (NHTSA) at about the time the standard SAE J3016, defining             group). At the same time, the Group of Seven (G7) Ministers
+        automated driving levels, was drafted.                                 of Transport agreed to cooperate within this group to tackle the
+        Advanced Driver Assistance Systems                                     harmonization of related regulatory matters.
+        During the Inland Transport Committee session in 2014, a               The activities of the Working Party are performed under the
+        search engine company announced the availability of their self-        framework provided by the United Nations vehicle Agreements
+        driving system in four years and a major automotive systems            from 1958, 1997 and 1998 as well as the Framework Document
+        supplier presented the strategy to launch automated driving            on Automated/Autonomous Vehicles.
+        systems based on a step-by-step approach.                              Since the inception of GRVA, the automotive sector profoundly
+        At the same time, the former Working Party on Brakes and               transformed the way it addresses cyber security as well as
+        Running   Gear (GRRF)     received     inputs    concerning Truck      further generalised ADAS systems performing lane keeping
+        Platooning and interrelations with technical regulations under         or changes on highways. These impressive developments
+        the purview of the Working Party.                                      were also supported by the first UN Regulation for approval of
+                                                             6
+
+Level 3 systems that perform automated lane keeping at low          Under this environment, several activities are still ongoing, but
+speed on motorways, a use case covering, for instance,              some outcomes were already delivered such as:
+congested traffic situations. The first series vehicle equipped
+with an Automated Lane Keeping System in conformity with UN
+Regulation No. 157 under the 1958 Agreement were put on the         Guidance documents for contracting parties to the
+market in 2021.                                                     1958 and 1998 Agreements, for global harmonization:
+Many other technologies are also in development and under trial
+in various regions of the world.                                    (a) Recommendations for Automotive Cyber Security
+                                                                         and Software Update (draft).
+While some countries (mostly those applying the type approval
+system) are in favour of developing technical regulations (with     (b) Guidance on Event Data Recorder - Performance Elements
+minimumperformancerequirements,potentiallyapplicableduring               Appropriate for Adoption under the 1958
+the life cycle of a vehicle type) to accompany the development           and 1998 Agreements (draft).
+and facilitate the emergences of those technologies, other
+countries (most of them applying the self-certification regime)     (c)  First iteration of the New Assessment/Test Method for
+believe that guidance and recommendations are currently                  Automated Driving (NATM) - Master Document.
+sufficient under a self-certification regime to provide the greatest
+flexibility for innovation and technological development.           (d) Second iteration of the New Assessment/Test Method for
+                                                                         Automated Driving (NATM) - Master Document (draft).
+Framework Document on Automated/
+Autonomous and Connected Vehicles                                   UN Regulations under the 1958 Agreement:
+The Framework on Automated/Autonomous and Connected
+Vehicles (FDAV) was drafted by China, the European Union,           (a) UN Regulation No. 155 (Cyber Security and Cyber Security
+Japan and the United States of America. It defines a safety              Management System) and the corresponding interpretation
+vision, key safety elements, and guidance to the Working Parties         document.
+of WP.29, as well as a programme of activities suitable for the     (b) UN Regulation No. 156 (Software Update and Software
+countries under the regime of type approval and the countries            Update Management System) and the corresponding
+under the regime of self-certification.                                  interpretation document.
+These activities, at the intergovernmental level, form a novel
+initiative aimed at harmonizing globally automated driving          (c) DSSAD requirements in UN Regulation No. 157 (ALKS)
+regulations and creating a more productive environment for               in chapter 8.
+innovation.
+The World Forum WP.29 unanimously endorsed this document.           (d) UN Regulation No. 160 (Event Data Recorder).
+WP.29 continues to use it as a programme management tool,
+clustering activities on Functional Requirements for Automated
+Vehicles, Validation Method for Automated Driving, Cyber
+Security and Over-The-Air issues and Data Storage System for
+Automated Driving / Event Data Recorder (DSSAD/EDR), to be
+dealt with by specific working groups.
+
+
+
+
+
+
+
+
+
+
+7
+
+    (C £) : ——
+       &      = |
+
+
+
+    = —    4
+    4. Myths and realities
+
+
+    Myth 1 – Vehicles will decide who to kill in case                      Relying on external information could create a dilemma. For
+        of a dilemma                                                       example, at a road crossing, does the absence of a signal
+                                                                           (supposed to inform on the presence of a vehicle) really mean
+    This myth is related to the famous trolley dilemma, which is an        the absence of a vehicle? It could be that a vehicle has a
+    interesting question from an academical point of view.                 technical defect and is not properly emitting, or that interference
+    However, it is currently expected, given the current technological     disturb the communication.
+state of the art, that an automated driving system will have to ~~ Progress of vehicle-to-vehicle communications and vehicle
+comply with the same rules as conventional vehicles driven by ~~ to infrastructure communications are going on. Such
+drivers. Existing traffic rules stipulate that the driver shall at all ~~ telecommunication technologies will in the future create added
+    time have its speed under control […], and slowdown of stop            values and could potentially enhance automated driving system,
+whenever circumstances so require […]. From the safety point ~~ supporting a “natural driving” vehicle behaviour and more
+of view, if this rule is imposed on drivers, why should the rules ~~ comfort for vehicle occupants and off board information could
+    be more lenient for automated vehicles? It is also noted that          contribute to “anticipation”.
+    complex situations don’t provide much time for computation.            For the time being, UN Regulation No. 79 defines autonomous
+    From the safety point of view, it is argued that this time should be   steering systems as follow:
+    used for optimizing trajectories, decelerations, and interactions      “Autonomous Steering System”     means a system                   that
+    with road users to avoid or, at least, mitigate a crash in cases       incorporates a function within a complex electronic control
+    when avoidance is impossible, instead of computing highly              system that causes the vehicle to follow a defined path or to
+    complex and subjective parameters related to potential victims.        alter its path in response to signals initiated and transmitted
+    Myth 2 – Self-driving cars are driving thanks to 5G                    from off-board the vehicle. The driver will not necessarily be in
+                                                                           primary control of the vehicle.”
+    This myth implies that self-driving (automated driving system)         It stipulates in the introduction:
+    primarily relies on wireless communication (Wi-Fi, LTE, 5G             “It is anticipated that future technology will also allow steering
+    etc.). However, no automated driving technology rely on off-           to be influenced or controlled by sensors and signals generated
+    board information to drive. Automated driving systems consist         ~~ either on or off-board the vehicle. This has led to several concerns
+    of onboard hardware, software, and sensors that together               regarding responsibility for the primary control of the vehicle and
+    perform the entire dynamic driving task. On the contrary, remote       the absence of any internationally agreed data transmission
+    driving (also known as teleoperation) and vehicle-to-vehicle           protocols with respect to off-board or external control of steering.
+communications do rely on off-board information, but neither of ~~ Therefore, the Regulation does not permit the general approval
+    those technologies constitute automated driving, nor are under         of systems that incorporate functions by which the steering can
+    mass production. Before telecommunications can safely perform         ~~ be controlled by external signals, for example, transmitted from
+    a driving task, matters related to network coverage, latency and       roadside beacons or active features embedded into the road
+    interference would need to be addressed for all locations and         ~~ surface. Such systems, which do not require the presence of a
+    conditions.                                                            driver, have been defined as “Autonomous Steering Systems”.
+                                                                          8
+
+    Myth 3 – Current state of the art technology                        Myth 5 – Automated driving is pointless
+     enables self-driving cars for sale                                 if it requires a human supervision
+     to the public                                                      The advancements in lower levels of automation, including
+There is no product for sale to the public that is technically self- ~~ assisted driving are expected to serve the purpose of Sustainable
+driving on public roads. Even the most advanced technology ~~ Development Goal (SDG) 3.6 and road safety in general. ADAS
+    under trial remains under the control or supervision of an          may assist the human driver for several activities while driving
+    operator that can take over the control of the “ego vehicle” in     and therefore ease the basic driving tasks. Thus, drivers are in
+    case of an issue. Automated driving exists currently within the     the position to use their capacities for better observing the traffic
+    boundaries and limitations of the Operational Design Domain         situations and are supported during emergency manoeuvres
+    defined by the manufacturer.                                        by such systems. It is expected that vehicles equipped with
+                                                                        automated driving systems (Level 3 through 5) will not commit
+    Myth 4 – Drivers can have a nap while an automated                  the same errors (e.g. impaired driving or distraction) that cause
+    driving system is engaged                                           the vast majority of vehicle crashes today.
+
+    The current technologies in vehicles for sale to the public do
+    not enable automated driving systems without any supervision
+    that could allow a driver to sleep. In fact, UNECE observes a
+    different trend: manufacturers have started implementing driver
+    monitoring functions in vehicles that require the vehicle to verify
+    the availability of the fall-back user in case the individual should
+    resume the driving task. Level 4 ride-hailing applications that
+    do not have a human driver nor a fall-back user will allow for
+    passengers to take naps throughout a trip, as these trials are
+    performed under remote supervision.
+
+
+
+
+      p                                                                 =
+      -  Pe Human                                                       .    b
+ uman    -
+ :                                                                          Human
+
+
+
+                                                                                 1
+                                                                        \
+                                                                        \    3   \
+     y 4 / cae                                                              y
+
+
+     ;                                                                  \
+
+
+     4 {                                                                \
+                                                                        NY
+                                                                        Zs
+
+         9
+
+                                 Glossary
+
+“World Forum for Harmonization of Vehicle Regulations (WP.29)” was established on 6 June 1952 as the Working Party on the
+Construction of Vehicles, a subsidiary body of the Inland Transport Committee (ITC) of the United Nations Economic Commission
+for Europe (UNECE). In March 2000, WP.29 became the “World Forum for Harmonization of Vehicle Regulations (WP.29)”. The
+objective of the WP.29 is to initiate and pursue actions aimed at the worldwide harmonization or development of technical regulations
+for vehicles. Providing uniform conditions for periodical technical inspections and strengthening economic relations worldwide, these
+regulations are aimed at:
+                         •   Improving vehicle safety;
+                         •   Protecting the environment;
+                         •   Promoting energy efficiency, and
+                         •   Increasing anti-theft performance.
+
+“Working Party on Automated/Autonomous and Connected Vehicles” is a subsidiary body of the World Forum for Harmonization
+of Vehicle Regulations (WP.29) that prepares regulatory proposals on active safety, Advanced Driver Assistance Systems, Automated
+Driving Systems and Connected Vehicles.
+
+                             United Nations Economic Commission for Europe
+                                                (UNECE)
+
+                                       Inland Transport Committee
+                                                 (ITC)
+
+                             Other Working Parties             World Forum for Harmonization
+                                                                of Vehicle Regulations (WP.29)
+
+                                                                GRE Lighting and Light-Signalling
+                                                               GRVA Automate/Autonomous and
+                                                                     Connected Vehicles
+                                                               GRBP Noise and Tyres
+                                                               GRPE  Pollution and Energy
+                                                               GRSG  General Safety Provisions
+                                                               GRSP  Passive Safety
+
+“UN 1958 Agreement” concerning the Adoption of Uniform Technical Prescriptions for Wheeled Vehicles, Equipment and Parts
+which can be Fitted and/or be Used on Wheeled Vehicles and the Conditions for Reciprocal Recognition of Approvals Granted on
+the Basis of these Prescriptions; the Agreement counts 56 Contracting Parties (UN Countries) worldwide and around 160 annexed
+UN Regulations (by end of 2021). Whenever a company designs a prototype of an automotive component, accessory or vehicle they
+must prove that it meets the performance requirements of the 1958 Agreement’s Regulations. Once that is done, the manufacturer
+can follow the motto “certified once, sold everywhere”. That company engraves the E on their parts, and a car maker in any country
+can buy it with the confidence that it meets the Regulations. Companies can trade across borders and to different regions without a
+costly re-verification process which would be passed on to the consumer. UN Regulations, can be consulted on-line at or downloaded
+free of charge from the following website: https://unece.org/transport/vehicle-regulations.
+“UN 1998 Agreement” is the Agreement Concerning the Establishing of Global Technical Regulations (GTRs) for Wheeled Vehicles,
+Equipment and Parts Which Can Be Fitted and/or Be Used on Wheeled Vehicles. The 1998 Agreement was negotiated and concluded
+under the auspices of ECE and opened for signature on 25 June 1998. The United States of America became the first signatory. The
+Agreement entered into force on 25 August 2000 for eight Contracting Parties. In 2018 the Agreement had 38 Contracting Parties. To
+date, 22 UN GTRs have been established under this Agreement. The goal of the 1998 Agreement is to continuously improve global
+road safety, decrease environmental pollution and consumption of energy and improve anti-theft performance of vehicles and related
+components and equipment through globally uniform technical regulations.
+The 1998 Agreement establishes a process by which countries from all regions of the world can jointly develop UN GTRs on safety,
+environmental protection systems, energy sources and theft prevention of wheeled vehicles, equipment and parts and to implement
+these regulations in line with the uniform provisions of UN Regulations. The equipment and parts cover, but are not limited to, vehicle
+construction, exhaust systems, tyres, engines, acoustic shields, anti-theft alarms, warning devices and child restraint systems.
+                                                   10
+
+    List of reference documents and regulations mentioned in this document:
+
+
+• Framework Document on Automated/Autonomous and Connected Vehicles was adopted by WP.29 in 2019.
+    See ECE/TRANS/WP.29/2019/34/Rev.2
+
+• Reference document (levels of autonomy): ECE/TRANS/WP.29/1140
+
+• UN GTR No. 3 (Motorcycle braking) was established in 2006. It includes performance requirements for e.g. Combined
+    Braking System (CBS) and Anti-lock Braking System (ABS).
+
+• UN GTR No. 8 (Electronic Stability Control) was established in 2008. It defines the performance requirements applicable
+    to ESC, still in use in 2021.
+
+• UN Regulation No. 13 (Heavy vehicle braking) established in 1970 and 13-H (Light vehicle braking), established in 1998,
+    defined the minimum performance requirements for braking systems, including ABS and ESC.
+
+• UN Regulation No. 78 (Braking of category L vehicles) was established in 1988. It is harmonized with UN GTR No. 3.
+
+• UN Regulation No. 79 (Steering equipment) was established in 1995.
+
+• UN Regulation No. 130 (Lane Departure Warning System) was established in 2013.
+
+• UN Regulation No. 131 (Advanced Emergency Braking System) was established in 2013.
+
+• UN Regulation No. 140 (Electronic Stability Control) was established in 2017 based on UN Regulation No. 13-H.
+    It is harmonized with UN GTR No. 8 (ESC).
+
+• UN Regulation No. 155 (Cyber Security and Cyber Security Management System) was established in 2021.
+
+• UN Regulation No. 156 (Software Update and Software Update Management System) was established in 2021.
+
+• UN Regulation No. 157 (Automated Lane Keeping System) was established in 2021.
+
+• ISO/SAE PAS 22736:2021 / SAE: J3016
+    Taxonomy and Definitions for Terms Related to Driving Automation Systems for On-Road Motor Vehicles
+    https://www.sae.org/binaries/content/assets/cm/content/blog/sae-j3016-visual-chart_5.3.21.pdf
+
+
+
+
+    For further reading:
+
+    UN Regulations can be consulted on the UNECE website here:
+    https://unece.org/un-regulations-addenda-1958-agreement
+
+    UN GTRs can be consulted on the UNECE website here:
+    https://unece.org/transport/standards/transport/vehicle-regulations-wp29/global-technical-regulations-gtrs
+
+    Documents with “official symbols” (e.g. ECE/TRANS/WP.29/1140) can be accessed via
+    https://undocs.org/ + symbol = document.
+    (e.g. https://undocs.org/ECE/TRANS/WP.29/1140)
+
+
+
+    11
+
+    Find out more:
+
+
+
+
+
+
+
+
+
+
+    WEBSITE    INSTAGRAM
+
+
+
+
+
+
+
+
+
+
+    TWITTER    FLICKR
+
+
+
+
+
+
+
+
+
+
+    FACEBOOK    YOU TUBE
+
+
+
+
+
+
+
+
+
+
+    .    <<
+
+ i       — w=
+        12
+\
+
+        All you need to know about
+        Automated Vehicles
+Technical progress and regulatory activities
+
+
+
+
+
+
+
+
+
+
+    Information Service
+    United Nations Economic Commission for Europe
+
+    Palais des Nations
+    CH - 1211 Geneva 10, Switzerland
+    Telephone:   +41(0)22 917 12 34
+    E-mail:      unece_info@un.org
+    Website:     http://www.unece.org
+
+
+    Printed at United Nations, Geneva – 2119169 (E) – December 2021 – 1,000 – ECE/TRANS/NONE/2021/1
+

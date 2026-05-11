@@ -1,0 +1,652 @@
+                                                                                           Temporal Logic Formalisation of ISO 34502 Critical Scenarios:
+                                                                  Modular Construction with the RSS Safety Distance∗
+
+                                                                       Jesse Reimann†‡     Nico Mansion†‡                  James Haydon
+                                                                           TU Delft        Saarland University  National Institute of Informatics
+                                                                    Delft, The Netherlands    Saarbrücken, Germany         Tokyo, Japan
+
+                                                                        Benjamin Bray                         Agnishom Chattopadhyay‡          Sota Sato
+                                                              National Institute of Informatics                   Rice University            NII & SOKENDAI
+                                                                         Tokyo, Japan                           Houston, Texas, USA           Tokyo, Japan
+
+                                                                         Masaki Waga                               Étienne André              Ichiro Hasuo
+                                                                    Kyoto University & NII                Université Sorbonne Paris Nord,    NII & SOKENDAI
+                                                                         Kyoto, Japan                      LIPN, CNRS, UMR 7030, F-93430      Tokyo, Japan
+                                                                                                                Villetaneuse, France
+                                                                         Naoki Ueda                    Yosuke Yokoyama
+                                                              Mitsubishi Electric Corporation  Mitsubishi Electric Corporation
+                                                                      Kamakura, Japan                  Kamakura, Japan
+ABSTRACT                                                                                    KEYWORDS
+As the development of autonomous vehicles progresses, efficient                             automated driving, temporal logic, formal methods, safety, moni-
+safety assurance methods become increasingly necessary. Safety                              toring
+assurance methods such as monitoring and scenario-based testing                             ACM Reference Format:
+call for formalisation of driving scenarios. In this paper, we develop
+a temporal-logic formalisation of an important class of critical sce-                       Jesse Reimann, Nico Mansion, James Haydon, Benjamin Bray, Agnishom
+narios in the ISO standard 34502. We use signal temporal logic (STL)                        Chattopadhyay, Sota Sato, Masaki Waga, Étienne André, Ichiro Hasuo,
+as a logical formalism. Our formalisation has two main features: 1)                         Naoki Ueda, and Yosuke Yokoyama. 2024. Temporal Logic Formalisation
+                                                                                            of ISO 34502 Critical Scenarios: Modular Construction with the RSS Safety
+modular composition of logical formulas for systematic and compre-                          Distance. In The 39th ACM/SIGAPP Symposium on Applied Computing (SAC
+hensive formalisation (following the compositional methodology                              ’24), April 8–12, 2024, Avila, Spain. ACM, New York, NY, USA, 10 pages.
+of ISO 34502); 2) use of the RSS distance for defining danger. We                           https://doi.org/10.1145/3605098.3636014
+find our formalisation comes with few parameters to tune thanks to
+the RSS distance. We experimentally evaluated our formalisation;                            1 INTRODUCTION
+using its results, we discuss the validity of our formalisation and                         To increase social acceptance of automated driving vehicles (ADVs),
+its stability with respect to the choice of some parameter values.                          addressing safety concerns is vital. The safety vision of the UNECE
+CCS CONCEPTS                                                                                World Forum for Harmonization of Vehicle Regulations (WP.29)
+                                                                                            states that the level of safety should be such that ADVs “shall not
+• Theory of computation → Modal and temporal logics; Logic                                  cause any traffic accidents resulting in injury or death that are
+and verification; • Computer systems organization → Real-time                               reasonably foreseeable and preventable” [8].
+system specification.                                                                                One path towards realising this vision is scenario-based testing
+∗The work is partially supported by JST ERATO HASUO Metamathematics for Systems             of vehicle controllers [21]. For this approach, a library of criti-
+Design Project (No. JPMJER1603), JST START Grant (No. JPMJST2213), and JST CREST            cal scenarios is compiled, and the behaviour of the path-planning
+Grant (No. JPMJCR2012). J. Reimann is supported by a fellowship of the German               algorithm in these situations is observed through simulations. Com-
+Academic Exchange Service (DAAD). É. André is partially supported by ANR-NRF                pared to a posteriori analysis of recorded driving data, this allows
+ProMiS (ANR-19-CE25-0015) and ANR BisoUS (ANR-22-CE48-0012).† Equal contribution            for cost-efficient testing and adjustments of controllers, as it is not
+‡Work done during the stay at National Institute of Informatics (NII), Tokyo, Japan         necessary to record new driving data after algorithmic changes.
+                                                                                                         Efforts towards standardising test-scenario based ADV safety
+                                                              (©) ®                         evaluations include ISO Standard 34502 [12]. This standard derives
+                                                                                            relevant scenarios by systematically identifying risk factors related
+                                                                  =                         to vehicle perception, traffic conditions, and vehicle control. Com-
+This work is licensed under a Creative Commons Attribution International 4.0 License.       bining these factors yields a large number of critical scenarios.
+SAC ’24, April 8–12, 2024, Avila, Spain                                                             Most efforts towards specifying critical scenarios use a combina-
+© 2024 Copyright held by the owner/author(s).                                               tion of natural language descriptions and suitably chosen parameter
+ACM ISBN 979-8-4007-0243-3/24/04.
+https://doi.org/10.1145/3605098.3636014                                                     value ranges, see e.g. [20]. An alternative is formalisation of critical
+
+
+
+                                                                                           186
+
+SAC ’24, April 8–12, 2024, Avila, Spain                                                                           J. Reimann, N. Mansion, et al.
+
+       scenarios, in some formal language with a rigorously defined se-    Related work.          The RSS framework [28] is based on the assump-
+     mantics, so that 1) the content of each scenario is mathematically   tion that all vehicles comply with pre-defined proper responses to
+     well-defined, and 2) those scenarios can be mechanically processed   potentially critical scenarios. In our work, we use the RSS frame-
+  by software. A typical example of such processing is monitoring, i.e.   work to obtain a safety metric suitable to the logical formalisation
+detecting occurrences of scenarios automatically in a driving log.        of critical scenarios without the notion of responsibility implied
+     A class of formal languages particularly suitable for this purpose   by the proper responses. Some proper responses from [28] were
+      is temporal logics, pioneered by Pnueli [23]. Temporal logics can   formalised in STL in [11]. Suitable parameter ranges for calibrating
+     be thought of as extensions of propositional logics with so-called   the RSS distance are studied e.g. in [13]. On the use of RSS for
+     temporal operators, allowing for statements that refer to temporal   verifying safety, recent developments are found e.g. in [10].
+   relationships such as always or eventually in the future. Well-known         There are several efforts to formalise traffic rules in temporal
+       examples of temporal logics are LTL, CTL and CTL★; they all have   logic, such as selected laws from the German StVO relating to in-
+      discrete notions of time. For the purpose of formalising critical   terstate roads [18], dual carriageways [6], and intersections [17], as
+     scenarios, their extensions to continuous time are suited, such as   well as marine laws [16]. These works formalise rules to be obeyed
+metric temporal logic (MTL) [14] and signal temporal logic (STL) [19].    and thus use the always modality often, while ours is about distur-
+         In this paper, we provide a logical formalisation in STL of an   bance and thus primarily uses the eventually and until modalities.
+     important class of critical scenarios in ISO 34502, namely traffic          There are existing methods of detecting critical scenarios that
+   disturbance scenarios for general vehicles on highways. Our formali-   rely on metrics such as time-to-collision (TTC) or jerk. In [22, 26, 34],
+sation has two unique characteristics. The first one is its modularity:   critical scenarios resulting from cut-ins and braking are detected in
+     a common template of the formulas for different scenarios is first   monitored data. A more general workflow based on detecting criti-
+     fixed, and then the component formulas in the template are instan-   cal thresholds for jerk and time-to-collision is proposed in [29]. The
+        tiated. This construction—it mirrors the top-down compositional   Virtual Assessment of Automation in Field Operation (VAAFO) [31]
+        methodology in ISO 34502—aids systematic, comprehensive formal-   method uses, among other metrics, a weighted sum across potential
+isation. The second characteristic is the use of the RSS distance [28],   driving paths is used to identify critical scenarios where a human
+     a distance considered safe between two moving vehicles, for defin-   driver is assisted by a Highly Automated Driving (HAD) system.
+      ing danger. We find that this makes our formalisation more stable   Our logical formalisation is independent of our specific choice of a
+       by reducing the number of parameters to be tuned. We also report   safety metric (namely the RSS distance); use of other metrics such
+       our use of our tool called STL Debugger to improve our workflow.   as TTC is well possible. That said, we believe the choice of RSS
+    In general, a formalisation of critical scenarios in temporal logic   distance is another contribution of ours: it is known to be one of
+has two main usages: scenario-based testing (where a vehicle con-         the advanced and robust metrics, and can easily be accommodated
+ troller and a scenario are given and we search for a traffic situation   in temporal-logic formalisation.
+      in which the controller behaves as specified in the scenario) and
+        monitoring (where a driving log and a scenario are given and we
+     search for those segments of the log which match the scenario). We   2
+      note that there are a body of sophisticated tools that accept STL       PRELIMINARIES
+   formulas, for scenario-based testing [1, 5, 32, 33] and for monitor-   2.1 ISO Standard 34502
+ing [30]. Our formalisation can be readily utilised by these tools.       ISO 34502 [12] is a proposal of safety evaluation procedures of
+Contributions. Our technical contributions are as follows.                automated driving systems, based on a joint industry effort by
+                                                                             Japanese automotive manufacturers [27]. Critical scenarios, defined
+ •      We provide a set of logical formulas describing traffic distur-   in ISO 34502 as “scenario[s] including one or more risk factors”, are
+   bance scenarios based on ISO 34502.                                    systematically constructed in a top-down manner by combining
+ •          The two unique characteristics of our formalisation (namely   three categories of risk factors. They correspond to the three phases
+             modularity and the use of the RSS distance) suggest a gen-   in the common automated driving pipeline, namely perception,
+            eral methodology for formalising various driving scenarios,   planning, and control:
+   beyond those in ISO 34502.                                                   A perception disturbance includes intrinsic or extrinsic factors
+ •         We evaluate the adequacy of the traffic disturbance scenario   that can cause disturbance of sensors and cameras, such as light
+   descriptions in ISO 34502 and propose an extension.                    reflections or roadside objects. Traffic disturbances arise from road
+ •            Experimental evaluation of our formulas demonstrates that   geometry or the behaviour of other traffic participants, such as
+   we detect nearly all traffic disturbances in a given dataset.          dangerous cut-ins or braking. Vehicle control disturbances describe
+                                                                          internal or external factors that impact the feasibility of certain
+           Organisation. We introduce the conceptual and logical frame-   maneuvers, such as vehicle weight distribution or strong winds.
+   work of our formalisation in §2 and §3. Our formalisations ISO34502-           By refining and systematically combining these risk factors, a
+       STL and ISO34502-STL-ext and the formulas used to construct them   large number of critical scenarios arises. This can be considered a
+       are introduced in §4. We describe the experimental evaluation of   set of reasonably foreseeable critical scenarios in which an ADV is
+our formulas in §5, and summarise our results in §6.                      expected to avoid collisions or minimise unavoidable accidents.
+            Towards of our formalisation, we used our tool STL Debugger      In this paper, we focus on traffic disturbance scenarios as defined
+       for deriving and debugging STL formulas. The tool and our use of   in ISO 34502 for general vehicles on highways. They are composed
+it is discussed in [25, Appendix B].                                      of the following three components:
+
+
+
+   187
+
+Temporal Logic Formalisation of ISO 34502 Critical Scenarios           SAC ’24, April 8–12, 2024, Avila, Spain
+
+   Surrounding vehicle  | [Surrounding vehicle locations and motions   Table 1: General vehicle traffic disturbance scenarios on high-
+        locations                                                      ways in ISO Standard 32502 [12] (the table is from [12]). The
+ ON   ot dd                                                            white vehicle represents SV , the darker vehicles the POV s,
+ Lo   Li        1.Lead      o                                          the arrows indicate the (intended) motion of the vehicles.
+E           B   23.   Follow        0                                  The rightmost four columns refer to POV behaviour.
+                      Parallel              [e]
+
+ (J  EJ)                                                               oof = ==
+
+
+Figure 1: Left: Numbering of possible POV             locations rela-
+tive to SV . The fields numbered as "+1" are only relevant in
+three-vehicle scenarios. Right: Combinations of POV posi-                     1:37                                 brows
+tions and behaviours that may cause critical scenarios. These
+are from [12].                                                                boiz                                 hols
+                                                                                                          |
+           The first component is road geometry: On highways, one may
+assume that there are no intersections, roundabouts, or unstruc-
+tured roads. The relevant road shapes for highways are thus non-          to specify the behaviour of continuous-time signals in a succinct
+intersection segments (straight or curved), merge zones where two         manner that nevertheless maintains readability for humans. The
+roads merge into a single road, and departure zones, where an             familiar propositional logic using the operators ¬, ∨, ∧ is extended
+additional road branches off the main road.                               by adding temporal operators G, F , U denoting the temporal no-
+The second component is subject vehicle (SV) behaviour. It is clas-       tions always (or globally), eventually (or finally), and until. Formulas
+sified into either keeping the current lane (lane keep) or changing       in STL are constructed inductively from the following grammar,
+lanes (lane change). It is assumed that all vehicles behave reasonably,   where we let 𝑓 :          R𝑛 → R, 𝑥 ∈ R𝑛, 𝑛 ∈ N, and 𝐽 ⊆ R an interval.
+hence backwards driving or U-turns are not considered.
+    The last of the three components is principle other vehicle (POV)         𝜑 ::= ⊤ | ⊥ | 𝑓 (𝑥 ) > 0 | ¬𝜑 |  𝜑1 ∨ 𝜑2 |
+behaviour: The behaviour of the vehicles surrounding SV is assumed            𝜑1 ∧ 𝜑2 | 𝜑1U𝐽 𝜑2 | G𝐽 𝜑 | F𝐽 𝜑.
+to cause a dangerous situation for the vehicles involved. Here, these
+behaviours are classified into either 1) changing into the lane of        Here, the subscript 𝐽       denotes the restriction of an operator to a
+SV (dangerous cut-in), 2) leaving the lane of SV (dangerous cut-out),     time interval 𝐽 relative to the current time. As an example, consider
+3) driving dangerously fast behind SV   (acceleration), or 4) driving     a formula G[2,3] (𝑣 > 5). This formula is true at time 𝑇 if the value
+dangerously slow in front of SV   (deceleration). The location of POV     of 𝑣 is greater than 5 always from time 𝑇 + 2 to time 𝑇 + 3. If no
+relative to SV    is used to exclude non-critical behaviours, e.g. SV     interval 𝐽 is specified, the formula is treated as if 𝐽 = [0, ∞).
+will not be endangered if POV drives faster in front of it. For critical            The meaning of STL formulas is defined by their Boolean seman-
+combinations of POV behaviours and vehicle locations, see Fig. 1.         tics, inductively defined in Table 2. The relationship 𝜎 |= 𝜑 means
+Combining these three components results in 24 traffic distur-            that the formula 𝜑 is true under a signal 𝜎 : [0, ∞) → R𝑛, 𝑛 ∈ N.
+bance scenarios, see Table 1. While SV      may be surrounded by sev-             Particularly important in our formalisation are the semantics of
+eral POV s, traffic disturbance scenarios can generally be composed       the until operator U. For a formula 𝜑1 U 𝜑2 to be true at time 𝑇 ,
+of subscenarios involving only two vehicles, thus a formalisation of      it must hold that 1) 𝜑2 is true at some time 𝑇 ′      ≥ 𝑇 and 2) 𝜑1 is
+the 24 scenarios in Table 1 is the foundation of more comprehensive       constantly true throughout the time interval [𝑇 ,𝑇 ′). Note that 𝜑1
+sets of formalised scenarios, including many-vehicle scenarios.           is not required to be true at the time 𝑇 ′ when 𝜑2 first becomes true;
+      However, a three-vehicle cut-out is included in Table 1, namely     the formula 𝜑1 U 𝜑2 is thus trivially true at time 𝑇 if 𝜑2 is true at
+Scenario 2: There are two vehicles ahead of SV    in the same lane as     time 𝑇 . This becomes important in our formalisation, see §4.3.
+SV . The POV directly ahead of SV changes lanes, whereas the other
+POV remains in the lane. This scenario is critical when the 𝑃𝑂𝑉        2.3 Road Network and Vehicle Configuration
+remaining in the lane is slower than SV      could reasonably expect,             To model our road network, we use lanelets [3] and their logical
+causing risk of collision.                                                formalisation in [18], so that our formulas can be applied to a wide
+2.2 STL                                                                   range of road shapes. A rigorous description of our road network
+                                                                          can be found in [25, Appendix A].
+We formalise the traffic disturbance scenarios in ISO 34502 using                 In the current work, the relevance of lanelets is quite limited:
+signal temporal logic (STL) in a rigorous manner that can be used         they are used only in the very beginning of our workflow, for the
+for monitoring purposes and scenario generation. STL [19] is an ex-       purpose of mapping physical positions to lane coordinates. After
+tension of temporal logics such as LTL (see e.g. [2]) that is designed    that, the description of a disturbance scenario is independent of
+
+
+
+                      188
+
+SAC ’24, April 8–12, 2024, Avila, Spain                                                                                                 J. Reimann, N. Mansion, et al.
+
+             Table 2: Boolean semantics of STL                                             r
+         𝜎 ⊨ ⊤                ↔  true
+         𝜎 ⊨ ⊥                ↔  false                                                                                               a
+         𝜎 ⊨ (𝑓 (𝑥 ) > 0)   ↔  𝑓 (𝜎 (0)) > 0
+         𝜎 ⊨ ¬𝜑              ↔  𝜎 ⊭ 𝜑                                                 1, s
+         𝜎 ⊨ 𝜑1 ∨ 𝜑2        ↔  𝜎 ⊨ 𝜑1 or 𝜎 ⊨ 𝜑2                                        >
+         𝜎 ⊨ 𝜑1 ∧ 𝜑2        ↔  𝜎 ⊨ 𝜑1 and 𝜎 ⊨ 𝜑2
+         𝜎 ⊨ 𝜑1U𝐽 𝜑2       ↔  ∃𝑡 ∈ 𝐽 : 𝜎 (· + 𝑡) ⊨ 𝜑2
+                                  and 𝜎 (· + 𝑡′) ⊨ 𝜑1 for all 𝑡′ < 𝑡 in 𝐽           Figure 3: Curvilinear coordinates, with the reference path Γ
+         𝜎 ⊨ F𝐽 𝜑           ↔  ∃𝑡 ∈ 𝐽 : 𝜎 (· + 𝑡) ⊨ 𝜑                             being the lower road boundary. Here, 𝑠𝑎 denotes the coordi-
+         𝜎 ⊨ G𝐽 𝜑           ↔  ∀𝑡 ∈ 𝐽 : 𝜎 (· + 𝑡) ⊨ 𝜑                             nate of the vehicleΓ                𝑎 along the Γ, 𝑑𝑎 the distance of 𝑎 from
+                                                                                                       , and 𝜃𝑎 the orientation of the vehicle relative to Γ. See Sec-
+                                                                                          tion 2.3 for the definition of rear (𝑎).
+
+                                      >
+
+                                                                                          by lanelet 𝑙 , and false otherwise. Furthermore, we can define the
+                                                                                          coordinates front (𝑎), rear (𝑎) as the projection of the front and rear
+Figure 2: A sample road section (departure zone) constructed                              end of the vehicle onto the reference path. By construction, we have
+from lanelets forming two main road lanes (grey, attr (𝑙 ) =                             front (𝑎)               = 𝑠𝑎. On highways, we may assume that road segments
+main) and one departure lane (blue, attr (𝑙 )                      = departure). All     are locally straight, hence we assume rear (𝑎) ≈ 𝑠𝑎 − length(𝑎).
+depicted lanelets satisfy zone(𝑙 )                         = departZone. The driving               Longitudinal and lateral velocities of the vehicle relative to the
+direction is indicated by the arrow. The departure lane is                                reference path are given by 𝑣𝑙𝑜𝑛𝑔 :=   𝑣 sin(𝜃), 𝑣lat := 𝑣 cos(𝜃).
+adjacent to the lower main road lane but not adjacent to the                              3     TRAFFIC DISTURBANCE SCENARIO
+upper main road lane.
+                                                                                                         FORMALISATION
+                                                                                          We follow the modular approach of ISO 34502 (§2.1) in our STL
+road geometry; this is seen e.g. in Table 3. In any case, here we give                    formalisation of its traffic disturbance scenarios for general vehi-
+an informal overview of lanelets. For an illustration, see Fig. 2.                        cles on highways (Table 1). That is, we first fix a template of STL
+         Lanelets are atomic road segments described by their (piecewise                  formulas that express traffic disturbance scenarios, and by varying
+straight) left and right bounds. Each lanelet has an associated at-                       the “parameters” (i.e. component subformulas) of the template, we
+tribute, denoting whether it belongs to a main road lane or to a                          systematically obtain the formalisation of different scenarios.
+merge/departure lane, and an associated zone, stating whether the                             Our top-level formulas are scenario𝑖 , for 𝑖 = 1, 2, . . . , 24, each of
+lanelet is part of an overall merge/departure zone of the road.                           which represents one of the traffic disturbance scenarios in Table 1.
+         A lane is then defined as the set of all lanelets of the same at-                The format for these formulas scenario𝑖 is the following:
+tribute that pre- or succeed each other. Note that by this construc-
+tion, a single lane cannot branch out and lead in two different                               𝑠𝑐𝑒𝑛𝑎𝑟𝑖𝑜𝑖 (SV , POV , 𝐿) :=   initSafe(SV , POV )
+directions; however, two lanes may overlap. We call two lanes 𝐿1                                                                     ∧roadSector𝑖 (SV , POV )    (1)
+𝑙and1   and𝐿2𝑙adjacent2  if there are some lanelets 𝑙1 ∈ 𝐿1, 𝑙2 ∈ 𝐿2, such that                                                ∧disturb𝑖 (SV , POV , 𝐿).
+                          share a boundary line but do not overlap.
+         We further follow [18] and model the dynamics of our vehicles                    Here initSafe(SV , POV ) is a formula—common to all scenarios—
+as point masses described by 𝑥 = (𝑠, 𝑣, 𝑎, 𝑑, 𝜃) ∈ R5. Here 𝑠 denotes              stating that there is no hazard at the start of the scenario for the
+the position of the vehicle along a fixed reference path Γ (typically                     duration of a pre-defined time interval; its definition is given in §4.3.
+the boundary of an outer lane), 𝑣 its velocity, and 𝑎 its acceleration.                 The formula disturb𝑖 (SV , POV , 𝐿) expresses the content of the ac-
+The lateral distance of the vehicle to Γ                    is denoted by 𝑑 , and its    tual disturbance and is specific to each traffic disturbance scenario.
+orientation relative to Γ by 𝜃, see Fig. 3.                                              Here, 𝐿 denotes a lane relative to which the scenario is formalised.
+         For different vehicles, we use subscripts for the variables: 𝑥□ =                            We emphasise the importance of the formula initSafe(SV , POV ).
+(𝑠□, 𝑣□, 𝑎□, 𝑑□, 𝜃□) for a vehicle □, where □ is typically either SV                 In fact, it was absent in our early trials, causing most disturbance
+or POV ; e.g. 𝑣SV is the velocity of SV . In formulas, we refer to 𝑥SV                  formulas to be trivially true for certain traces. In particular, this
+and 𝑥POV     simply as SV        and POV . When no confusion with the                    problem occurs with traces that either start with danger between
+acceleration is possible, we refer to generic vehicles as 𝑎 and 𝑏.                      the observed vehicles or in which the monitored interval leading
+         To define the occupancy of a vehicle, we associate a box of length               up to danger is too short; we return to this discussion in §5.3.
+length(𝑎) and width width(𝑎) with each vehicle 𝑎. We choose the                                     The formula roadSector𝑖 (SV , POV ) corresponds to the road ge-
+front-left corner of this box as the point of which the location and                      ometry component in §2.1, i.e. main road, merge zone, or departure
+dynamics are tracked, and define occ(𝑎, 𝑙) to be true if any part of the                zone. For details, see §4.6.
+box associated with vehicle 𝑎 is within the road segment described                        We label the set {scenario𝑖     |    𝑖  = 1, . . . , 24} ISO34502-STL.
+
+
+
+                                  189
+
+  Temporal Logic Formalisation of ISO 34502 Critical Scenarios                                                SAC ’24, April 8–12, 2024, Avila, Spain
+
+  Table 3: Formalisation ISO34502-STL of general vehicle traffic disturbance scenarios of ISO 34502 (cf. §2.1) in STL. For definitions
+  of initSafe and danger see §4.3, for all other subformula definitions see the section indicated in the corresponding column
+  heading. For a discussion of the formulas see §4.6.
+
+scenario𝑖 (SV , POV , 𝐿) := initSafe(SV , POV ) ∧ roadSector𝑖 (SV , POV ) ∧ disturb𝑖 (SV , POV , 𝐿), 𝑖 = 1, . . . , 24 (cf. this is (1). initSafe is from §4.3)
+disturb𝑖 (SV , POV , 𝐿) := initialCondition𝑖 (SV , POV , 𝐿) ∧ behaviourSV𝑖 (SV , 𝐿) ∧ behaviourPOV𝑖 (POV , SV , 𝐿) , 𝑖 = 1, . . . , 24 (cf. (2) in §3)
+   𝑖      roadSector𝑖 (cf. §4.1)  𝑖    initialCondition𝑖     (cf.§4.2)    behaviourSV𝑖 (cf.§4.4)         behaviourPOV𝑖 (cf.§4.5)
+                                    1     ⊤                                   laneKeep(SV , 𝐿)               cutIn(POV , SV )
+                                                                               Udanger (SV , POV )
+                                    2     sameLane3 (SV , POV 1, POV 2, 𝐿)   laneKeep(SV , 𝐿)               leavingLane (POV 1, 𝐿)
+                                               ∧aheadOf (SV , POV 1)          U (¬sameLane (SV , POV 1, 𝐿) ) ∧(laneKeep(POV 2, 𝐿)
+                                               ∧aheadOf (POV 1, POV 2)                                        U (¬sameLane (POV 2, POV 1, 𝐿)
+                                                                                                              ∧danger (SV , POV 2) ) )
+                                    3     aheadOf (POV , SV )                 laneKeep(SV , 𝐿)               accel (POV , SV , 𝐿) U danger (SV , POV )
+                                               ∧(sameLane (SV , POV , 𝐿)      Udanger (SV , POV )
+                                               ∨inAdjLanes(SV , POV , 𝐿) )
+   1 − 8   mainRoad (SV , POV )     4     aheadOf (SV , POV )                 laneKeep(SV , 𝐿)               decel(POV , SV , 𝐿) U danger (SV , POV )
+                                               ∧(sameLane (SV , POV , 𝐿)      Udanger (SV , POV )
+                                               ∨inAdjLanes(SV , POV , 𝐿) )
+                                    5     ⊤                                   leavingLane (SV , 𝐿)           cutIn(POV , SV )
+                                    6     ⊤                                   leavingLane (SV , 𝐿)           cutOut (POV , SV , 𝐿)
+                                    7     aheadOf (POV , SV )                 enteringLane (SV , 𝐿)          accel (POV , SV , 𝐿) U danger (SV , POV )
+                                    8     sameLane (SV , POV , 𝐿)            leavingLane (SV , 𝐿)           decel(POV , SV , 𝐿) U danger (SV , POV )
+                                               ∧aheadOf (SV , POV )
+   9–16    mergeZone(SV , POV )    9–16   initialCondition𝑖−8                behaviourSV𝑖−8                 behaviourPOV𝑖−8
+   17–24   departZone(SV , POV )  17–24   initialCondition𝑖−16               behaviourSV𝑖−16                behaviourPOV𝑖−16
+
+
+   The general structure of our disturbance formulas disturb𝑖 is              The overall structure of the formula disturb𝑖 (2) is as follows. It
+    disturb𝑖 (SV , POV , 𝐿) := initialCondition𝑖 (SV , POV , 𝐿)        requires that a general notion of danger is true at a certain stage
+                              ∧ behaviourSV𝑖 (SV , 𝐿)              (2)   (recall that 𝜑1 U 𝜑2 requires 𝜑2 becoming true at some time); the
+                                                                           formulas behaviourSV𝑖 and behaviourPOV𝑖 specify the behaviours
+                              ∧ behaviourPOV𝑖 (POV , SV , 𝐿)             of the vehicles in the period leading to that dangerous moment.
+   corresponding roughly to the latter two of the three components in      Some additional initial conditions are expressed in initialCondition𝑖 .
+                                                                                     There is, however, an initial condition that is common to all
+          §2.1, namely SV behaviour and POV behaviour. Each component      critical scenarios, namely that danger must happen after no danger
+  of the template (2) is as follows.                                       has been observed for some time. This is entirely and exclusively
+  •  The formula initialCondition𝑖 (SV , POV , 𝐿) specifies initial      described by initSafe in (1).
+     conditions, e.g. initial lanes and vehicle order (see Fig. 1). In             The STL formulas disturb𝑖 for the traffic disturbance scenarios
+     some traffic disturbance scenarios (such as in Scenarios 1, 5,        in Table 1 are collected in Table 3. The subformulas occurring there
+     or 6), no such initial conditions are necessary, in which case        (such as e.g. laneKeep and cutIn) are introduced in §4; after that we
+     we set initialCondition𝑖 (SV , POV , 𝐿) = ⊤. By the semantics       will review the formulas and see that they indeed correspond to
+     of ⊤ (see Table 2), this subformula is thus trivially true.           the natural language descriptions in the ISO 34502 standard.
+  •  The formula behaviourSV𝑖 (SV , 𝐿) corresponds to the SV be-                   In the following section, we describe the formulas from which
+     haviour component in §2.1, i.e. keeping the current lane 𝐿,          our formalisation of the traffic disturbance scenarios is composed.
+     or changing from lane 𝐿 into a different lane.
+  •  The formula behaviourPOV𝑖 (POV , SV , 𝐿) corresponds to the         4   DEFINITIONS OF FORMULAS
+     POV behaviour component in §2.1, namely cut-in, cut-out,              4.1 Vehicle Positions
+     acceleration, and deceleration. Note that SV        behaviour is
+     also relevant here; the formula thus has as arguments SV              We say that a vehicle 𝑎 is in a given lane 𝐿 if it occupies any lanelet
+     and the lane 𝐿 relative to which the behaviour of SV        is de-   of that lane, where occ(𝑎, 𝑙) is from §2.3.
+     scribed. Notably, POV behaviour formulas always contain a                                                Ô
+     subformula of the form                                                    𝑎𝑡𝐿𝑎𝑛𝑒 (𝑎, 𝐿)          := 𝑙 ∈𝐿 (occ(𝑎, 𝑙)) .
+
+     𝜑1 (SV , POV ) U (𝜑2 (SV , POV ) ∧ danger (SV , POV ))              A vehicle 𝑎 may occupy multiple lanes at once, for example during
+     or    F (𝜑2 (SV , POV ) ∧ danger (SV , POV )),                       a lane change. To characterise the road sector a vehicle 𝑎 is in, we
+                                                                           refer to the zone of the lanelets the vehicle occupies, where the
+     expressing that POV behaviour is dangerous relative to SV .           disjunction is indexed over all lanelets 𝑙      with the corresponding
+
+
+
+                                               190
+
+SAC ’24, April 8–12, 2024, Avila, Spain                                                                                                                            J. Reimann, N. Mansion, et al.
+
+associated zone:                           Ô                                                                                      Using the above functions for RSS distances, we go on to define
+             onMainRoad (𝑎)     :=               Ôzone(𝑙 ) =mainZone occ(𝑎, 𝑙),              our formulas for danger. Following the RSS framework, we define
+            inMergeZone (𝑎)     :=              Ôzone(𝑙 ) =mergeZone occ(𝑎, 𝑙),              a dangerous situation as a violation of the RSS distance between
+            inDepartZone(𝑎)     :=            zone(𝑙 ) =departZone occ(𝑎, 𝑙).                two vehicles. Our main formula danger is hence defined by
+We can now define the relevant road sector for a scenario by                                      danger (SV , POV )       :=                    G[0,minDanger] rssViolation(SV , POV );      (6)
+     mainRoad (SV , POV )   :=  onMainRoad (SV ) ∧ onMainRoad (POV ),                            it requires the formula rssViolation(SV , POV ) to last at least for
+     mergeZone(SV , POV )   :=  inMergeZone (SV ) ∨ inMergeZone (POV ),                          the time minDanger. The time duration minDanger is a parame-
+    departZone(SV , POV )   :=  inDepartZone (SV ) ∨ inDepartZone (POV ).                        ter that should be suitably chosen; the effect of its choice is in-
+                                                                                                 vestigated in our experiments in §5. Note that minDanger                                     = 0
+4.2 Relationship between Vehicles                                                                does not imply that there is no danger present; by the seman-
+We express a difference in (longitudinal) position or velocity of two                            tics of G[0,0]                           (see §2.2), it means that danger (𝑆𝑉 , 𝑃𝑂𝑉 ) is true at
+vehicles 𝑎 and 𝑏 by                                                                            time 𝑇 if rssViolation(SV , POV ) is true at time 𝑇 ; i.e. if one chooses
+                                                                                                 minDanger = 0, then danger (SV , POV ) = rssViolation(SV , POV ).
+                 aheadOf (𝑎, 𝑏)          :=   front (𝑎) ≤ rear (𝑏),                    (3)    By construction, danger stands for durable danger; the notion
+               fasterThan(𝑎, 𝑏)          :=   𝑣𝑎 < 𝑣𝑏,                                     of instantaneous danger, used in its definition (6), is defined as a
+using the vehicle parameters front, rear, and 𝑣 defined in §2.3. Using                          violation of both the lateral and longitudinal RSS distance by
+atLane from §4.1 and adjLanes (𝐿) from [25, Appendix A], we further                              rssViolation(𝑎, 𝑏 )   :=          rssViolationlon (𝑎, 𝑏 ) ∧ rssViolationlat (𝑎, 𝑏 ).  (7)
+define formulas expressing that vehicles 𝑎, 𝑏, 𝑐 are in the same lane                         The component formulas therein are defined as follows, using RSS
+or in adjacent lanes as                                                                          distances from (4–5).
+sameLane (𝑎, 𝑏, 𝐿) := 𝑎𝑡𝐿𝑎𝑛𝑒 (𝑎, 𝐿) ∧ 𝑎𝑡𝐿𝑎𝑛𝑒 (𝑏, 𝐿),                           rssViolationlon (𝑎, 𝑏 )                 := dangerAhead (𝑎, 𝑏 ) ∨ dangerAhead (𝑏, 𝑎),  (8)
+inAdjLanes(𝑎, 𝑏, 𝐿) := atLane (𝑎, 𝐿) ∧ Ô𝐿′∈adjLanes(𝐿) atLane (𝑏, 𝐿′),                   dangerAhead (𝑎, 𝑏 )    :=                                                                 (9)
+sameLane3 (𝑎, 𝑏, 𝑐, 𝐿) := 𝑠𝑎𝑚𝑒𝐿𝑎𝑛𝑒 (𝑎, 𝑏, 𝐿) ∧ 𝑠𝑎𝑚𝑒𝐿𝑎𝑛𝑒 (𝑏, 𝑐, 𝐿).         𝑠𝑏 − 𝑠𝑎 ≥ 0 ∧ 𝑠𝑏 − 𝑠𝑎 ≤ length(𝑏 ) + dRSSlon (𝑣𝑙𝑜𝑛,𝑎, 𝑣𝑙𝑜𝑛,𝑏 );
+4.3 Danger                                                                                        rssViolationlat (𝑎, 𝑏 )  :=  dangerLeft (𝑎, 𝑏 ) ∨ dangerLeft (𝑏, 𝑎),                 (10)
+                                                                                                  dangerLeft (𝑎, 𝑏 )  :=
+In Table 3, the formula danger (SV , POV ) is a general formula that                                 𝑑𝑏 − 𝑑𝑎 ≥ 0 ∧ 𝑑𝑏 − 𝑑𝑎 ≤ width(𝑏 ) + dRSSlat (𝑣𝑙𝑎𝑡,𝑏, 𝑣𝑙𝑎𝑡,𝑎 ).       (11)
+states that POV poses a danger to SV . It is among our key findings                              The formulas length and width are from §2.3.
+that this formula danger (SV , POV ) can be the same in all critical                              Similarly, we introduce a durable notion of safety, i.e. safety for
+scenarios—scenario-specific features can be expressed in other com-                              the duration of minSafe. It is called initSafe because we use it for
+ponents of a formula. At the same time, we found that a good defini-                             the “safe in the beginning” requirement in our template (1).
+tion of danger is critical to the quality of our formalisation: initially
+we had a looser condition as danger , which matched many traces in                                   initSafe(SV , POV )         := G[0,minSafe] instSafe(SV , POV ),                        (12)
+which POV s are hardly relevant to SV                             (see also [25, Appendix B]).       instSafe(𝑎, 𝑏)     := ¬rssViolation(𝑎, 𝑏).                                          (13)
+of Our definition of danger , described below, is based on the notion                                                                When we use robust semantics of STL for quantitative notions
+                       RSS distance [28]. It is defined as the smallest distance such that, if   of truth [7], we find some modification of the formula rssViolation
+the lead vehicle brakes at its maximal braking rate, the rear vehicle                            more useful. See [25, Appendix C].
+can avoid a crash by braking at a pre-defined comfortable braking
+rate. According to [28] (see also [9]), the RSS distance is defined by                           4.4 SV Behaviour
+
+dRSSlon (𝑣𝑟 , 𝑣𝑓     ) := max 0, 𝑣𝑟 𝜌 + 𝑎max2 𝜌2 + (𝑣𝑟 +𝑎ᵐᵃˣ𝜌)²   𝑣2𝑓       (4)
+                                                                2𝑏
+                                                                min     − 2𝑏ₘₐₓ     .           For readability we set
+Here, 𝑣𝑟 , 𝑣𝑓 are the velocities of the rear and front vehicle respec-                               laneKeep(𝑎, 𝐿)           := atLane (𝑎, 𝐿),
+tively, 𝜌                            is the reaction time after which the rear vehicle starts   where 𝑎 denotes a vehicle, 𝐿 a lane, and atLane is from §4.1. This
+braking, 𝑎max is the maximum acceleration of the rear vehicle, 𝑏min                            formula laneKeep is used as part of behaviourSV𝑖 in Table 3.
+is the maximum comfortable braking rate of the rear vehicle, and                                                            To formalise scenarios in which SV is changing its lane, it is suffi-
+𝑏max is the maximum possible braking rate of the front vehicle.                                 cient to specify only the initial or target lane, and that it eventually
+                            For multi-lane scenarios, we additionally need a notion of lateral   changes its lane. For a vehicle 𝑎 and a lane 𝐿 we thus define
+danger. This lateral RSS distance, following [28], is given by                                              leavingLane(𝑎, 𝐿)  :=                  atLane (𝑎, 𝐿) ∧ F (¬atLane (𝑎, 𝐿)),
+    dRSSlat (𝑣1, 𝑣2)           :=                             +(𝑣2−𝜌𝑎max                        enteringLane (𝑎, 𝐿)       :=                 ¬atLane (𝑎, 𝐿) ∧ F (atLane (𝑎, 𝐿)) .
+    max 0, (𝑣1 − 𝑣2)𝜌 + 𝑎lat               (𝑣 +𝜌𝑎lat
+                                 max𝜌2 +      1     max)2
+                                               2𝑏lat               lat        )2     ,    (5)   4.5 POV Behaviour
+                                                                min
+where Vehicle 1 is assumed to be to the left of Vehicle 2, 𝑣1, 𝑣2 denote                       To distinguish POV ’s dangerous cut-in or cut-out maneuvers from
+their lateral velocities, 𝑎lat
+                                                     max the maximum lateral acceleration rate   regular lane changes (see §4.4), the formulas for the former contain
+the vehicles can apply, and 𝑏lat                            their maximum comfortable lateral   a term F danger to stress that these behaviours lead to danger. Fur-
+                                 min
+braking rate. (For simplicity, we ignore the stability factor in [28].)                          thermore, these formulas need the lane currently occupied by the
+
+
+
+                                                                               191
+
+Temporal Logic Formalisation of ISO 34502 Critical Scenarios                                                                       SAC ’24, April 8–12, 2024, Avila, Spain
+
+SV as input. Lastly, we require that POV s complete their lane change                         is Scenario 7, where we use the lane that SV                   enters as the
+when (or shortly after) danger occurs, in order to tie the danger to                                        input lane. This is due to the fact that in Scenario 7, the SV
+the change of lanes. This is represented by the F[0,minDanger] (. . . )                                          behaviour is described by the formula enteringLane rather
+part of the following formulas. Overall, we obtain                                            than leavingLane, see §4.4.
+       cutIn(POV , SV , 𝐿) :=       4.7 Extended Formalisation
+    ¬sameLane (POV , SV , 𝐿) ∧ F     danger (SV , POV )                                       ISO34502-STL-ext(A)
+      ∧F[0,minDanger] (sameLane (SV , POV , 𝐿) ∧ aheadOf (SV , POV ) )     ,                             In our experiments (§5), we found that natural interpretation of
+cutOut(POV , SV , 𝐿) :=        sameLane (POV , SV , 𝐿)                                                some of the ISO 34502 descriptions potentially overly restrictive.
+    ∧F danger (POV , SV ) ∧ F[0,minDanger]¬atLane(POV , 𝐿)           .                                 Specifically they concern 1) acceleration/deceleration and 2) rel-
+Here, atLane is from §4.1 and sameLane and aheadOf are from §4.2.                                          ative vehicle positions. Our formalisation ISO34502-STL follows
+Note that by the semantics of F in Table 2, a formula of the form                                    such natural (potentially overly restrictive) interpretation; in this
+F (𝜑1 ∧ F[0,𝑡 ] 𝜑2) is true at time 𝑇             if 1) there exists a time 𝑇 ′ ≥ 𝑇             section, we suggest its relaxation. We call it ISO34502-STL-ext. For
+such that 𝜑1 is true at time 𝑇 ′ and 2) 𝜑2 is true at some time during                   experimental comparison of our two formalisations, see §5.3.
+the interval [𝑇 ′,𝑇 ′ + 𝑡].                                                                          The first point of relaxation is about the definition of accel and
+                        In ISO 34502 [12], it is stated that “acceleration or decelera-               decel. We chose to include vehicle acceleration (resp. deceleration)
+tion categories actually imply relative velocity differences with                           as an alternative to relative velocity differences and define
+respect to the subject vehicle.” We therefore define our formulas                            accelext (POV , SV , 𝐿)  :=  (fasterThan(SV , POV ) ∨ accelerates(POV ) )
+accel and decel using the fasterThan formula from §4.2. We further                                                          ∧laneKeep(POV , 𝐿),
+add laneKeep from §4.4 to distinguish this POV behaviour from the                            decelext (POV , SV , 𝐿)  :=  (fasterThan(POV , SV ) ∨ decelerates(POV ) )
+dangerous cut-ins and cut-outs defined previously.                                             accelerates(POV )       :=  𝑎 ∧laneKeep(POV , 𝐿),
+      accel (POV , SV , 𝐿) :=  fasterThan(SV , POV ) ∧ laneKeep(POV , 𝐿),                    decelerates(POV )       :=  𝑎POV > 0,
+                                                                                                                            POV    < 0.
+       decel(POV , SV , 𝐿) :=  fasterThan(POV , SV ) ∧ laneKeep(POV , 𝐿).                               In ISO34502-STL-extA, we replace accel and decel by accelext and
+4.6   Our Formalisation ISO34502-STL                                                        decelext. This affects scenario𝑖 , 𝑖 = 3, 4, 7, 8; all other formulas remain
+                                                                                            unchanged.
+Our set of formulas ISO34502-STL :=     {scenario𝑖                 | 𝑖 = 1, . . . , 24},    The second point of relaxation is the formula aheadOf            (cf. §4.2),
+describing the traffic disturbance scenarios of Table 1, is composed                                in order to (partially) include positions 4 and 7 in Fig. 1. We define
+of the subformulas defined in §4.1–4.5. Their construction proceeds                               aheadOf ext (𝑎, 𝑏)          := front (𝑎) < front (𝑏).
+in the following steps.
+                   The top-level formula is scenario𝑖 ; its format is given in (1) (see                   In ISO34502-STL-ext, we further extend ISO34502-STL-extA by re-
+also the top line of Table 3). Its first component initSafe is common                       moving aheadOf from the definition of cutIn (cf. §4.5) completely
+and is defined in (12). For its second component roadSector𝑖 , we set                                    (thus redefining dangerous cut-ins to include POV entering SV ’s
+                                  mainRoad (SV , POV ),     𝑖  = 1, . . . , 8,                      lane behind SV dangerously), and replacing aheadOf by aheadOf ext
+                                                                                            in all other formulas.
+roadSector𝑖 (SV , POV ) := mergeZone(SV , POV ),            𝑖  = 9, . . . , 16,
+                                  departZone(SV , POV ),        𝑖  = 17, . . . , 24,       5 EXPERIMENTAL EVALUATION
+with the zone subformulas defined in §4.1.                                                          In this section, we seek to quantitatively evaluate our formalisation.
+                       The third component disturb𝑖 is the scenario-specific main part.                 In related work on the formalisation of traffic rules in temporal
+Its template is given in (2) (see also the second line of Table 3). Its                               logic, experiments focussed on the percentage of vehicles in a given
+components initialCondition𝑖 , behaviourSV𝑖 , and behaviourPOV𝑖                                   dataset obeying the formalised traffic rules, see e.g. [17, 18]. Sim-
+are shown in Table 3. Note that the disturbance descriptions are                                        ilarly, we will evaluate our formulas on a set of recorded vehicle
+independent of road geometry, thus it suffices to define them for                           traces to gain insight into how often our formulas are true.
+the scenarios 𝑖 = 1, 2, . . . , 8.                                                           We aim to address the following research questions:
+Our component subformulas initialCondition𝑖 , behaviourSV𝑖 , and                                        RQ1 Are ISO 34502’s original descriptions of traffic disturbance
+behaviourPOV𝑖 for each scenario are mostly straightforward con-                              scenarios adequate for detecting traffic disturbances?
+junctions, following their description in ISO 34502 (see Table 1 and                                      RQ2 Are ISO 34502’s original descriptions of traffic disturbance
+Fig. 1). Nevertheless, the following points are worth noting.                                 scenarios adequate for classifying traffic disturbances?
+    •                    In Scenario 2, a three-vehicle cut-out is performed, see §2.1.                       RQ3 How does our formalisation perform in terms of precision
+                                   Note that this maneuver cannot simply be composed of       and recall?
+                          laneKeep(SV , 𝐿) and cutOut (POV 1, SV , 𝐿), since the cutOut                  RQ4 How does the choice of the duration minDanger in (6) affect
+      subformula implies danger between SV                             and the POV per-       the recall of our formalisation?
+                             forming the cut-out maneuver (see §4.5), whereas danger in                       RQ5 How does our formalisation compare to existing works, in
+      this scenario occurs between SV     and POV 2.                                          terms of detection of common disturbance scenarios?
+    •                   In nearly all scenarios, the input lane 𝐿 refers to the lane SV                   To answer RQ3, we use two sets of ground truths. We will define
+                          occupies at the beginning of the scenario. The only exception     them later in §5.3.
+
+
+
+                                                                    192
+
+SAC ’24, April 8–12, 2024, Avila, Spain                                                                                                     J. Reimann, N. Mansion, et al.
+
+5.1       Experiment Setup                                                                     in the formulas scenario𝑖            is chosen to match the considered set
+We evaluate our formulas for traffic disturbance scenarios on the                              of traces, that is, minDanger          = 0 for traces in disturbTraces1 and
+highD dataset [15], which consists of drone-recorded vehicle traces                            minDanger = 0.6 for traces in disturbTraces2. For the lane 𝐿 in the
+on main road sections of German highways. The vehicle parameter                                formulas scenario𝑖 (1), we use the initial lane of POV      for scenario7,
+values needed to define the RSS distance in §4.3 are chosen similarly                          and the initial lane of SV for scenario𝑖 , 𝑖 = 1, 3, 4, 5, 6, 8.
+to [11, 18] as 𝜌                    = 0.6, 𝑎max = 5, 𝑏min = 6, 𝑏max = 8, 𝑎max,lat = 1.5,           The results of evaluating the STL formulas scenario𝑖 on the traces
+𝑏min,lat = 1.5. We chose 𝑏min such that our RSS distance roughly                             in disturbTraces𝑗 , 𝑗     = 1, 2 are collected in Table 4. Using our pro-
+corresponds to the "halber Tacho" rule-of-thumb used in Germany,                               totype implementation, the evaluation of all formulas scenario𝑖 ,
+stating that on highways, a safe distance (in meters) to the preceding                         𝑖 = 1, 3, . . . , 8, over all traces in disturbTraces1 took around 2 hours
+vehicle is given by half the current velocity (in kilometers per hour);                        on a laptop (Windows 10, Intel Core i7 @ 2.60GHz, 16GB RAM).
+e.g. at a velocity of 100km h−1, we consider 50m a safe distance.
+                     In our evaluation, we first filter the data traces and focus only on      5.3     Discussions
+those in which there arises a danger in its middle. Specifically, we
+first collect all pairs of cars1 that violate the RSS distance between                         In this section, we address our previously stated research questions.
+them eventually. Next, we evaluate the semantics of the formula                                          RQ1: Are ISO 34502’s original descriptions of the traffic distur-
+          dangerArises(SV , POV )     :=                                             (14)      bance scenarios adequate for detecting critical scenarios? While the
+          F (initSafe(SV , POV ) ∧ F (danger (SV , POV ))).                                    original descriptions are not adequate, our extension (see §4.7) is
+                                                                                               indeed suitable for the purpose of detecting critical scenarios. By
+over all vehicle pairs (SV , POV ) found in the previous step. Those                           comparing the performance of our formalisations ISO34502-STL and
+traces which do not satisfy dangerArises(SV , POV ) are discarded.                             ISO34502-STL-extA in Table 4, it is evident that a significant number
+Since the implication scenario𝑖                       ⇒ dangerArises is logically valid,      of traces are not detected with the strict interpretation of acceler-
+the truth of dangerArises is a necessary condition for any of the                              ation and deceleration following ISO 34502, suggesting that their
+formulas in ISO34502-STL(-ext) (see §4.6–4.7); therefore we are not                            definitions should be clarified. With our extension ISO34502-STL-
+discarding any traces that are relevant to our formalisation. We then                          ext, we detect over 96% of all traces in disturbTraces. This conclusion
+shorten the remaining traces so that they only contain information                             holds regardless of minDanger, see RQ4.
+relevant to our formulas: we discard the part before initSafe is true                                RQ2: Are ISO 34502’s original descriptions of the traffic disturbance
+and the part after the last danger interval ends. Finally, we discard                          scenarios adequate for classifying critical scenarios?         The descrip-
+all data about vehicles other than SV     and POV .                                            tions are not adequate for classification purposes. This is to be
+                   The result of this filtering of the highD dataset is the set of traces      expected; the ISO 34502 scenario set in Table 1 is not designed for
+where danger arises, i.e. those relevant to the ISO 34502 traffic                              the purpose of classification but rather for a comprehensive cover-
+disturbance scenarios. This trace set is referred to as disturbTraces.                         age of all traffic disturbances. As an example, consider SV         keeping
+                              The evaluation of our formalisations ISO34502-STL(-ext) was      its lane, while POV performs a dangerous cut-in maneuver while
+conducted by computing the semantics of the formulas scenario𝑖 ,                              driving at a slightly slower speed than SV throughout the maneuver.
+for 𝑖 = 1, 3, 4, . . . , 8, over each trace 𝜎  ∈ disturbTraces. Here,                        This clearly matches Scenario 1 in Table 1; however it may also
+       •                      we exclude scenario2 since our implementation is limited to      match Scenario 4 if danger arises shortly after POV             has entered
+                             two-car scenarios (scenario2 involves three cars and dealing      SV ’s lane. Refining the scenario descriptions (and accordingly their
+          with it is future work); and                                                         formalisation) for the purpose of classification is future work.
+       •                 we exclude scenario9, . . . , scenario24 since the highD dataset                RQ3: How does our formalisation perform in terms of precision and
+          only has main road traces.                                                           recall?        We recall the definitions of precision and recall from [24],
+                                                                                               namely precision = #truePositives/(#truePositives + #falsePositives),
+5.2       Results                                                                              and recall         = #truePositives/(#truePositives + #falseNegatives). For
+In our filtering of the highD dataset as discussed above, we first                             our experiments, a true positive denotes a disturbance trace for
+identified 99656 pairs (SV , POV ) between which danger according                              which one of our formulas is true, a false positive is a disturbance-
+to formula (6) occurs at some point. Here we used minDanger = 0                                free trace for which one of our formulas is true, and a false negative
+for the formula danger in (6) to be the most inclusive. From these                             denotes a disturbance trace for which none of our formulas are true.
+pairs (SV , POV ), we created two variations of the set disturbTraces,                         Precision and recall for individual scenario-formulas are outside
+by applying the formula dangerArises in (14) with the following                                the scope of our experiments, as this would require the dataset to
+parameter values.                                                                              contain labels denoting the type of traffic disturbance scenario.
+       •                       disturbTraces1: using minSafe = 0.6 and minDanger = 0, and                  We have a precision of 100%—false positives cannot occur in our
+       •  disturbTraces2: using minSafe = 0.6 and minDanger = 0.6.                             formalisation, as our definition of a disturbance trace as a trace for
+                                                                                               which the formula dangerArises (see §5.1) is eventually true has
+                          On these trace sets disturbTraces1, disturbTraces2, we evaluate      been exactly implemented into all our formulas.
+our sets of formulas ISO34502-STL and ISO34502-STL-ext(A) (see §4.6                                      The recall of ISO34502-STL, and particularly of ISO34502-STL-ext,
+and §4.7). In this evaluation, the value of the parameter minDanger                            relative to the sets disturbTraces𝑖 , 𝑖 = 1, 2 is very high, see Table 4.
+1In the highD dataset, a vehicle is either a car or a truck. In our experiments, we focus      This notion of recall is exactly what we discussed in RQ1.
+on cars, for the reason that different physical characteristics of trucks should lead to                 We note that the use of initSafe (see §4.3) is important. Indeed,
+different scenario descriptions. Elaboration of it is future work.                             if we omit the filtering using dangerArises (14) and merely filter
+
+
+
+          193
+
+    Temporal Logic Formalisation of ISO 34502 Critical Scenarios                                                SAC ’24, April 8–12, 2024, Avila, Spain
+
+Table 4: Quantitative results of our experiments. Data trace set T refers to the set of traces on which our formulas are evaluated.
+See §5.1: disturbTraces1, disturbTraces2 are the sets with minDanger = 0, 0.6, respectively. The number of traces in 𝑇 is denoted by |𝑇 |.
+In the spec set column, the evaluated set of formulas is noted (see §4.6 and §4.7). Matching traces denotes the total number
+of traces in 𝑇 for which at least one of the considered formulas scenario𝑖 , 𝑖 = 1, 3, . . . , 8 is true. The recall column (see §5.3)
+refers to recall relative to |𝑇 | as ground truth. In each column labelled 𝑠𝑖 , 𝑖 = 1, 3, . . . , 8, we state for how many traces in 𝑇 the
+corresponding formula scenario𝑖 is true.
+
+     data trace set 𝑇   min-     no. of            spec set             matching   recall  scenario1     𝑠3      𝑠4          𝑠5  𝑠6   𝑠7  𝑠8
+                         Danger   traces |𝑇 |                           traces                  (𝑠1)
+     disturbTraces1      0        32398             ISO34502-STL         24038      74. 2%       4091  21941    21941          291  218  3188  924
+     disturbTraces1      0        32398             ISO34502-STL-extA    30288      93. 5%       4091  27652    26008          291  218  4362  969
+     disturbTraces1      0        32398             ISO34502-STL-ext     31139      96. 1%       9364  27652    26008          378  218  4362  969
+     disturbTraces2      0.6      28881             ISO34502-STL         21564      74. 7%       4076  19595    19595          283  215  3171  801
+     disturbTraces2      0.6      28881             ISO34502-STL-extA    27177      94. 1%       4076  24843    23328          283  215  4347  838
+     disturbTraces2      0.6      28881             ISO34502-STL-ext     27963      96. 8%       9312  24843    23328          361  215  4347  838
+
+    Table 5: Absolute number of the cut-in and deceleration                            in [26] as hard braking (above a parameter value they choose) by
+    scenarios detected in the highD dataset by [26, 34] and our                    the POV ahead of SV in the same lane. As danger metrics, time to
+    formalisation (see §4.6–4.7). Definitions and danger metrics                   collision (TTC < 4s) and time headway (THW < 2s) are used.
+    of [26] and [34] are discussed in the discussion of RQ5 in                         In [34], a cut-in is defined as in [26], with the additional re-
+    §5.3. Our danger metric RSS distance is defined in §4.3. The                   strictions that 1) the lateral velocity of POV   must remain nonzero
+    values in the ISO34502-STL(-ext) columns are from Table 4.                          throughout the maneuver, and 2) a maximum longitudinal distance
+    For details see the discussion of RQ5 in §5.3.                                 between SV         and POV is introduced. A deceleration scenario is
+                                                                                         defined as “reduction of the headway distance between vehicles
+                           [26]  [26]         [34]    ISO34502 -STL-ext              [...] caused by the deceleration of a preceding vehicle and not by
+      danger metric      TTC      THW         none            RSS dist.              the acceleration of the subject vehicle”, where POV is required to
+      cut-in                144  7219         1017                 9364                 brake continuously throughout the scenario and to remain in its
+      deceleration           22   112        26846                26008              lane. In [34], matching traces are first detected without any dan-
+                                                                                        ger metric; later the danger metrics TTC and THW are calculated
+                                                                                      for the detected traces. We restrict our discussion to the number
+    using danger (6), our recall is quite low (around 25%) due to many                 of traces that were detected without any danger metric, as their
+    false negatives. This is natural; due to the spatial limitation of the         danger metric analysis lacks absolute numbers.
+    highD dataset, many traces do not fulfill initSafe, i.e. danger is either              For our formalisation, we use ISO34502-STL-ext (§4.7), based
+    present from the beginning of the trace or the observed interval                   on our discussion in RQ1. We identified cut-in as Scenario 1 and
+    of safety leading up to danger is shorter than required by initSafe.            deceleration as Scenario 4: although Scenarios 5 and 8 also contain
+    This spatial limitation can be considered a perception disturbance              cut-in and deceleration components, respectively, Scenarios 1 and 4
+    (see §2.1), which is outside the scope of our formalisation.                       correspond more closely to the definitions used in [26, 34]. The
+      RQ4: How does the choice of minDanger in (6) affect recall of our                   numbers for ISO34502-STL-ext in Table 5 are hence the numbers
+    formalisation?                                                                 for Scenario 1 (cut-in) and Scenario 4 (deceleration) from the third
+      The choice of minDanger in (6) does not have a significant impact            row of Table 4, i.e. for minDanger = 0 and ISO34502-STL-ext.
+    on recall, see Table 4. For this reason, we restrict our discussion of                In Table 5, the numbers for different formalisations for both
+    the other research questions to minDanger = 0.                                  the cut-in and deceleration scenarios are quite different. For each
+      One implication of the above is that our formalisation—based               scenario, the number for our formalisation is (close to) the greatest,
+    on the RSS-based notion of danger—is stable, with respect to a                     and we may wonder if the number is too large. We argue that this
+    parameter value which is not easy to choose (namely minDanger).                is not the case:
+      RQ5: How does our formalisation compare to existing works, in                 •    the trace set disturbTraces1 is a naturally defined one by the
+    terms of detection of common disturbance scenarios?                                 formula dangerArises in (14);
+      Here we compare the content of our formalisation with some                    •       the whole set ISO34502-STL-ext of formulas, achieving 96.1%
+    existing works. We focus on the cut-in and deceleration scenarios,                  recall for disturbTraces1 (see RQ3), is therefore a natural one
+    as these two scenarios have been studied many times before. Our                     (note that precision is 100% by definition); and
+    comparison is with [26] (with two danger metrics TTC and THW)                   •         the formulas scenario1 and scenario4, defined by imposing
+    and [34], as these works evaluate their formalisation on the highD                  natural constraints (Table 3), are natural ones, too.
+    dataset. The comparison is in Table 5; here are some details.                        We note that a similar number of cut-ins as in our experiments
+      In [26], a cut-in is defined as a lane change in which POV enters          is detected in [26] (7219). This is natural, since their danger metric
+    the lane of SV    in front of SV . The notion of deceleration is defined             THW < 2s is very similar to the “halber Tacho” rule we used to
+
+
+
+                                                                         194
+
+SAC ’24, April 8–12, 2024, Avila, Spain                                                                                                              J. Reimann, N. Mansion, et al.
+
+                     calibrate our parameter values for the RSS distance (see §5.1) and          [8] E. C. for Europe Inland Transport Committee. 2019. Framework document on auto-
+                     their definition of a cut-in is similar to ISO 34502. On the other                  mated/autonomous vehicles. Technical Report ECE/TRANS/WP.29/2019/34/Rev.2.
+                    hand, [34] detects significantly less cut-ins (1017) even without a    World Forum for Harmonization of Vehicle Regulations.
+                  danger metric; this may be due to the restriction on the longitudinal   [9] I. Hasuo. 2022.              Responsibility-Sensitive Safety: an Introduction with an
+                                                                                           Eye to Logical Foundations and Formalization.                CoRR abs/2206.03418 (2022).
+distance between the two vehicles.                                                         arXiv:2206.03418
+                         For deceleration scenarios, [34] detects a very similar number  [10] I. Hasuo, C. Eberhart, J. Haydon, J. Dubut, R. Bohrer, T. Kobayashi, S. Pruekprasert,
+                                                                                               X.-Y. Zhang, E. A. Pallas, A. Yamada, K. Suenaga, F. Ishikawa, K. Kamijo, Y. Shinya,
+                  (26846) as our formalisations. Note that in [34], no danger metric is               and T. Suetomi. 2023. Goal-Aware RSS for Complex Scenarios via Program Logic.
+                      used, implying that deceleration on highways leads to a violation    IEEE Trans. Intell. Vehicles 8, 4 (2023), 3040–3072.
+                       of the RSS distance (see §4.3) in nearly all cases. On the other              [11] M. Hekmatnejad, S. Yaghoubi, A. Dokhanchi, H. B. Amor, A. Shrivastava, L.
+                                                                                                     Karam, and G. Fainekos. 2019. Encoding and Monitoring Responsibility Sensitive
+                     hand, the formalisation in [26] is much stricter and hence matches                   Safety Rules for Automated Vehicles in Signal Temporal Logic. In MEMOCODE
+significantly fewer traces (< 150).                                                        2019 (La Jolla, California). ACM, New York, NY, USA, Article 6, 11 pages.
+                       Another point in the comparison is that parameter-tuning is easy   [12] ISO 34502:2022(E) 2022.         Road vehicles — Test scenarios for automated driving
+                                                                                                      systems — Scenario based safety evaluation framework. Standard. International
+                       in our formalisation. Our parameter-tuning is largely reduced to    Organization for Standardization, Geneva, CH.
+that for RSS in general:                                                                     [13] H. Königshof, F. Oboril, K. Scholl, and C. Stiller. 2022. A Parameter Analysis on
+                                                                                                      RSS in Overtaking Situations on German Highways. In IV 2022. IEEE, 1081–1086.
+   •                         besides the RSS parameters (e.g. response time 𝜌 and maxi-         [14] R. Koymans. 1990. Specifying real-time properties with metric temporal logic.
+                           mum acceleration/braking rates, see §4.3), our formalisation    Real-Time Systems 2, 4 (Nov. 1990), 255–299.
+                                                                                                [15] R. Krajewski, J. Bock, L. Kloeker, and L. Eckstein. 2018. The highD Dataset: A
+                   only has minDanger and minSafe as parameters, and                                      Drone Dataset of Naturalistic Vehicle Trajectories on German Highways for
+   • as seen in RQ4, the value of minDanger is hardly relevant.                            Validation of Highly Automated Driving Systems. In ITSC 2018. 2118–2125.
+                                                                                                     [16] H. Krasowski and M. Althoff. 2021. Temporal Logic Formalization of Marine
+                          Tuning the RSS parameters is a more general problem—those pa-    Traffic Rules. In IV 2021. IEEE, 186–192.
+                       rameters are important beyond specific disturbance scenarios—and     [17] S. Maierhofer, P. Moosbrugger, and M. Althoff. 2022. Formalization of Intersection
+                 methods of doing so are an active field of research [13]. Such ease of    Traffic Rules in Temporal Logic. In IV 2022. IEEE, 1135–1144.
+                                                                                              [18] S. Maierhofer, A.-K. Rettinger, E. C. Mayer, and M. Althoff. 2020. Formalization
+                   parameter tuning is not the case, e.g. in [26], where “hard braking”    of Interstate Traffic Rules in Temporal Logic. In IV 2020. IEEE, 752–759.
+in a deceleration scenario must be manually defined.                                              [19] O. Maler and D. Nickovic. 2004. Monitoring Temporal Properties of Continuous
+                                                                                           Signals. In Formal Techniques, Modelling and Analysis of Timed and Fault-Tolerant
+                                                                                           Systems. Springer Berlin Heidelberg, Berlin, Heidelberg, 152–166.
+6  CONCLUSIONS AND FUTURE WORK                                                               [20] H. Muslim, S. Endo, H. Imanaga, S. Kitajima, N. Uchida, E. Kitahara, K. Ozawa, H.
+                  In this paper, we presented a temporal logic formalisation of traffic                 Sato, and H. Nakamura. 2023. Cut-Out Scenario Generation With Reasonability
+                                                                                                               Foreseeable Parameter Range From Real Highway Dataset for Autonomous
+                       disturbance scenarios concerning general vehicles on highways as    Vehicle Assessment. IEEE Access 11 (2023), 45349–45363.
+                      specified in ISO Standard 34502. Based on this important class of       [21] D. Nalić, T. Mihalj, M. Baeumler, M. Lehmann, A. Eichberger, and S. Bernsteiner.
+                                                                                                    2020. Scenario Based Testing of Automated Driving Systems: A Literature Survey.
+                      scenarios, further critical scenarios can be formalised through a       [22] J.-P. Paardekooper, S. van Montfort, J. Manders, J. M. Goos, E. de Gelder, O. O.
+                       modular approach. Our formalisation relies on the RSS framework,                 den Camp, O. Bracquemond, and G. Thiolon. 2019. Automatic Identification of
+                       allowing for easy parameter-tuning. Experimentally, we were able    Critical Scenarios in a Public Dataset of 6000 km of Public-Road Driving.
+                                                                                          [23] A. Pnueli. 1977. The temporal logic of programs. In SFCS 1977. 46–57.
+                   to show that a small extension of the ISO standard allows for a very           [24] D. Powers. 2008. Evaluation: From Precision, Recall and F-Factor to ROC, In-
+high rate of disturbance trace detection.                                                  formedness, Markedness & Correlation. Mach. Learn. Technol. 2 (01 2008).
+                     Future work includes the formalisation of further critical scenar-     [25] J. Reimann, N. Mansion, J. Haydon, B. Bray, A. Chattopadhyay, S. Sato, M. Waga, E.
+                                                                                                   André, I. Hasuo, N. Ueda, and Y. Yokoyama. 2023. Temporal Logic Formalisation of
+                      ios in ISO 34502 and beyond, such as scenarios involving motorcy-            ISO 34502 Critical Scenarios: Modular Construction with the RSS Safety Distance.
+cles, vehicle control disturbances, and intersection scenarios.                            (2023). Extended version with appendices, available on arXiv.
+                                                                                                    [26] P. Schneider, M. Butz, C. Heinzemann, J. Oehlerking, and M. Woehrle. 2020.
+                        Our current formalisation needs an initial lane as input, since    Scenario-based threat metric evaluation based on the highd dataset. In IV 2020.
+                         STL does not support variable binding and hence does not allow    IEEE, 213–218.
+                  us to refer to the lane initially occupies otherwise. As future work,          [27] A. D. S. Sectional Committee of AD Safety Evaluation. 2022. Automated Driving
+                                                                                                 Safety Evaluation Framework Ver. 3.0 Guidelines for Safety Evaluation of Automated
+                          an implementation of our formulas to an extension of STL with    Driving Technology.
+temporal freezing (e.g. STL*, see [4]) should be considered.                                    [28] S. Shalev-Shwartz, S. Shammah, and A. Shashua. 2018. On a formal model of safe
+                                                                                           and scalable self-driving cars.
+                                                                                           [29] Q. Song, K. Tan, P. Runeson, and S. Persson. 2023. Critical scenario identification
+REFERENCES                                                                                 for realistic testing of autonomous driving systems.        Software Quality Journal 31,
+       [1] Y. Annpureddy, C. Liu, G. Fainekos, and S. Sankaranarayanan. 2011. S-TaLiRo:    2 (June 2023), 441–469.
+             A Tool for Temporal Logic Falsification for Hybrid Systems. In TACAS 2011,   [30] D. Ulus. 2018.       Pattern Matching with Time : Theory and Applications. (Filtrage
+   Vol. 6605. Springer, 254–257.                                                                par motif temporisé : Théorie et Applications). Ph. D. Dissertation. Grenoble Alpes
+   [2] C. Baier and J.-P. Katoen. 2008. Principles of Model Checking. The MIT Press.       University, France. https://tel.archives-ouvertes.fr/tel-01901576
+[3] P. Bender, J. Ziegler, and C. Stiller. 2014. Lanelets: Efficient map representation             [31] C. Wang and H. Winner. 2019. Overcoming Challenges of Validation Automated
+   for autonomous driving. In IV 2014. 420–425.                                            Driving and Identification of Critical Scenarios. In ITSC 2019. 2639–2644.
+    [4] L. Brim, P. Dluhoš, D. Šafránek, and T. Vejpustek. 2014. STL∗: Extending signal           [32] Z. Zhang, G. Ernst, S. Sedwards, P. Arcaini, and I. Hasuo. 2018. Two-Layered
+        temporal logic with signal-value freezing operator. Information and Computation              Falsification of Hybrid Systems Guided by Monte Carlo Tree Search. IEEE Trans.
+   236 (2014), 52–67. Special Issue on Hybrid Systems and Biology.                         on CAD 37, 11 (2018), 2894–2905.
+      [5] A. Donzé. 2010. Breach, A Toolbox for Verification and Parameter Synthesis of   [33] Z. Zhang, I. Hasuo, and P. Arcaini. 2019.            Multi-armed Bandits for Boolean
+   Hybrid Systems. In CAV 2010, Vol. 6174. Springer, 167–170.                                        Connectives in Hybrid System Falsification. In CAV 2019, Vol. 11561. Springer,
+      [6] K. Esterle, L. Gressenbuch, and A. Knoll. 2020. Formalizing Traffic Rules for    401–420.
+   Machine Interpretability. In CAVS 2020. IEEE, 1–7.                                             [34] A. Zlocki, A. König, J. Bock, H. Weber, H. Muslim, H. Nakamura, S. Watanabe,
+ [7] G. E. Fainekos and G. J. Pappas. 2009. Robustness of temporal logic specifications               J. Antona-Makoshi, and S. Taniguchi. 2022. Logical Scenarios Parameterization
+   for continuous-time signals.      Theoretical Computer Science 410, 42 (2009), 4262–                     for Automated Vehicle Safety Assessment: Comparison of Deceleration and
+   4291.                                                                                                 Cut-In Scenarios From Japanese and German Highways. IEEE Access 10 (2022),
+                                                                                           26817–26829.
+
+
+
+
+
+
+   195
+

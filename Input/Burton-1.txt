@@ -1,0 +1,594 @@
+(     Centre for      $n     UNIVERSITY
+      Assuring
+      Autonomy        York
+
+Automotive standards for AI safety
+and research perspectives
+
+
+ Safety under uncertainty
+ Prof. Simon Burton,
+ Chair of Systems Safety, Business Director - CfAA
+
+Automotive safety and AI
+
+vi  Ae  Time to  i
+nds)
+4  i  fact
+|  2  seco  Prediction®  nd Syste
+7  11  pr  51  accelerate firom  35 mph
+vil  |  Rightᴵ  turn  in  response to increased si
+ane  icle  reaches 44 mph.
+I/  t  5  5 6  “3  [oi  Vehicle—by  adar  makes
+|  [  makes firᶠʳˢᵗ  detectn of  ped
+Radard  tes
+Paih  prediction   one:  not   on  iver
+{Nes  Tc  52  prediction  lidar  nom obec Object is
+-  Path  oy byvr
+;  Bath  ia ron  red new, tracki ing cannot
+determined.ᵘinavailable, and  history isbe
+V  //  Ped:  3  4  Gai  .  pe  |  Cassitcatol  id  static.  ts object's path as
+/  positions  idar
+5.6;  Be  1.  a  Path⁵  s vehicle;
+12  erie
+-  out  a  lio
+/  )  mph  and with  anged classificaion  of objject
+Y  beg  ..  s path as static.
+A  h  impact
+\  12L  s §to  1  n:Vehide—oy lidar  | Lidar retains classifi
+Left through
+7ᴶ  o=⁴  N  IE  Shs  i  lan  net onpatn  object's path Gs  signed-goal,ₙ  Al
+twe  Object's classifi  Severe,
+9  Xo  5  ANY  47  | Glassifcation  ates
+vehicle and  a pm
+ofr
+A  racking  Is  her-ALe:
+[  x  |  NP  SF  i  predicts
+Path prediction  left thc  ADS  bject’  path
+5/  Path  alternate  abʰⁱⁱˢᵗᵒʳʸ
+<f  |  mph ;  bet  rough  |  classificationˢᵗane When
+sidered on path  same,  ADS prec  cts  path as  traveling  in left
+y  &  |  1  between  and  | detectedADSᵒᵇʲʲᵉᶜᵗ  as  ins.
+lane; neither consid  ,
+of SUV  rough  ane
+\  I  a  AY  448   |  i:  Bieyolᴮⁱᶜʸᶜˡᵉy  lidar ||  Lida7  detected object as biicycle;
+Path  prediction”  Static,  noton  this  ged  track  ion.of
+Sh  path  and  object  classificatia  object
+\  {  is  without
+XNON,  \  Through  [ly  A  EN  ye
+N  \  lanes  Ro  3  25  Classification;  by lidar  |   Lidar  5  pati   as static.
+x  ]  |  3  2  Path  predictiof  through  | Lidar  retainsʳᵉ  bicycle  ion;  based
+Pred  bicycle’s
+predicts  yle's path as  aveling   i
+“us  §  ing history and assitreigned  goal, ADS
+ED  QA\  $a  ak  |
+AN  lane (next to  path  thy
+3  NR  of SUV.  rough lane.
+NA\  \\  N\  :  |  impact  3  Source: National Transportation Safety Board. Collision between vehicle
+NN  =  controlled by developmental automated driving system and pedestrian Tempe,
+=  2  NN\  ;  a 2  Arizona march 18, 2018. 2019.
+
+Wider context of automotive safety standards
+
+ISO 26262: Functional safety
+
+“Absence of unreasonable risk due to hazards caused by
+malfunctioning behaviour of the electrical and/or electronic
+systems”
+
+                                               behaviour                  on vehicle level
+Also addresses:                             Malfunctioning  Results in  Hazardous behaviour
+•  Safety management                           |
+   (organisational and project-specific)           Random
+•  Supporting processes                     {  Caused by >  hardware faults |
+                                                   Systematic faults
+
+                                                   for
+
+  Safety challenges of automated driving functions
+
+  Impact of environment, task and system complexity
+
+
+
+oh  pp  Scope & unpredictability
+Org  Bae  of operational domain and  Environment
+Environment
+Environment
+(world)
+fe  (world)
+=  Ce  critical events  (world)
+A,  Observations
+rp  Observations
+(Evidence)
+Source: https   bbc com/newsAvoric-asia-ndia- 38155635  (Evidence)
+
+Environmental,
+Environmental,
+task and system
+task and system
+task and system  (Decision
+Inaccuracies.  & noise. iin  Environmental, oD   System
+complexity
+complexity
+complexity  maker)
+environmental sensors and
+
+signal processing
+
+
+
+                                                                                     Manifestations of uncertainty
+                                                                                     Manifestations of uncertainty
+                                                                                     Manifestations of uncertainty
+                                              Heuristics or machine                   Burton, Simon, and Benjamin Herd. "Addressing uncertainty in the safety assurance of
+                                              learning.          techniques.  withⁱ  machine-learning." Frontiers in Computer Science 5 (2023), Inspired by: Lovell, B. E.
+                                                                                             (1995). A Taxonomy of Types of Uncertainty. Portland State University.
+                                              unpredictable      results                 CAA:
+                      dataset convexamples                                                                        Centre for
+  Source                                                                                                          Assuring
+                                                                                                                  Autonomy
+
+Wider context of automotive safety standards
+
+ISO 21448: Safety of the intended functionality (SOTIF)
+
+“Absence of unreasonable risk due to hazards resulting from
+functional insufficiencies of the intended functionality or by
+reasonably foreseeable misuse by road users”
+
+   Hazardous behaviour on vehicle
+     level
+ Triggering    activate  Functional   Results in
+ conditions        insufficiency
+ Inability to prevent or detect and
+     mitigate foreseeable indirect misuse
+
+                                  Insufficiencies of |
+                             |    the specification  |
+                         Caused by
+
+                                     Performance 1|
+     1_ insufficiencies     |        GAA
+
+Safety challenges of AI-based functions
+
+Insufficiences of the specification
+
+
+ How to define a “complete” specification:                                          =    13
+ •  Dealing with rare but critical events
+ •  Distributional shift / changes in the environment over time              Zo     J  ‘=
+ •  Requires a detailed understanding of the operational domain and      +          PER =
+    technical system context
+ •  Which KPIs/Metrics can be used to measure the conformance to                    -
+ •  the requirements?        748                                                    -
+    How to derive target values (validation targets) for these metrics?     we  /     ao.
+ Data as the specification:                                                   2
+ •  How to demonstrate coverage of the operational domain and        i          a =     3
+ •  requirements?
+    Does the (ground truth) data accurately represent the intended                      :
+    functionality for all possible scenarios?                                   ;        G A
+                                                                                    Centre for
+
+Safety challenges of AI-based functions
+
+Performance insufficiencies
+
+Model uncertainty:                                                TT
+•  Residual errors: due to bias and lack of generalization and   “ae    -
+   robustness: outputs sensitive to small changes in the inputs   >     1
+   and insufficiencies in training data
+•  Prediction uncertainty: Confidence scores not necessarily          1 (i
+   indication of probability of correctness                           fl i 3
+•  Related to the concepts of task complexity, sample                 yy
+   complexity and model expressiveness
+•  How to systematically identify triggering conditions and
+   demonstrate a lack of “unknown triggering” conditions?
+
+  ISO PAS 8800
+
+
+
+
+
+
+    Road vehicle-specific safety of E/E systems
+
+
+ISO 26262 Road vehicles -  ISO 21448 Road Vehicles
+    Functional safety     – Safety of the Intended
+    Functionality
+          Safety concepts
+          extended for AI
+
+ISO PAS 8800 Road Vehicles – Safety
+    and Artificial Intelligence
+
+Overview of ISO PAS 8800
+
+Scope
+
+•  Extension of concepts from ISO 26262 and ISO 21448    Through-life assurance
+•  Process oriented standard based on a safety-lifecycle
+•  Only a few high-level requirements defined for each   AI system:
+   lifecycle phase                                        Pre- and postprocessing to reduce
+                                                          impact of AI errors, consideration of
+    •   Not specific to a particular AI/ML technology     known insufficiencies in system
+    •   However, most recommendations and                 requirements, assurance argument
+        examples oriented towards machine learning         AI model:
+    •   Not specific to particular applications (e.g.      Specification of safety related
+        automated driving)                                 (quantitative) properties,
+•  Informative guidance to serve as an interpretation      measures to reduce technical
+                                                           uncertainty, V&V, Safety Analysis
+   aid of the requirements and not necessarily to
+   promote specific solutions                                  GAA
+                                                                                               Centre for
+                                                                                               Assuring
+                                                                                               Autonomy
+
+Overview of ISO PAS 8800
+
+Example scoping of the standards
+
+        Encompassing system
+  ISO 26262, ISO 21448, Traffic Jam Assist
+        … Sense Understand Decide Act
+        (Plan)
+
+
+        Environment
+
+             Traffic Sign Classifier
+ISO PAS 8800,    Source Pre-  Trained ML Model
+                     processing    processing
+  ISO 26262,…                        Post-    Consumer
+                    AI system
+
+  Overview of ISO PAS 8800
+
+  AI Safety lifecycle
+
+   Encompassing  Hazard and risk analysis and                      Encompassing system  Encompassing system
+         system  safety requirement definition at                 integration, test and   field monitoring
+    development  encompassing system level                              assurance            activities
+
+      oSN        4
+      HEA
+               Refinement of AI                                       Evaluation of
+                    safety      Selection of AI                     confidence in the      Operation and
+                 requirements   approach and AI     AI safety analysis  assurance            continual
+               allocated to the  system design                           argument            assurance
+  AI system       AI system        &-.      17
+development        Data     v                     AI system
+                               specification and
+      collection for                           verification and
+                               training and test  validation
+                                                                              Insufficiencies or
+                                                                                changes in the
+                Requirements cannot be achieved      Insufficient confidence operating conditions
+               and must be renegotiated with the     in the assurance          detected during
+                      encompassing system        argument                         operation  G A
+                                                                             Centre     for
+                                                                             Assuring
+                                                                             Autonomy
+
+Overview of ISO PAS 8800
+
+Derivation of safety requirements (Example)
+
+                                      Safety requirement                    Acceptance criteria
+                     Correctly classify construction signs for any given            < 10⁻⁰⁴ missed detections/construction sign
+                                            image
+
+ Property            Derived requirements                               Metrics / Targets
+ Generalization ~~   The TSC shall achieve a high recall rate for       Recall 99.99%
+                     construction signs
+ Robustness          The TSC should be robust against camera noise      Adding noise perturbations characterized by 𝐿1norm <
+                                                                        0.001 on the image, shall introduce at most 0.01% false
+                                                                        negatives
+                     The TSC should be robust against partial           Occlusion of the traffic sign of 25% shall introduce at most
+                     occlusion of or damage to the traffic sign         0.01% false negatives
+ Bias                For each combination of possible weather and       Recall of 99.99% shall be achieved for all equivalence
+                     lighting conditions                                classes of weather and lighting
+ Prediction          The confidence scores shall be representative of   Maximum Calibration Error < 0.01
+ uncertainty         the probability of failure
+ …                   …                                                  …
+                                               In addition, the limitations of the AI model and AI system must be characterized     CAA:
+    so that these can be compensated for at the level of the encompassing system        Centre     for
+
+    Overview of ISO PAS 8800
+
+    Design concepts
+
+        AI System
+
+        Supervisor
+
+
+
+
+  Input Trained ML Model    Limiting
+monitoring Trained ML Model Voter    Switch
+    Trained ML Model         logic
+
+
+
+    Non-AI Technology
+
+
+
+Can help to reduce the absolute performance requirements on the ML model by  GAA
+                      compensating for residual errors    Contre
+
+Overview of ISO PAS 8800
+
+Data lifecycle and dataset safety analysis
+
+
+  Safety requirements      Data collection                       Common dataset errors
+    on the ML system  during testing and  ML system integration
+                          operation            and testing       Lack of coverage of the input space
+  :                                                          :   Lack of representation of safety-relevant edge cases
+  H     Dataset        Dataset                   Dataset     :
+      requirements        maintenance           validation   i   Distribution does not match the target input space
+  H     Dataset         Dataset safety                       i   Dependencies on the data acquisition method (e.g. camera type,
+  H     design             analysis      Dataset
+            verification                                     :   geographic, temporal dependencies)
+  i                Dataset implementation:                   :   Data fidelity (e.g., sensor noise, accuracy of synthetic data)
+  HH              Data acquisition/synthesis                 H
+                      Data augmentation                      :   Errors in the meta-data / labelling
+  :                    Data annotation                       :
+  i     Dataset lifecycle                                    :   Lack of independence between training and verification datasets
+
+
+
+
+
+
+
+
+
+
+  Centre for
+  Assuring
+  Autonomy
+
+Overview of ISO PAS 8800
+
+Verification, Validation and Safety Analysis:
+
+•   Limited transferability of software
+    verification techniques
+•   Increased reliance on statistical and      3
+    search-based testing
+•   Virtual testing vs. physical testing       5
+•   Safety analysis        Wik
+     •   A direct relationship between causes
+         of errors and their consequences may
+         be difficult to determine/disentangle.
+     •   An evaluation of the effectiveness of
+         proposed measures is therefore
+         essential.                             GAs
+
+Overview of ISO PAS 8800
+
+Safety assurance argument
+
+•   Develop an assurance argument     ~~          Ey
+    demonstrating that the AI safety              CREE
+•   requirements are fulfilled              =,    = ‘
+    As a contribution to the safety         E=
+    assurance argument of the
+    encompassing system
+•   Continually re-evaluated and                Sl
+    updated during operation
+
+
+                                                  for
+
+    Wider context of automotive safety standards
+
+    A complex evolving landscape of standards and regulation
+
+
+
+  Laws and       Sector- UN ECE WP.29        Technology-     US EO on Safe, Secure,
+regulations specific      GRVA      (EU) 2022/1426     … specific      Trustworthy AI                                EU AI Act                                                    …
+
+    Aligned with or directly reference
+         international standards                                                                                     AI standards
+                                                                                                                     support the
+    Road vehicle-specific                                             ISO TS 23792 Intelligent transport systems —   implementation of
+    safety of E/E systems                              ADS-specific            Motorway chauffeur systems            laws and regulations
+                                                        standards    ISO/FDIS 23374 Intelligent transport systems —
+                                                                         Automated valet parking systems (AVPS)
+        ISO 26262 Road      ISO 21448 Road             Requirements   SAE J3016 Taxonomy and Definitions for Terms
+                                                          to be        Related to ADS for On-Road Motor Vehicles
+    vehicles - Functional || Vehicles – Safety of the  implemented  SAE J3316 – Cooperative driving automation (CDA)
+            safety             Intended Functionality  according to                     Features
+             Safety concepts                          the principles     BSI PAS 1883 ODD taxonomy for an ADS -
+             extended for AI                            of safety                    specification
+                                                        standards    IEEE P2846 Standard for Assumptions in Safety-
+                                                                                 related models for ADS
+                                                                      ISO TS 5083 Road vehicles – Safety for ADS –
+       ISO PAS 8800 Road Vehicles –                                       design, verification and validation
+    Safety and Artificial Intelligence                                                     …                         EU AI Act calls for
+                                                                                                                     the creation of AI
+        May make use of application-agnostic guidance during implementation                                          standards
+
+    Application-agnostic AI/ML                        ISO/IEC 22989 Artificial intelligence     ISO/IEC TR 5469 Artificial intelligence    ISO/IEC TS 25058 “ SQuaRE - Guidance
+             concepts                                        concepts and definitions               Functional safety and AI systems       for quality evaluation of artificial   …
+                                                                                                                                                intelligence (AI) systems
+                                                      ISO/IEC TS 4213 Assessment of machine |     ISO/IEC TR 24029 – Assessment of the [I ISO/IEC TR 24027 Bias in AI systems and
+                                                       learning classification performance           robustness of neural networks               AI aided decision making
+                                                       IEEE P3396 Recommended Practice for          IEEE P2976 - Standard for XAI –         IEEE P3129 Standard for Robustness    …    © A A
+                                                     Defining and Evaluating AI Risk, Safety,  eXplainable AI- for Achieving Clarity and  Testing and Evaluation AI-based Image   …     Cation
+                                                       Trustworthiness, and Responsibility       Interoperability of AI Systems Design             Recognition Service                  Autonomy
+
+            Safety under uncertainty
+
+BizARRO.COM Facebook.com/      Kiné faves
+Xo)        Are we
+    there yet,?
+    or
+ho     —     ~                      4
+
+    LR                      |       |
+
+Ul                         “0  AA
+    |                     Sa2     we
+
+Safety under uncertainty
+
+Principles of effective assurance arguments*
+
+• Clear definition of the safety claim to be demonstrated
+    🤔 How to formulate safety requirements as measurable properties of ML models?
+• Assurance driven workflow for continually/incrementally capturing evidence during
+   development and operation
+    👍 Covered by ISO PAS 8800 and other standards
+• Arguments based on rigorous models of the system and its context
+    🤔 Opaque models/ML explainability, incomplete definition of the input space?
+• Use of evidence and arguments that can be easily refuted or believed
+    🤔 Can we trust our ML metrics to provide us with an accurate
+       evaluation of safety risk?
+
+
+    for
+    *With thanks to Natarajan Shankar, SRI: Keynote SAFECOMP 2023
+
+Safety under uncertainty
+
+Ongoing research
+Many metrics are proposed for evaluating the         #{j Estimated safety                       Actual safety
+safety of ML-based functions, do they really provide € I: AG) A PG,
+a realistic estimation of the actual safety risk?    #je I:
+                                                         Assurance Uncertainty
+1.   Collect primary evidence to
+     directly support the safety claim                                                          ST]
+     including uncertainty
+2.   Identify evidence to support or                          |                                 so
+     refute the validity of the primary        =                                                wl    A
+     evidence
+3.   Adjust estimates of safety risk                 For more details see: Herd, Benjamin, and Simon Burton. "Can you trust your
+                                                     ML metrics? Using Subjective Logic to determine the true contribution of ML
+     based on uncertainty in the                     metrics for safety." In Proceedings of the 39th ACM/SIGAPP Symposium on
+     measurement                                     Applied Computing, pp. 1579-1586. 2024.        GAA
+                                                                                                                              or
+                                                                                                                            Cone
+                                                                                                                        Autonomy
+
+                                                               Assurance uncertainty
+
+                                                  Uncertainty aware safety arguments
+
+                                                                                      tes             Combined evidence ωcom
+                                              a1        TO]                       I Stace
+P=                                            ‘Camera is operating within its      |  in   esi
+Recall rate > 98%                                 ions                                    |           Adj. Expected value     99.2%
+Estimated with 95% confidence                 are as defined in the ODD, traffic          i
+and s 1% second order uncertainty             signs have been correctly detected          i           Adj. 95% credible       98.0%
+                                              within the original image.                  i
+                                                                                          i           interval lower bound
+    -                                             M                                                   2nd Order Uncertainty   1.2%
+
+s1                                                0                                       h
+
+ofDemonstration of claim via a combination        0.96      097                          098  099 1.00
+statistical testing and simulation
+
+
+
+
+
+-   |  \    oz                                            ‘The lower bound of the 95% confidence.     |
+    |  \\   Tne lower bound of te confidence              interval on the test resus from        .    |
+            randomlyselected real-world images is > 98%   search basedtesting using aynthetic         |
+        [tna    second oder      <1.                      nea
+
+                ACP1
+                                                              ACP2
+
+
+
+                                sn2
+               est results:     Simulation
+
+               Passed: 39800
+w ==||    |    Failed:  200     results                   AN   i|ii  [I|   For more details see: Herd, Benjamin, and Simon Burton.
+     |                                                         |           "Can you trust your ML metrics? Using Subjective Logic to
+    i|    |                                                    ii    Jᴵ\   determine the true contribution of ML metrics for safety."
+          |                                                                In Proceedings of the 39th ACM/SIGAPP Symposium on      G
+                                                                           Applied Computing, pp. 1579-1586. 2024.
+                                                                                                                                     Centre for
+                                                                                                                                     Assuring
+                                                                                                                                     Autonomy
+
+Conclusions and next steps
+2  |  (RY  ~   ~  AN
+NH
+iv  il  |  \  ;  1ʸ  WW
+J  %  E  Ja  1
+2  ili.  -  a
+lyᵒʷ  >  y  )  / ci
+La  = N  K
+PENN
+—  2  Ue Add  /
+i =  LA  - 2  EN  |  /
+i
+LS
+=  .  x   TA  ad  By
+=  =  =.  I  y.
+ phᵖᵒᵉ  gr  3  —  -  -
+A  =a
+er  a
+dae
+Shed Si
+
+    Conclusions and next steps
+
+    Research: Foundations of convincing AI safety arguments
+
+Convincing arguments for AI safety require:
+• A precise definition of the properties being measured and their relationship to
+   system requirements
+• • Safety requirements à Measurable properties
+   Evidence beyond simple metrics calculated based on arbitrary test data
+• • Rigorous approach to statistical reasoning based on quantitative evidence
+   Reducing uncertainty in the integrity and validity of evidence
+    • Advancing state-of-the-art in (virtual) testing of AI-based systems
+• • Scaling formal verification of well-bounded properties such as robustness
+   High integrity safety measures at the architectural level to mitigate against
+   residual errors in the model
+     •   Balancing safety risk against utility (overly restrictive safety measures) GAA
+
+Conclusions
+
+Summary
+
+• Initial standards define AI safety lifecycles and iterative approaches to collecting and
+   evaluating evidence
+• The ability to provide a convincing argument for the safety of AI-based autonomy is
+   inherently linked to the complexity of the environment, the task and the resulting
+   models.
+• Acknowledgement and management of the resulting uncertainties is required to
+   make a convincing safety argument.
+• The greater the complexity of the environment, task and system (AI models), the
+   harder it is to trust the evidence, the assumptions and the argument structure itself.
+• This may lead to the need for inherently resilient (and anti-fragile) systems, which
+   are not fully assured in a classical sense during development.
+
+( : Centre for UNIVERSITY
+        Assuring oS York
+        Autonomy
+
+Thank you for your attention, any questions?
+
+
+
+
+    www.york.ac.uk/assuring-autonomy
+    assuring-autonomy@york.ac.uk
+    Centre for Assuring Autonomy LinkedIn
+

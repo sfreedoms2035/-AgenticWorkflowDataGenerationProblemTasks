@@ -1,0 +1,1671 @@
+    Received 25 October 2024, accepted 16 November 2024, date of publication 25 November 2024, date of current version 9 December 2024.
+    Digital Object Identifier 10.1109/ACCESS.2024.3506333
+
+
+
+
+    A Systematic Approach to Enhancing ISO 26262
+    With Machine Learning-Specific Life Cycle
+    Phases and Testing Methods
+
+PADMA IYENGHAR 1,2, EMIL GRACIC 3, AND GREGOR PAWELKE3
+1innotec GmbH, 70794 Filderstadt, Germany
+2Faculty of Engineering and Computer Science, University of Applied Sciences, 49076 Osnabrück, Germany
+3CARIAD SE, 10587 Berlin, Germany
+Corresponding author: Padma Iyenghar (padma.iyenghar@innotecsafety.com)
+
+
+ABSTRACT This paper presents a systematic approach to enhancing ISO 26262, a widely adopted standard
+for automotive functional safety, by integrating Machine Learning (ML)-specific life cycle phases and
+testing methods for Automotive Safety Integrity Level (ASIL) A/B. With the increasing incorporation
+of ML techniques in automotive systems, the current ISO 26262 framework reveals significant gaps in
+addressing ML-specific safety requirements. While ISO/DPAS 8800 provides an approach for developing
+AI systems that meet some safety properties, it does not provide a mapping concept for ASIL classification
+of ML systems. Furthermore, given the complexity of ML techniques in automotive systems, issues such
+as interpretability—critical for transparency and accountability—along with robustness and uncertainty
+handling, pose significant challenges that are not fully addressed by ISO 26262 and ISO/DPAS 8800. This
+study identifies and addresses these gaps by defining three additional life cycle phases: prepare data, train ML
+model, and deploy ML model. For each life cycle phase, we establish desired properties such as robustness,
+uncertainty handling, and interpretability, and propose suitable methods to achieve these properties. We adopt
+a rigorous evaluation framework inspired by IEC 61508 to assess the effectiveness of these methods. Since
+the method recommendations of ISO 26262 for ML-based products are incomplete, the approach presented
+in this paper provides critical guidance and room for expert assessment and independent certification,
+ensuring solid and reliable recommendations. This systematic, clear, uniform development procedure not
+only supports product teams in achieving their safety goals but also facilitates the certification process,
+reducing ambiguity and enhancing the overall safety and reliability of ML-based automotive systems.
+
+INDEX TERMS Artificial intelligence (AI), data model, automotive functional safety, certification process,
+embedded systems, evaluation framework, interpretability, ISO 26262, life cycle phases, machine learning
+(ML), method recommendations, model deployment, robustness, safety-critical systems, software life cycle,
+systematic approach, testing methods, V-model.
+
+
+I. INTRODUCTION key in guiding the development of safe automotive systems.
+The rapid advancements in automotive technology have It addresses various aspects of vehicle development, from
+led to an increased integration of Machine Learning (ML) item definition to system-level, hardware, and software
+techniques into safety-critical systems. ISO 26262 [1], the implementation, as well as various supporting and manage-
+international standard for functional safety of electrical and ment processes. However, when it comes to using ML as
+electronic systems in production automobiles, has been the a software development technology, the standard does not
+        provide specific guidelines for ML-based systems. As ML
+  The associate editor coordinating the review of this manuscript and becomes state-of-the-art, its integration into functional
+approving it for publication was Liang-Bi Chen . safety contexts requires new design and testing concepts
+
+        2024 The Authors. This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 License.
+179600 For more information, see https://creativecommons.org/licenses/by-nc-nd/4.0/ VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+that  differ significantly    from  traditional code-centric    or     •   Training Processes
+            model-based approaches. In contrast, the ISO/DPAS 8800     •   Model Deployment
+        [2] draft proposal, currently under development, defines a    Details regarding the  identified gaps  can   be found       in
+         general safety framework for Artificial Intelligence (AI)      section II. These gaps highlight the necessity for an updated
+and   ML in        the automotive   industry but   lacks  specific           approach that incorporates ML-specific considerations to
+         guidelines for various Automotive Safety Integrity Levels    ensure  the  safety and reliability  of modern       automotive
+          (ASIL). For a broader understanding of functional safety    systems.
+           beyond software development, ISO/IEC TR 5469 [3], which
+           addresses AI-functional safety and ML systems, offers a    B. CONTRIBUTION
+         comprehensive view, including management activities, tool    This  paper  leverages  existing standards IEC   61508      [4]
+     usage, and hardware integration. However, it does not provide              and ISO 26262 [1] to establish a robust framework for
+        ML-specific life cycle phases, testing methods, or mapping    incorporating ML-specific life    cycle phases and      testing
+          to various ASILs. Thus, despite the recent developments,           methods. The approach includes identifying gaps in these
+               that attempt to provide frameworks for AI and ML in         standards, defining new life cycle phases, and mapping and
+       safety contexts, they do not fully address the gaps left by         evaluating test methods. This paper introduces several key
+        ISO 26262, particularly in defining ML-specific life cycle         innovations, to address the aforementioned identified gaps
+        phases and testing methods. This highlights the need for a            in ISO 26262 for ML-based automotive systems, which are
+           comprehensive extension of ISO 26262 to accommodate the    listed below:
+         unique challenges posed by ML. This paper aims to address     1)   Extended life cycle phases: We propose three addi-
+          these gaps by proposing a systematic approach to enhance          tional life cycle phases specific to ML:
+          ISO 26262, integrating ML-specific life cycle phases and            •  Prepare data
+testing methods, from a software perspective.                                 •  Train ML model
+            Nevertheless, inputs from higher levels of development            •  Deploy ML model
+      are also crucial for understanding their impact on ML safety
+          and the potential derivation of the respective ASIL. Two             These phases are seamlessly integrated with the exist-
+important considerations include:                                                     ing ISO 26262 framework, ensuring comprehensive
+                                                                            coverage of ML-specific requirements.
+ •    Considering      input from    Hazard Analysis and      Risk     2)              Desired Properties and Methods: For each newly
+               Assessment (HARA) regarding sensor faults and limi-            defined life cycle phase, we establish critical desired
+       tations, as these directly implicate insufficiencies in the              properties, such as robustness, uncertainty handling,
+      ML software components.                                                 and interpretability. Additionally, we propose suitable
+ •             Considering input from the Software Safety Analysis                methods to achieve these properties. In this paper,
+            conducted at the software architecture level to under-              we ensure that each desired property is covered by at
+                  stand the relationship between ML components and          least one test method across the three life cycle phases.
+          other traditional software components. This relationship                   While additional test methods may be explored in
+                   can mean that the ML component may benefit from           future work, the priority in this study was to guarantee
+          monitoring or fault detection by other software, or con-             comprehensive coverage of the key properties, aligning
+               versely, that the ML component might need to handle          with our testing methods-centric focus.
+      faults generated by other software parts.                        3)   Systematic and Rigorous Evaluation Framework:
+            Other aspects of functional safety, such as management            •  We adopt    a systematic   and rigorous      evalua-
+         activities, overall requirements management, and hardware                      tion framework inspired by IEC 61508 (Part 3,
+integration, are equally critical but are out of the scope of this               Annex    C) to assess  the   effectiveness of the
+           study. ISO/IEC TR 5469 [3] can be referenced for a more               proposed methods.
+         comprehensive understanding of these areas in the broader            •    This framework assigns rigor levels (R1 and R2) to
+context of AI-based systems.                                                       different methods, providing a structured approach
+                                                                                     that ensures ML models meet the required desired
+A. IDENTIFIED GAPS                                                                    safety properties, which in the end support the
+        As stated above, this paper proposes a systematic approach               overall product safety.
+         to extend ISO 26262 by integrating ML-specific life cycle            •       This approach facilitates expert assessment and
+phases and         testing methods  from a software     perspec-                  independent certification, paving the way for these
+        tive. Through a systematic literature review, discussed in                   methods to be integrated into future versions of
+         section II, several critical gaps have been identified in               ISO 26262.
+      integrating ML into the ISO 26262 framework. The gaps w.r.t.     4)   Mapping and Evaluation of Methods:
+    ML development relate (but are not exclusively restricted) to:            •  Adapt methods from existing standards.
+ •    Software requirements                                                   •    Evaluate which desired properties are supported by
+ •    Data Aspects                                                               each method.
+
+VOLUME 12, 2024                                                                                                                179601
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+           •  Evaluate      the   effectiveness  of  each    method   C. ORGANIZATION
+              (e.g. by assigning rigor levels R1 and R2) to fulfill   Following this introduction, the remainder of this paper is
+                  the assigned desired properties, thereby creating   organized as follows. Section II deals with background and
+               mapping tables to align desired properties with test   related work. Section III outlines our proposed systematic
+              methods.                                                approach. Sections IV, V and VI deal with the evaluation
+   5)  Outputs and Recommendations:                                   and results for ML data model, trained model and deployed
+           •       Defined inputs, methods, and objectives for each   model respectively. Section VII provides a discussion and
+                 life cycle phase, similar to the structure used in   conclusion.
+              ISO 26262.
+           •            Provide method recommendations for ASIL A/B   II. BACKGROUND AND RELATED WORK
+              based on rigorous evaluation.                           In   this   section,  a brief    background    is provided   on
+By    addressing       these  gaps,   our  contributions provide  a   ISO 26262 and the current gaps in ISO 26262 pertaining to
+clear,        systematic  approach   to incorporating   ML-specific   ML development are elaborated. Following this, an overview
+requirements    into       ISO   26262.    This not  only  supports   of the existing standards relevant to ML is provided, along
+product         teams  in  achieving  their safety  goals  but also   with a mention of the gaps that are pertinent to the scope of
+       streamlines the certification process, offering reliable and   this paper. Related work is presented next, with a literature
+          expert-backed recommendations. Ultimately, this work con-   review and summary of the gaps identified. This section ends
+      tributes to systematically considering the characteristics of   with a list of definitions for some of the relevant terms used
+          ML-based automotive systems in the development, fostering   in this paper.
+        greater confidence not only in their functionality but also
+             in achieving the overall goal for software development   A. ISO 26262
+       w.r.t ISO 26262, i.e. reducing the probability of systematic   ISO 26262 [1] is an international standard for functional
+errors.                                                               safety in the automotive industry. It provides a comprehensive
+               Please note that since the method recommendations of   framework for the development and production of safety-
+             ISO 26262 for the development of ML-based products are   critical systems, ensuring that they meet stringent safety
+        incomplete, there is some room for interpretation regarding   requirements throughout their life cycle. Part 6 of ISO
+        the suitability of methods for the ML-specific life phases.   26262 focuses specifically on the software development
+         In our opinion, if the introduced ML life cycle phases and   process,    outlining a V-model  that    defines  development
+             the novel ML testing concept are assessed and accepted   activities, verification, and validation steps.
+         by an independent certification body, a solid and reliable         The V-model in Part 6 (cf. Fig. 1) guides the development
+          recommendation is created. A clear recommendation reduces   from software requirements specification to design, imple-
+    the room for interpretation and can establish a uniform testing   mentation, integration, testing, and release. This structured
+      concept that supports product teams in achieving their safety   approach helps in identifying and mitigating potential safety
+goals.                                                                risks at each stage of the software life cycle. However,
+          Additionally, this paper introduces a novel systematic ML   this model primarily addresses traditional software systems
+          testing concept, which enables the release of ML products   and does not accommodate the complexities and unique
+               that conform to ASIL A and ASIL B (a gap that is not   requirements of ML-based systems. As automotive systems
+        addressed in [1], [2] and [5]). Please note that ASIL C and   increasingly incorporate ML, the limitations of ISO 26262 in
+         ASIL D are out of scope for this paper. A brief background   addressing    these    advanced   technologies  become     more
+on ASIL levels is available in Section II-A.                          apparent.
+   Furthermore,        this  study   focuses  on  the most   widely              ISO 26262 introduces the concept of ASIL to classify
+            used and applied ML technologies in automotive systems,   safety requirements based on the severity, exposure, and
+              specifically Neural Networks (NN). This includes Con-   controllability of potential hazards. These levels range from
+              volutional Neural Networks (CNN), Feed-Forward Neural   ASIL A (the lowest) to ASIL D (the highest), and each
+              Networks (FFNN), and Recurrent Neural Networks (RNN).   level helps determine the necessary rigor in development and
+        It considers both supervised learning and transfer learning   validation.
+methodologies. Thus, the usage of the term              ML through-      •  ASIL    A     corresponds  to    systems  with    minimal
+            out the paper reflects the study’s specific focus on ML         safety  impact,   where    failure might  lead to   minor
+          technologies used in automotive systems, particularly the         disruptions.
+             ones mentioned above. Broader AI concepts and other ML      •     ASIL B indicates a moderate safety risk, necessitating
+      methods, such as decision trees or Bayesian networks, as well         more stringent safety measures than ASIL A.
+as  reinforcement         and unsupervised   learning   approaches,      •             ASIL C and ASIL D apply to systems where fail-
+are   out    of the       scope   of  this study. However,   future             ure could result in severe or life-threatening conse-
+            work may extend the framework to cover these additional         quences, requiring the highest levels of verification and
+ML categories.                                                              validation.
+
+179602                                                                                                                VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+
+
+
+
+
+
+
+
+                         FIGURE 1. Life cycle phases of ISO 26262 [1].
+
+                 As the ASIL level increases, so does the rigor in the                  Models (LMMs) represent significant advancements
+         design, verification, and validation processes, ensuring that               in the ML field and are increasingly influencing ML
+           more critical systems are developed with more robust safety                practices. These foundational models introduce new
+            mechanisms. Please note that, in ISO 26262, the concept of        complexities in terms of scale, interpretability, and data
+         rigor levels such as R1 and R2 are not formally introduced or           dependencies. While our current focus is on traditional
+           explicitly defined. However, the standard inherently imple-                ML processes, future work will need to address the
+             ments a rigor-based approach through ASIL levels (ASIL A-           implications of these cutting-edge models, particularly
+       D), which dictate the level of effort, thoroughness, and safety            regarding their integration with safety standards such
+            measures required for different system components based on      as ISO 26262.
+        the potential hazard they present. It should be noted that the   4)             Model Deployment: Transforming trained ML models
+          concept of different rigor levels has been introduced by IEC                 from high-level programming languages like Python
+         61508. Further details on this can be found in section II-C5.                into embedded C/C++ code for deployment in automo-
+                                                                                 tive systems is another area not covered by the current
+B. CURRENT GAPS IN ISO 26262 PERTAINING TO ML                                     standard. This transformation is critical for ensuring
+DEVELOPMENT                                                                 that  the  deployed models maintain their          integrity
+          Despite its comprehensive nature, a detailed analysis of the      and   safety properties in a     real-world      operational
+             ISO 26262 standard reveals several notable gaps regarding      environment.
+ML-based systems, including:
+ 1)                  Software Requirements: The standard does not ade-                  C. OVERVIEW OF EXISTING STANDARDS RELEVANT TO ML
+                   quately cover ML-specific safety properties such as           Several other standards and guidelines provide valuable
+               robustness, uncertainty handling, and interpretability.          insights into developing and testing ML models, although
+                    These properties are critical for ensuring that ML    they are not specifically tailored to automotive applications.
+                  models operate safely and reliably under diverse and   These include:
+     unpredictable conditions.
+ 2)  Data      Aspects:  Effective     ML functionality         relies   1) ISO/IEC 29119-11
+     heavily     on the  quality   and    management of          data.         ISO/IEC 29119-11 [6] is a part of the ISO/IEC 29119 soft-
+     ISO      26262   lacks guidelines on handling             various     ware testing standard series, which focuses on the testing of
+               data aspects, including data collection, preprocessing,       AI systems. This standard provides comprehensive guidelines
+                 labeling, and validation. These steps are crucial for         for testing ML-based systems, covering various aspects of
+               training ML models that are both accurate and reliable.           verification and validation of ML models. It emphasizes
+ 3)  Training Processes:                 ML training processes involve      the importance of testing for properties such as robustness,
+                  stochastic methods and iterative optimization, often    interpretability, and bias, which are crucial for ensuring the
+                      using frameworks like TensorFlow or PyTorch. The   reliability and safety of AI systems.
+     existing     ISO 26262   framework   does not             provide       In the context of automotive applications, these properties
+                          guidance on how to manage and document these   are particularly important due to the safety-critical nature of
+                    processes to ensure that the resulting models meet         automotive systems. Robustness ensures that the ML models
+                 safety standards. Emerging technologies such as Large           can handle unexpected inputs and operate reliably under
+     Language     Models    (LLMs)  and     Large           Multimodal   diverse conditions. Interpretability is vital for understanding
+
+VOLUME 12, 2024                                                                                                                   179603
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+the decision-making process of the ML models, which is                phases. Thus, the gaps pertaining to the definition of life cycle
+essential for debugging and validating the system’s behavior.         phases are intended to be closed by introducing three new
+The ISO/IEC 29119-11 standard also addresses the need                 life cycle phases inspired by [12] and compatible with those
+for systematic testing approaches that can be adapted to              defined in ISO/IEC 5338 [7].
+the specific requirements of ML models used in automotive
+systems. By integrating the principles and methods from               4) ISO/DPAS 8800
+ISO/IEC 29119-11 into the ISO 26262 framework, we can                 This is a Draft Publicly Available Specification (DPAS)
+enhance the testing and validation processes for ML-based             that provides principles and methods for the development
+automotive systems.                                                   of reliable AI systems. It emphasizes key aspects such
+                                                                      as  transparency,  explainability, and   robustness, offering
+2) ISO/IEC TR 5469                                                    guidelines that can be adapted to ensure the safety and
+ISO/IEC TR 5469 [3] provides a comprehensive framework                reliability of ML models in various applications, including
+for addressing functional safety in AI systems. It focuses            automotive systems.
+on the properties, risk factors, and methods associated with              Transparency and explainability are critical in the auto-
+AI systems, particularly in safety-critical functions. This           motive  context,   where understanding      the behavior  and
+standard explores three key areas: the use of AI to realize           decision-making process of ML models is essential for
+safety-related functions, the use of non-AI safety functions          validating their performance and ensuring safety. Robustness,
+to ensure the safety of AI-controlled equipment, and the              on the other hand, ensures that the ML models can maintain
+application of AI systems in the design and development of            their performance and reliability across a wide range of
+safety-related functions.                                             operating conditions and scenarios.
+              In the context of automotive applications, ISO/IEC TR      ISO  DPAS 8800     outlines a   systematic  approach   for
+5469 is particularly relevant as it provides methods for              developing AI systems that meet these critical properties.
+integrating AI into safety-critical systems while ensuring            This approach includes methodologies for data management,
+functional safety. The standard emphasizes managing risks,            model development, and testing, which can be tailored to the
+transparency, validation, and safety assurance, which are             specific requirements of automotive applications. By incor-
+crucial for AI-driven automotive systems where failures               porating these methodologies into the ISO 26262 framework,
+could have severe consequences. Integrating these principles          we can address the unique challenges posed by ML models
+into the ISO 26262 framework enhances the safety and                  in automotive systems, ensuring that they meet the stringent
+reliability of ML-based automotive systems by addressing              safety standards required for ASIL A/B conformance.
+gaps in risk assessment, validation, and testing, and ensuring                    Standards like ISO 26262 and ISO PAS 8800 address
+robust, transparent, and safe AI deployment in automotive             functional safety in AI systems but lack focus on validating
+environments.                                                         ML models in real-world conditions. ASAM OpenSCE-
+                                                                      NARIO [13], while not AI-specific, offers a framework
+3) ISO/IEC 5338                                                       for simulating driving   scenarios   to  test ML models    in
+ISO/IEC 5338 [7] defines a comprehensive set of life cycle            autonomous vehicles. Scenario-based testing complements
+processes for AI systems, building upon existing standards            the proposed ML life cycle phases by enabling real-time
+like ISO/IEC/IEEE 15288 [8] and ISO/IEC/IEEE 12207 [9],               validation of model robustness and uncertainty in safety-
+while adding AI-specific processes derived from ISO/IEC               critical environments.
+22989 [10] and ISO/IEC 23053 [11]. This standard provides                        ISO 15288 [8] forms the basis for many key systems
+guidelines for managing AI systems throughout their life              engineering processes,   offering  a    comprehensive  frame-
+cycle, addressing key aspects such as system definition,              work   for managing   the life   cycle   of  systems.  Recent
+control, execution, and improvement.                                  developments, such as [14], emphasize the potential of
+               In the context of automotive safety, ISO/IEC 5338 is   leveraging model-based approaches to formalize processes
+particularly relevant as it offers a structured approach for          and standards. This concept of modeling can serve as an
+integrating AI-specific life cycle processes into safety-critical     extension of our work, where life cycle phases for ML
+systems. These processes align with the gaps identified in            systems can be formalized and integrated into established
+ISO 26262, such as model training, data handling, and                 systems engineering frameworks like ISO 26262. Such an
+deployment. By incorporating the systematic management                approach would provide enhanced traceability, rigor, and
+of AI systems into safety frameworks like ISO 26262,                  consistency, thereby ensuring the effective application of ML
+we can    better address     challenges related to      robustness,   in safety-critical automotive systems.
+transparency, and traceability of ML models in automotive
+applications. Leveraging the principles and methods from              5) IEC 61508
+ISO/IEC 5338 will enhance the development, testing, and               Known as the ‘‘mother’’ of functional safety standards, IEC
+validation of AI-based systems, supporting our proposal               61508 provides a comprehensive framework for ensuring the
+for extending ISO 26262 to include ML-specific life cycle             functional safety of electrical, electronic, and programmable
+
+179604                                                                                                              VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+electronic systems. It is a crucial standard that serves as               development, they do not address the unique safety-critical
+the  basis for     numerous  sector-specific functional      safety    requirements of automotive applications, particularly in terms
+standards, such as those used in the automotive, process, and         of life cycle phases, testing, and deployment.
+machinery industries. The standard is structured into seven                First, these standards do not adequately cover ML-specific
+parts, each addressing different aspects of functional safety.            software requirements, including key safety properties such
+Part 1 to Part 3 cover the general requirements, requirements         as  robustness,  uncertainty handling,    and interpretability.
+for electrical/electronic/programmable electronic (E/E/PE)            Additionally, there is insufficient guidance on dataset valida-
+systems, and software requirements, respectively. Parts 4 to              tion and inadequate coverage of the stochastic nature of ML
+7 provide  supporting information,      including      definitions,         training processes. Furthermore, the transformation of ML
+the  use of   safety  integrity levels  (SILs),   guidelines     on          models from high-level programming languages like Python
+the application of IEC 61508 for specific industries, and                  to embedded C/C++ code or specific hardware configurations
+examples of methods and techniques.                                      remains under-addressed. In terms of validation and testing,
+              Part 3, Annex C of IEC 61508 is particularly relevant          although standards like ISO/IEC 29119-11 provide testing
+for the work discussed in this paper as it offers a detailed              methodologies for AI systems, they fall short of addressing
+methodology     for  evaluating  the effectiveness of        safety     the unique challenges of testing ML models in safety-critical
+measures. This annex outlines the safety life cycle, detailing              automotive contexts. Lastly, while standards like ISO/IEC
+the  activities  and  tasks  necessary  to achieve       functional         5338 provide general life cycle processes for AI systems,
+safety. It provides a systematic approach to assessing safety            they do not fully account for the specific life cycle phases
+functions, assigning safety integrity levels, and ensuring that               required for ML development in automotive applications.
+all safety-related systems and components meet the required                    Thus, an analysis of these ML-related, non-automotive-
+safety standards. The safety life cycle includes phases such          specific standards  offers   key insights into   the    broader
+as concept, overall scope definition, hazard and risk analysis,               challenges of ML integration. Leveraging these insights
+overall safety requirements, safety-related system design and                enables the development of a more comprehensive approach
+development, and operation and maintenance.                                to incorporating ML-specific life cycle phases and testing
+                   The evaluation framework provided in Annex C can   methods into ISO 26262.
+be adapted and tailored to assess ML-specific methods
+within the ISO 26262 framework. This involves a systematic            D. RELATED WORK
+approach to defining and validating ML-specific life cycle                   This section discusses related work in industry projects
+phases and testing methods. By assigning rigor levels (R1             and  literature  pertaining  specifically to  integrating    ML
+and R2) to different methods, the framework ensures that the                technologies into the ISO 26262 framework. We carried out
+methods are evaluated for their effectiveness in supporting                    a Systematic Literature Review (SLR) focusing on works
+the achievement of desired safety properties. Rigor level 1            that cover the critical aspects of ML integration. Please note
+(R1) indicates a lower level of rigor, suitable for less critical        that these are the main aspects pertain to the main topic of
+functions, while rigor level 2 (R2) indicates a higher level                our paper, namely, a systematic approach to enhancing ISO
+of rigor, suitable for more critical functions. This rigorous         26262 with ML-specific life cycle phases and testing methods.
+evaluation process helps in establishing clear and reliable           The SLR followed the steps outlined below:
+recommendations, reducing the room for interpretation and                1)  Search Strategy:         A comprehensive search strategy
+ensuring that ML-based systems meet the stringent safety                       was defined to retrieve relevant studies from academic
+requirements necessary for ASIL A/B conformance.                             databases and   industry  reports. The  search     terms
+                Thus, by leveraging the methodology outlined in IEC             included combinations of keywords, such as: (a) ‘‘ISO
+61508, particularly Part 3, Annex C, we can develop a                               26262’’ AND ‘‘ML safety’’, (b) ‘‘AI/ML automotive
+more robust and comprehensive approach to integrating                         standards’’ AND ‘‘functional safety’’ and (c) ‘‘machine
+ML-specific life cycle phases and testing methods into ISO                       learning life cycle’’ AND ‘‘automotive safety’’. The
+26262. This integration enhances the applicability of ISO                         databases searched include IEEE Xplore, ACM Digital
+26262 to modern automotive systems, ensuring that ML-                        Library and  Google    Scholar, as    well as   relevant
+based safety-critical systems are developed and assessed with                industry white papers.
+the highest levels of rigor and effectiveness.                           2)  Inclusion and   Exclusion   Criteria:  The    literature
+                                                                                  review focused on studies that specifically address
+6) SUMMARY OF GAPS IDENTIFIED                                                the application of    ML technologies     within   auto-
+In addition to the gaps in ISO 26262 pertaining to ML                            motive safety-critical systems. Research that delved
+development summarized in section II-B, a thorough analysis                           into standards such as ISO 26262, PAS 8800, and
+of related standards such as ISO/IEC 29119-11, ISO/IEC TR                       SOTIF, particularly in the context of integrating ML,
+5469, ISO/IEC 5338, and ISO DPAS 8800 provides valuable                        was prioritized. Additionally, papers proposing exten-
+insights into ML development but reveals several critical                       sions or adaptations to these functional safety stan-
+gaps concerning the integration of ML into automotive safety                         dards to accommodate AI/ML-specific requirements
+systems. While these standards offer guidance on general ML                     were included. Studies that discussed general-purpose
+
+VOLUME 12, 2024                                                                                                                179605
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+              AI/ML without a clear focus on the automotive domain   Over 36 months, this project involved various stakeholders,
+                were excluded from the review. Furthermore, papers   including OEMs, technology providers, research institutes,
+               that lacked empirical validation or did not address   universities, and external partners, with a substantial budget
+             safety-related aspects in their discussions were also   of 41 million euros. However, the project highlighted the need
+             omitted to ensure relevance to the scope of enhancing   for more comprehensive safety processes tailored specifically
+          automotive safety standards.                               for AI technologies, which remain a gap in current practices.
+ 3)       Study Selection and Screening:          After conducting   The Literature Repository KI Absicherung1 provides a com-
+              the initial search and the application of the inclu-   prehensive collection of research and publications related to
+          sion/exclusion criteria, 19 studies were shortlisted for   the KI Absicherung project. This repository includes valuable
+             further analysis. The selected studies were primarily   insights and methodologies that have been developed and
+            from the past 5 years, ensuring the review was focused   can be referenced to understand the current state of AI
+          on recent developments.                                    safety research in automotive applications. By leveraging the
+ 4)       Data Extraction and Synthesis:          The data extrac-   findings and recommendations from these sources, we can
+              tion process involved capturing key details from the   better inform the development of extended life cycle phases
+             selected studies, such as, (a) Identified gaps in the   and robust testing methods for ML models.
+                   existing safety frameworks for ML in automotive    Leading automotive companies such as Bosch have been
+           systems, (b) Proposed solutions or extensions to safety   working on the AI safety landscape, developing methodolo-
+              standards and (c) any specific methodologies or life   gies to ensure the safety and reliability of AI in automated
+             cycle phases tailored to ML integration in functional   driving systems.2                    Bosch’s efforts focus on creating safety
+            safety. The extracted information was then synthesized   frameworks for autonomous driving, but specific aspects of
+              to identify common themes and gaps in the literature   ML model deployment and training processes in automotive
+          related to software requirements, data aspects, training   contexts are not comprehensively addressed, leaving room for
+          processes, and model deployment.                           further development as proposed in this paper.
+ 5)             Gap Identification: The systematic review revealed    Waymo’s detailed Safety Framework for its autonomous
+             four key gaps, which are central to the contributions   vehicles emphasizes a     multilayered approach     to                safety,
+               of this paper. Those gaps are in line with the gaps   including the hardware layer, ADS behavioral layer, and
+            identified during the review of ISO 26262, for details   operations layer, each with specific safety verification and
+          see section II-B.                                          validation methods. Waymo’s transparency in publishing its
+        The SLR results were grouped into two categories: industry   safety methodologies and performance data aims to foster
+        projects, discussed in section II-D1, addressing AI and ML   trust and accountability in autonomous driving technology.
+         safety in automotive applications, and research papers in   However, like other initiatives, it does not fully cover the
+       section II-D2, which explore the integration of ML into the   integration of ML-specific life cycle phases and rigorous
+ISO 26262 framework.                                                 testing methods proposed in this paper.3
+                                                                      CARIAD has been actively working on enabling the
+1) INDUSTRY PROJECTS/INITIATIVES                                     development of safety-critical AI functions through various
+            Recent advancements in ensuring the safety of AI-based   initiatives such as safety first for automated driving4                   and
+           function modules for highly automated driving have been   contribution to development of standards for safety for
+       significant. Notable projects and standards have emerged to   automated driving systems such as [16]. Their involvement
+           address the unique challenges posed by AI in automotive   in AI safety research and the development of tools and
+   safety, specifically in the context of pedestrian detection and   processes underscores the growing industry focus on safe AI
+     other critical functions. The integration of AI in automotive   deployment in automotive systems.
+      systems, particularly for highly automated driving, presents    Last,   but not    the least,     a  study on  the               application
+      significant safety challenges. Various initiatives have been   of AI  in functional    safety,5     conducted  by  a panel                of
+      undertaken to address these challenges, focusing on develop-   working groups across various industry sectors, identifies
+          ing robust safety frameworks and methodologies. However,   significant gaps in the current approach to AI safety in
+          notable gaps remain, which this paper aims to address by   critical systems. The study highlights that traditional system
+         proposing a comprehensive approach tailored to the unique   development practices, which are deterministic in nature, are
+needs of ML-based systems in the automotive industry.                insufficient for AI-driven systems, which inherently involve
+            The KI Absicherung project [15] focussed on addressing    1      https://www.ki-absicherung-projekt.de/en/news/news-detail/literature-
+     the insufficiencies of existing safety processes for AI-based
+   systems, specifically targeting the verification and validation   repository-published
+         of AI modules, such as pedestrian detection, in automated    2 https://www.bosch.com/stories/artificial-intelligence-in-cars/
+                                                                      3         https://www.telematicswire.net/waymo-sharing-safety-framework-for-
+     driving to ensure their safe integration into vehicles, which   fully-autonomous-operations/
+           cannot be addressed using established safety processes.    4 https://group.mercedes-benz.com/documents/innovation/other/
+         The project aimed to develop a joint safety argumentation   safety-first-for-automated-driving.pdf
+             methodology and foster industry consensus on safe AI.    5https://electrical.theiet.org/media/ifbjt25i/the-application-of-artificial-
+                                                                     intelligence-in-functional-safety.pdf
+
+179606                                                                                                                             VOLUME 12, 2024
+
+    P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+non-deterministic components. Further, it identifies that the ISO 26262. The authors identify critical gaps in the standard
+existing safety standards, such as IEC 61508 do not fully regarding ML applications and suggest three key adaptations
+address unique AI challenges like bias and explainability, to bridge these gaps. However, the study primarily initiates
+requiring the development of alternative safety arguments the discussion and highlights the necessity for more com-
+tailored to AI. Moreover, AI systems require additional prehensive solutions. The work introduced by [18] presents
+activities during design, implementation, and testing stages, a comprehensive assessment of ISO 26262 in the context
+particularly regarding specialized verification and validation of supervised ML and proposes modifications to better
+techniques that extend beyond traditional methodologies. align the standard with the needs of ML-driven automotive
+Further, it identifies that ethical considerations, such as systems. They highlight significant gaps in ISO 26262, partic-
+governance, trust, and fairness, emerge as crucial in the AI ularly regarding the handling of non-deterministic behaviors
+development process, and necessitate new frameworks to inherent in ML models used for advanced driver assistance
+ensure responsible use. Understanding the behavior of AI systems (ADAS) and automated driving systems (ADS).
+systems, particularly in their interaction with human opera- By systematically analyzing Part 6 of ISO 26262, the authors
+tors, is also identified as critical for ensuring safe operation. suggest new process requirements specifically designed to
+Finally, the study underscores the lack of consensus on address these gaps. Their work underscores the critical need
+managing the AI life cycle in safety-related applications, for an extended safety framework that accommodates ML-
+stressing the need for evolving standards and practices as AI’s specific challenges, such as robustness, data management,
+role in critical systems continues to grow. and model verification, which directly align with the gaps
+  Thus, an analysis of industry projects and initiatives identified in our research on software requirements and ML
+reveals several key gaps in addressing the integration of life cycle phases. This paper strengthens the case for adapting
+ML into automotive safety frameworks. The identified gaps safety standards to ensure the safe deployment of ML in
+focus on main areas such as inadequate consideration of automotive systems.
+ML-specific software requirements, insufficient guidance on In [19], the authors address key issues in ML safety such
+data management for ML models, limited coverage of the as interpretability, robustness, and verification of ML models
+stochastic nature of ML training processes, and a lack of in autonomous vehicles. The paper discusses gaps in ISO
+clear strategies for deploying ML models safely in embedded 26262 and provides algorithmic techniques to improve ML
+automotive systems. While projects like KI Absicherung and safety. It emphasizes the challenge of interpretability and
+efforts by leading automotive companies have made progress, transparency in ML models, which is crucial for safety-
+they do not fully address these challenges. Moreover, critical systems, directly linking to the gap in software
+despite several other initiatives contributing to AI safety, requirements. While the authors successfully address key
+significant gaps remain in adapting ML life cycle phases, gaps such as interpretability, robustness, and error detection
+testing methods, and deployment strategies within the ISO in ML models, they fall short in fully addressing the
+26262 framework. gap related to the life cycle management of AI systems
+        in compliance with ISO 26262. Additionally, the authors
+2) LITERATURE REVIEW in [20] survey techniques to build confidence in ML systems,
+Apart from industry projects, the literature review focusing highlighting the lack of a cohesive framework for integrating
+on recent research works on enhancing ISO 26262 with these methods into the ISO 26262 life cycle. Their findings on
+ML-specific life cycle phases and testing methods remains challenges like robustness, uncertainty, and interpretability
+limited. The following discussion highlights key contribu- align with the gaps identified in our research, particularly in
+tions in this area and summarizes the identified gaps. software requirements, data aspects, and training processes.
+  The work presented in [12] discusses a novel concept The absence of standardized guidelines for managing these
+for the systematic development of Deep Neural Networks ML-specific issues supports our call for extended life cycle
+(DNN) in automotive applications, addressing the gap in phases and a more comprehensive framework within ISO
+current standards like ISO 26262 and SOTIF, which do 26262. This survey further underscores the need to address
+not fully accommodate DNN-specific characteristics. Their these gaps to ensure the safe deployment of ML in automotive
+work focuses on developing systematic V-models for data systems.
+management, the training process, and DNN integration into The work discussed in [21] explores the potential of
+embedded hardware. These insights directly inspired our incorporating ML technologies in enhancing compliance
+approach to extending ISO 26262 with ML-specific life with the ISO 26262 safety standard in automotive systems.
+cycle phases, particularly in addressing challenges around One of the primary gaps identified in the paper is the lack
+robustness, traceability, and training data uncertainties. This of established norms and guidelines for applying ML and
+paper supports the need for new life cycle phases and AI within the framework of ISO 26262. This echoes broader
+standards, reinforcing our argument for an enhanced safety gaps in the application of AI to functional safety, where
+framework for ML-based systems in automotive safety- traditional methodologies for safety assurance struggle to
+critical applications. Similarly, [17] investigates the integra- account for the non-deterministic and probabilistic nature
+tion of ML into automotive safety standards, particularly of AI systems. The paper also points to the stochastic
+
+VOLUME 12, 2024 179607
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+nature of ML algorithms, aligning with challenges identified            assess the risks posed by AI systems in safety-critical appli-
+in other research on interpretability and transparency in                   cations. This method addresses gaps in existing standards,
+AI models. However, the paper falls short of providing                         which often fail to account for AI system complexities.
+practical methodologies for resolving these gaps. In [22], the               By highlighting the need for more precise differentiation
+authors propose a new approach to quantify ML failures in                   of AI risks, the paper supports our argument for extending
+autonomous vehicles, treating them not only as systematic                        ISO 26262 with AI-specific life cycle phases and risk
+but also as random faults. The paper highlights challenges                    assessments tailored to the unique challenges AI systems
+like training data uncertainties and the ‘‘black box’’ nature            present. Similarly, [28] proposes methodologies to ensure the
+of ML models, aligning with the gaps identified in our                      trustworthiness of high-risk AI systems in compliance with
+research on software requirements and data aspects. Their                   the European Union’s AI Act. It introduces the Operational
+focus on real-time failure rate assessment supports our                            Design Domain (ODD) and Behavior Competencies (BC),
+call for enhanced life cycle phases and robustness metrics                       borrowed from the automated driving domain, to assess
+within ISO 26262, further validating the need for updated                     risks across the AI life cycle. The paper emphasizes the
+safety frameworks for ML-based systems in autonomous                       role of standards and ethical considerations in shaping the
+vehicles.  Additionally, [19] discusses     gaps in  the      ISO          certification of AI systems, aiming to foster human-centric
+26262 framework regarding the testing and validation of ML                  and trustworthy AI. The methodology addresses gaps related
+training processes, particularly in dealing with the stochastic     to robustness, uncertainty  handling, and         interpretability
+nature of ML training, which introduces challenges not                        but does not fully address life cycle phases specific to
+adequately covered by current standards.                                       ML. Last, but not least, in [29], the authors conduct a
+          In [23], the authors address the unique safety concerns           comprehensive SLR of 329 key references, highlighting five
+posed by DNNs in automated driving systems, emphasizing                     main approaches for ensuring AI safety: black-box testing,
+the alignment of these concerns with standards like ISO                      safety envelopes, fail-safe AI, white-box explainable AI,
+21448 (SOTIF) and ISO PAS 8800. Their work highlights                        and life cycle-based safety assurance. They emphasize the
+the importance of adapting safety frameworks to manage                      importance of integrating safety considerations throughout
+DNN-specific issues such as uncertainty, robustness, and                      the life cycle of AI systems and propose future research
+explainability, aligning with gaps in our research related                    areas such as dataset safety analysis and hyperparameter
+to software requirements and model deployment. However,                  justification. This review aligns with our identified gaps in
+their approach primarily focuses on perception components,               software requirements and verification processes, reinforcing
+lacking a full life cycle framework for ML systems. The work                     the need for more structured approaches for AI safety
+presented in [24] proposes adapting ISO 26262 to address            assurance across industries.
+ML-specific challenges, focusing on dataset requirements               The literature review highlights several key gaps            in
+and hazard    analysis for   autonomous     driving.     However,                 enhancing ISO 26262 for ML-based automotive systems.
+they do not fully address key gaps such as robustness,                      Current standards lack specific life cycle phases tailored
+explainability, and   the safe deployment   of   trained       ML      to ML, particularly in areas like robustness, traceability, and
+models. While the paper offers initial insights, further work               systematic development [12], [17], [18]. Certification and
+is needed to systematically integrate ML-specific life cycle               validation guidelines remain underdeveloped, especially for
+phases and testing methods.                                               handling the stochastic nature of ML algorithms and ensuring
+            Another recent work in [25] deals with a survey on AI   explainability [21], [27].  Critical ML safety          properties
+for safety-critical systems in industrial and transportation             such as robustness, uncertainty, and interpretability are not
+domains. The paper identifies, among others, the need for           sufficiently addressed [19], [20], [30]. Further, there is limited
+standardization and certification of ML systems in alignment                  guidance on managing ML training processes, particularly
+with ISO 26262 and the importance of integrating AI-specific                    when using frameworks like TensorFlow or PyTorch [19],
+methods into existing standards such as ISO 26262. [26]                 [22]. The standard also lacks structured processes for dataset
+highlights the advancements in AI applications for auto-                      validation and data management, which are crucial for ML
+motive sectors like predictive maintenance, vehicle security,                  model development [25]. Additionally, there is a gap in
+and Vehicle-to-Vehicle (V2V) communication, but it doesn’t                     deploying ML models, especially when transitioning from
+address some key areas. Notably, gaps related to ISO 26262,                   high-level languages like Python to embedded C/C++ envi-
+such as specific software requirements for AI/ML safety, the              ronments while maintaining safety properties [23]. Moreover,
+handling of training processes for robustness and uncertainty,           several works highlight the necessity of risk assessments and
+and challenges in deploying AI models in embedded systems,              tailored life cycle phases for ML-specific systems [28], [29].
+remain unexplored.                                                          The AI Safety Integrity Levels (AI-SILs) framework is also
+In [27], the authors introduce AI Safety Integrity Levels                  proposed as an extension to address AI risks [27]. Last but
+(AI-SILs), an extension of traditional SIL frameworks like                     not least, the comprehensive assessment of ISO 26262 in
+ISO 26262. Their approach incorporates task complexity,                       the context of supervised ML carried out in [18] and SLR
+using input entropy and output non-determinism, to better                   in [29] provides a strong foundation and supports the need
+
+179608                                                                                                                 VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+
+
+
+
+
+
+
+
+    FIGURE 2.     Example of a ML Unit [31].
+
+for enhancing ISO 26262 to address ML-specific challenges,           5) ML-IN-THE-LOOP
+which is the focus of our work. Thus, these gaps underscore          Similar to the HW-in-the-Loop testing concept from ISO/IEC
+the need for a comprehensive integration of ML-specific              TR 5469 [3], the ML-in-the-loop testing concept enables test-
+life cycle phases, safety properties, testing methods and a          ing of a deployed ML model in a real-operating environment.
+rigorous evaluation framework to assess the effectiveness of         The ML model as well as the direct pre- and post-processing
+these methods, into ISO 26262. Details regarding the specific        steps should be implemented on the target hardware to enable
+properties of each life cycle phase are available in Section IV.     testing in an operation-like environment.
+
+E. DEFINITIONS                                                       6) ML UNIT
+In this section, we define key terms essential to our study’s        A ML Unit is the smallest entity of code that encapsulates
+contributions and to addressing specific gaps in current             the essential components required to generate predictions.
+standards. While we assume readers possess a foundational            It includes only the minimal code necessary to process
+understanding     of AI and ML-including     familiarity      with   input data and produce output predictions, excluding the
+common terms, we provide explanations for specialized                code used to load the model or data. For the example of
+concepts    such   as ML unit and ML-in-the-Loop.            These   (feed-forward) neural networks, the ML Unit is composed
+terms are pivotal to our work, particularly in the context           of various layers, interconnections between them, which all
+of automotive systems and ML model deployment and                    together build up the desired functionality. This definition is
+testing.                                                             designed to be flexible, allowing the ML Unit to encompass
+                                                                     future ML architectures and hardware developments. Please
+1) MACHINE LEARNING (ML) MODEL                                       note that in the context of ASPICE 4.0 [32] an ML Unit
+A mathematical construct that generates an inference based           can be compared with ML Element and ML Architecture,
+on input data or information and comprises functionality that        which similarly encapsulates the essential components of
+is created by machine learning (cf. section 3.1.32 in [2]).          an AI-based function, but it is not limited by specific
+                                                                     programming paradigms or hardware requirements. Figure 2
+2) ML DATA MODEL                                                     shows a typical neural network architecture of an image
+A ML Data Model consists of data subsets used for different          classification task. For products in the automotive industry,
+purposes in the context of ML like training, validation and          typical image classification tasks are traffic sign or traffic
+test datasets (cf. section III-B1 / 3.2.2 / 3.2.8 in [2]).           light classification. For the example architecture in Fig. 2,
+                                                                     all elements in the figure would be considered part of the
+3) TRAINED ML MODEL                                                  ML Unit. The final work product of ML development is an
+A ML model with a set of model parameters as a result of             embedded ML function, which runs on the target hardware.
+model training (cf. section 3.1.40 in [2]).                          The embedded ML function, and therefore the ML Unit,
+                                                                     consists of:
+4) DEPLOYED ML MODEL                                                  •  Diverse layers, which are given as e.g. C/C++ code,
+A ML model that has been optimized after the training                 •  Weights, which are e.g. concrete integer 8-Bit values.
+process and deployed into a format compatible with the target        For the example of neural networks, (SW) layers of an ML
+platform, like embedded hardware. This corresponds to the            function might be interpreted as SW units regarding ISO
+interpretation of the deployed ML model given by ISO 8800            26262-6. Because of the limited scope of ISO 26262 and gaps
+[2] and ASPICE 4.0 [32], although an explicit definition is          related to ML technology, a new test level for an ML Unit
+not mentioned there.                                                 shall be introduced and defined. The definition includes not
+
+VOLUME 12, 2024                                                              179609
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+
+
+
+
+
+
+
+
+FIGURE 3. Steps involved in the development of a systematic ML testing concept for ASIL A/B conformance.
+
+the single (SW) layer of an ML function, but the overall ML                   authors of this paper) with expertise in classic functional
+model with all parts that are directly related to the task of the               safety and AI standards integration and AI Auditing6,7,.8
+ML model (e.g. layers and weights). The definition of an ML                     The process aimed to systematically assess the proposal’s
+Unit will allow to:                                                           applicability in the context of safety-critical AI systems,
+ •  Address ML specific aspects that are not covered by     ensuring alignment with relevant industry standards.
+    ISO 26262,                                                     •  Expert Selection     and     Preparation: Experts              were
+ •  Perform requirements-based and interface tests,                                    selected based on their extensive experience in AI
+ •  Introduce new testing methods to prove ML specific                             auditing, functional safety, and standards such as ISO
+    safety  properties     (e.g. robustness, uncertainty  and                          29119 and ISO PAS 8800. Their collective expertise
+    interpretability).                                                            provided a solid foundation for evaluating the proposal
+                                                                                     from multiple perspectives, ensuring a comprehensive
+III. SYSTEMATIC APPROACH                                              review.
+Fig. 3 illustrates our applied approach for the definition         •  Evaluation: An     initial     proposal of the study            was
+of the novel, systematic ML testing approach for ASIL                                 created by the authors of this paper, following the
+A/B conformance introduced in this paper. Since expert                                steps outlined in Fig. 3. This proposal was subject
+judgement was an important aspect in performing the steps             to evaluation                   by experts. The experts were tasked
+mentioned in Fig. 3, this section provides further insights into                   with evaluating the proposal’s alignment with existing
+the expert judgement performed. The approach is inspired by                          safety standards, particularly ISO 26262, as applied
+the 61508 (Part 3, Annex C), which makes use of the so-called                          to AI/ML applications. This focused on several key
+‘‘desired properties’’ and ‘‘rigor’’. This section of the paper                    areas, including robustness, uncertainty handling, and
+provides more details on how those terms have actually been           identifying gaps in current safety frameworks.
+used by the authors in developing the concept and can be split     •                    Questions Asked: Experts were asked to assess the
+into the following steps;                                                              proposal’s alignment with safety standards and the
+ •  Identifying missing, ML-specific life cycle phases                            adequacy of the testing methods and desired properties.
+ •  Defining desired (safety) properties for the outcomes of                      Key questions included (a) do the selected test methods
+    each life cycle phase                                                           comprehensively address the identified safety proper-
+ •  Designing test methods that support the achievement of                      ties?, (b) are the proposed life cycle phases and testing
+    the desired properties                                                               methods appropriate for ML safety assurance? and
+ •  Evaluating the test methods for the desired properties                           (c) how effectively does the proposal handle various
+ •  Determining the test methods’ rigor                               desired properties?
+ •  Assigning test methods to ASIL                                 •                    Structured Feedback and Collaborative Assessment:
+                                                                                    Using methodologies similar to those outlined by [33]
+    A. EXPERT JUDGMENT PROCESS                                                        and [34], the experts engaged in a structured, col-
+To ensure the scientific rigor and validity of our study,          6
+a structured expert judgment process was employed. This            7https://innotecsafety.com/
+                                                                   https://cariad.technology/
+multi-step evaluation involved professionals (including the        8https://www.trustifai.at/
+
+179610                                                                    VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+           laborative evaluation process. This process involved
+      discussions that highlighted inconsistencies across stan-
+      dards, identified gaps in current practices, and provided
+                recommendations for improvement based on empir-
+            ical insights. These insights were derived from the
+      experts’ practical experience and real-world applications
+             ensuring that the recommendations were grounded in
+        evidence from actual implementations in safety-critical
+    AI systems.
+•             Data Collection and Analysis: Expert feedback was
+    systematically  gathered, documented, and          analyzed
+          using various qualitative techniques. The method used   FIGURE 4. Interfaces to existing life cycle phases of ISO 26262-Part 6.
+          was the use of an Excel sheet to collect, categorize,
+            and track review comments from evaluation, enabling
+        systematic revisions and ensuring that all feedback was               for example, the specification of data requirements are not
+          addressed. This method ensured a comprehensive review   part of this document.
+          process, allowing for the iterative refinement of the               In addition to the requirements, a detailed design specifi-
+           proposal by addressing identified gaps. Feedback was            cation as defined by ISO 26262 is a relevant input to the life
+       assessed qualitatively across two rounds of discussions.                   cycle phases of this document. The deployed ML model as
+          The first round included four experts, and the second              output of the life cycle phase deploy ML Model is considered
+           included six. While no formal statistical tests were                  to be an AI Unit, which needs to be specified with other
+              conducted, the consistency of expert feedback was                SW Units in the detailed design specification. Information
+    noted, and qualitative agreement was achieved.                             such as specified interfaces to other SW Units needs to be
+•             Synthesis and Application of Feedback: The expert                 considered in the life cycle phase deploy ML model, which
+           feedback was synthesized into recommendations, which              makes the detailed design specification a mandatory input to
+             were incorporated into the proposal to improve its   this development step.
+            overall robustness and ensure better alignment with
+    relevant industry standards.                                  1) DATA HANDLING
+    By applying this method of expert judgment, we have derived                 There is an important separation between ML-specific data
+      conclusions that are documented in our approach. The main                handling and ML-agnostic data handling. This document only
+     benefit of our approach is the thorough development of the                 focuses on ML-specific data handling. The data life cycle
+   concept. The second benefit is that we systematically set up              phase that is part of this document requires quality-assured
+the expert group which supports the maturity of the results.                      data and metadata as input, which is not defined in the
+                                                                                 existing life cycle phases of ISO 26262. Aspects such as
+B. DEFINITION OF LIFE CYCLE PHASES                                           data acquisition, data storage, and data labeling/annotating
+   In comparison of the life cycle phases of ISO 26262 with the              are not considered specific to ML since these activities are
+     activities of ML product development, three major gaps can            also relevant for verification and validation purposes in non-
+be highlighted:                                                                ML products. These activities are crucial for ensuring the
+ •  Prepare data                                                                  quality of the data, and we assume that measures are in
+ •  Train ML model                                                        place to maintain this quality, although they are not described
+ •  Deploy ML model                                                             in detail in this paper. These quality assurance measures
+   In this paper, these life cycle phases are referred to as ML                   might be derived from performing a Process Failure Mode
+life cycle phases, as illustrated on the bottom side of Fig. 4.                  and Effects Analysis (P-FMEA) [35] on the aforementioned
+    As an extension to Fig. 4, Fig. 6 in Appendix A provides an                  aspects—acquisition, storage, and annotation/labeling—as
+   elaboration on how these life cycle phases are embedded into                   recommended by the Safety of the Intended Functionality
+ the traditional V-Model and aligned with the life cycle phases   (SOTIF) standard [5].
+of ISO 26262.                                                                     For example, the following steps might be undertaken to
+     To perform these life cycle phases, artifacts (e.g. inputs   ensure data quality:
+        and outputs of each life cycle phase) as defined by ISO    •                Reviewing the requirements for the target data acqui-
+   26262 need to be provided as input. It needs to be specified                      sition to ensure they are comprehensive and meet the
+       upfront, what the requirements are for the functionality      necessary standards.
+          of the ML model. These requirements need to cover the    •              Verifying that the hardware used for capturing the data
+     functionality of the ML model as well as the syntactic and      is configured correctly and operates reliably.
+      semantic requirements for the data, and should be derived    •              Performing tool classification and qualification of the
+       following the requirements engineering life cycle of ISO               labeling tools to ensure they are suitable for the task and
+26262. Necessary adaptations of this life cycle phase to cover,      produce consistent, high-quality results.
+
+VOLUME 12, 2024                                                                                                                    179611
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+             These measures are assumed to be in place to provide a   ML models, contributing to the development of more reliable
+solid foundation for the ML-specific processes described in           and safe automotive systems.
+this paper.
+                                                                      D. DEFINITION OF TEST METHODS
+2) TRAINING OF ML MODEL                                               There are several standards that provide robust test methods
+The training of an ML model is part of the second life                for developing and testing ML models, each contributing
+cycle phase of the approach outlined in this paper. For many          valuable insights and methodologies. For this paper, we con-
+applications, the outcome of the training process will not            sidered ISO 29119 (Part 11) and ISO PAS 8800. The selection
+be the product that is used during operations. Therefore,             of both the standards and the test methods was based on
+this paper provides a third life cycle phase that describes           expert judgment, acknowledging that many of these methods
+the deployment of the ML models after training. For those             are complementary, which enhances their effectiveness in
+applications, the quality of the ported or deployed version           ensuring safety.
+of the ML model is the most critical, since this version will         In the initial step, we thoroughly analyzed the test methods
+be used during operations. Due to this criticality, the testing       in these standards for their applicability to the ML life cycle
+activities on the deployed ML model should be prioritized             phases. This analysis resulted in a detailed mapping of test
+over the testing of the trained ML model. We assume                   methods to the specific phases of the ML life cycle. For each
+that a systematic development and testing approach for the            test method, we developed a concise definition and provided a
+trained ML model also supports the quality of the deployed            concrete and pragmatic description to ensure clarity and ease
+ML model and the identification of systematic issues, and             of implementation.
+therefore demands the application of test methods on the                 It is important to emphasize that while specification and
+trained ML model.                                                     design are crucial activities in the life cycle phases discussed
+                                                                      in this paper, our primary focus is on testing methods. These
+3) DEPLOYMENT OF ML MODEL                                             methods are essential for ensuring the robustness, reliability,
+The third life cycle phase (model deployment) consists of the         and safety of ML models. By leveraging the comprehensive
+test methods of the second life cycle phase (model training)          guidelines and methodologies from ISO 29119-11 and ISO
+and extends those with deployment-specific test methods               PAS 8800, we aim to establish a solid foundation for the
+(e.g., related to hardware restrictions that are not relevant         systematic testing of ML models, ultimately contributing to
+to the trained model). Since the deployed ML model is                 the advancement of safety-critical automotive systems.
+considered as a ML Unit, integration steps with other SW
+Units and SW Components are necessary before the deployed             E. EVALUATION OF TEST METHODS, RIGOR DERIVATION
+ML model can be used in operations. At this point, the                AND ASIL ASSIGNMENT
+interface to the existing life cycle phases of ISO 26262 comes        In this step, all test methods that have been mapped to the
+into play again. The interfaces to the existing life cycle phases     ML life cycle phases are evaluated with respect to their
+of ISO 26262, as described above, are also illustrated in Fig. 4      effectiveness in supporting the achievement of the desired
+and Fig. 6.                                                           properties. A single test method can support the achievement
+                                                                      of several desired properties; we assumed that there is a
+C. DEFINITION OF DESIRED PROPERTIES                                   main and potentially several minor desired properties that are
+For each life cycle phase, there is a significant outcome             supported by a test method.
+artifact that serves as the foundation for subsequent phases.
+For example, the trained ML model is a key input for                  1) RATIONALE BEHIND RIGOR ASSIGNMENT
+the deploy     ML model  life cycle phase. Each of            these   In the first step, the test methods have been mapped to the
+major     outcomes has clearly defined desired          properties.   desired properties they support in general, and then the major
+These desired properties represent the essential nonfunctional        desired property for the test method has been defined. The
+requirements that should be prioritized during development            degree to which a desired property is supported by the test
+and testing to ensure high-quality results. Examples of               method is defined with a rigor, similar to IEC 61508 (cf.
+these desired properties are completeness and consistency.            Fig. 5). For this paper, there was a separation between Rigor
+The desired properties outlined in this paper focus on the            Level 1 (R1) and Rigor Level 2 (R2). The rationale behind
+most critical aspects, carefully selected based on expert             the assignment of R1 and R2 for each test method and desired
+judgment. This targeted approach ensures that the most                property is based on the effectiveness and thoroughness of the
+relevant and impactful properties are emphasized, facilitating        test methods in addressing the specific desired properties.
+a thorough and effective evaluation process. By concentrating           R1 (Rigor Level 1): Indicates that the method is effective
+on key properties such as robustness, explainability, and             and suitable for safety-related aspects with lower criticality,
+uncertainty handling, this framework aims to improve the              such as those   classified under  ASIL A    in    functional
+current practices in ML model development and testing,                safety standards like ISO 26262. Methods assigned R1
+addressing gaps in existing standards. The purpose of this            provide adequate  assurance for   functions where     safety
+approach is to lay the groundwork for systematic testing of           measures are necessary but the required rigor is moderate.
+
+179612                                                                                                             VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+R2 (Rigor Level 2): Indicates that the method is highly              •          Mapping of Properties to Methods: Aligning desired
+effective and suitable for critical aspects where thoroughness          properties with  specific test methods  to    ensure     a
+is essential, such as those classified higher than ASIL A in            comprehensive evaluation.
+functional safety standards like ISO 26262. Methods assigned         •        Rigor Assignment: Assigning rigor levels (R1 and R2)
+R2 offer a higher level of confidence in achieving the desired           to test methods based on their effectiveness in achieving
+properties and are often more comprehensive and resource-               desired properties.
+intensive.                                                           •              ASIL Mapping: Recommendations for test methods
+          Please note that, on a fine granular level, test methods              based on ASIL A or B to guide their application in
+can be executed in several ways. Therefore, two test method             safety-critical contexts.
+variants have been defined for each test method. The test                 By following this structured approach, the framework not
+method variants vary in their effectiveness to support a                   only enhances the robustness and reliability of ML data
+desired property.                                                        models but also aligns with established safety standards,
+                                                                    facilitating their integration into automotive systems.
+                                                                            The purpose of the prepare data life cycle phase is to
+                                                                       enable the development of data-driven, safety-critical, and
+                                                                       quality-managed products by providing verified datasets for
+                                                                    ML model training, validation, and testing.
+
+                                                                    A. OBJECTIVES
+                                                                     •         Provide evidence that the implemented ML data model
+FIGURE 5.  Rigor assignment.                                                fulfills the allocated Operational Design Domain (ODD)
+                                                                              to enable the fulfillment of the system and software
+After      the     rigor R1     and R2 have  been  assigned     to      requirements.
+the  test  method    variants,    recommendations  for the  test     •      Verify that the defined safety measures resulting from
+method application have been derived, considering the ASIL.             safety-oriented analyses are properly implemented.
+In general, the paper differentiates between ASIL A and ASIL
+B. For ASIL A, all test methods that have an R1 assigned are        B. INPUTS
+highly recommended (HR), and the test methods with R2 are            •          Labeled data and metadata that achieved the safety
+recommended (R). For ASIL B, all test methods that have R2              goals/quality criteria.
+are HR, and the test methods with R1 are R.                          •  ODD definition, part of system requirements.
+                                                                     •  Functional/logical architecture of the system.
+IV. EVALUATION AND RESULTS FOR ML DATA MODEL                         •  Functional/logical architecture of the software.
+In this section, the systematic approach defined in section III
+is applied to the first ML product life cycle phase, namely         C. DESIRED PROPERTIES FOR THE LIFE CYCLE PHASE
+prepare data. Similar to ISO 26262, the objectives and inputs       PREPARE DATA
+of the respective life cycle phase are defined. This is followed     In the following, the safety desired properties for the first
+by a definition of the set of desired safety properties for             life cycle phase, namely prepare data, are discussed. Each
+the prepare data life cycle phase and the selection of test           property is introduced with a brief description and a simple
+methods for this phase. The mapping of desired properties               example. The examples, based on a Traffic Sign Recognition
+and test methods for the ML data model is subsequently                 (TSR) classifier use case, provide representative scenarios
+outlined. Following the rigor assignment, a mapping of the          demonstrating how these properties apply in practice.
+ASIL level (A or B) and test methods for this life cycle             •  Completeness:          The goal is to ensure that the data
+phase is described. Thus, the presented approach provides               comprehensively    covers all  relevant aspects    of  the
+a comprehensive framework for evaluating and ensuring                   problem    domain, including   temporal aspects.      This
+the safety of ML data models in automotive systems. This                    involves capturing all necessary elements, attributes,
+framework includes:                                                              and relationships to meet the system and software
+ •   Objectives: Clearly defined goals to ensure the data                    requirements (ODD). Completeness requires the dataset
+     model meets operational and safety requirements.                     to include all necessary elements and scenarios that the
+ •   Inputs: Necessary data and metadata, system require-                      ML model will encounter in real-world applications,
+     ments, and architectural specifications.                           ensuring it is thorough and accounts for all variations in
+ •   Desired Properties: Identification of key safety prop-               the ODD, including a wide range of features, variations,
+     erties such as completeness, consistency, correctness,                    and edge cases relevant to the intended application
+     representativeness, and independence.                              domain.
+ •   Test Methods:             Selection of appropriate methods to               Example: For a TSR classifier, completeness would
+     verify the data model.                                                      mean having a dataset that includes images of all
+
+VOLUME 12, 2024                                                                                                             179613
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+   possible traffic signs under various conditions such as               Example:               For a TSR classifier, independence would
+   different lighting, weather, and occlusions.                                     mean ensuring that the same samples aren’t contained
+•  Consistency: The objective is to maintain consistency                            in different datasets, which could lead to the model
+   within the data to avoid contradictory or conflicting                 overfitting to those specific examples.
+   information. Consistency in the data ensures uniformity
+   and coherence in the representation and interpreta-                D. TEST METHODS FOR THE LIFE CYCLE PHASE PREPARE
+   tion across different components. It maintains align-              DATA
+   ment with the system requirements (ODD) and the                             This section presents a list of test methods for the life
+   functional/logical architecture, facilitating accurate and                    cycle phase prepare data. Each test method includes two
+   reliable inference and decision-making. This means                 variants,  providing   flexibility and comprehensiveness        to
+   that data should be represented in a coherent and                  address different testing requirements effectively.
+   standardized format, avoiding discrepancies that might             •  Consistency Testing:             Ensures that the data used for
+   confuse the ML model.                                                       training, validation, and testing is consistent in format
+   Example:    For  a      TSR classifier, consistency       would       and content.
+   entail ensuring that all traffic sign images are captured              –      Random     Data   Consistency Testing:         Randomly
+   in similar resolutions and formats, with annotations                              selects data entries to check for consistency. This
+   Correctness: The aim here is to verify the correctness                                 to ensure they meet the predefined consistency
+•  following the same labeling conventions.                                             involves checking random samples of data entries
+   of data to minimize errors and inaccuracies during                              criteria, e.g. verify that they conform to predefined
+   model training and evaluation. The data should cor-                                      formats and standards. For example, in a TSR
+   respond to the phenomenon they intend to capture,                             classifier, this  would mean  randomly         checking
+   including features and metadata that help characterize                              images to ensure they have consistent resolutions
+   the phenomenon [2]. This involves checking for errors,                        and correct labeling.
+   mislabeling, and inaccuracies within the dataset.                      –      Systematic Data Consistency Testing:          Systemat-
+   Example:    For  a      TSR classifier, correctness       would               ically checks     all data entries for     consistency.
+   require that each image is correctly labeled with the right                            This method involves a thorough and systematic
+   traffic sign and that there are no mislabeled or incorrect                         review of the entire dataset to ensure all entries
+   Representativeness:               The goal here is to guarantee                     standards. In the TSR example, this would involve
+•  entries in the dataset.                                                                are consistent with each other and the defined
+   that   the data  accurately   represents     the     underlying                     systematically verifying that all images meet the
+   distribution of real-world data to avoid bias and ensure                           necessary format and labeling standards across the
+   generalization. This property is crucial for training                         entire dataset.
+   models that generalize well to unseen data. Repre-                 •         Distribution Analysis: Analyzes the distribution of data
+   sentativeness ensures that the data adequately reflects               to ensure it is representative of the target environment.
+   the characteristics, structures, and relationships inherent
+   in     the real-world domain     it  represents. It    involves        –             Key Features Data Distribution Analysis: Focuses
+   capturing a diverse and representative sample of data                          on key features to ensure their distribution is repre-
+   that accurately represents the variability and complex-                           sentative. This method analyzes the distribution of
+   ity of the operational environment, supporting robust                          key attributes in the dataset to ensure they match the
+   AI model training, validation, and testing.                                     expected distribution patterns. For a TSR classifier,
+   Example: For a TSR classifier, representativeness would                               this would mean ensuring that the dataset has a
+   involve having a dataset with traffic sign images from                        balanced distribution of traffic sign types (e.g., stop
+   various geographical locations, different road types, and                     signs, yield signs) under various conditions.
+   varied environmental conditions.                                       –            All Features Data Distribution Analysis: Analyzes
+•  Independence of datasets The objective here is that                                the distribution of all features to ensure overall
+   the datasets sufficiently avoid leakage of information                                representativeness. This comprehensive approach
+   amongst    themselves     with respect  to     data sources                      checks the distribution of all attributes to confirm
+   and the methods used to capture, gather, generate,                                  they are representative of the operational design
+   and process the data. By ensuring the independence                                     domain. In the TSR example, this would include
+   of data sets, one can avoid leakage of information                              verifying that images are representative of different
+   between the three datasets (training, validation, testing).                           times of day, weather conditions, and levels of
+   In other words, independence refers to the necessity                          occlusion
+   for data samples to be distinct and not overly redun-              •                Data Augmentation: Enhances the dataset by adding
+   dant. This property helps in avoiding overfitting and                 modified versions of existing data to increase diversity.
+   ensures that the model learns to generalize rather than                –      Random Data Augmentation: Randomly augments
+   memorize.                                                                         data entries to increase variability. This involves
+
+179614                                                                                                                   VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+       randomly modifying data samples to create new,                 –      Review with All Stakeholders: Involves all relevant
+       varied examples. For example, in a TSR classifier,                       stakeholders in the review process. This compre-
+       this could involve randomly applying transforma-                      hensive review process ensures all relevant parties
+       tions such as rotation, scaling, and color adjust-                     validate the data and methods. In the TSR example,
+       ments to traffic sign images.                                           this could involve a review by the entire project
+    –  Systematic    Data     Augmentation:    Systematically                    team, including developers, testers, and domain
+       augments data entries based on specific rules. This                experts.
+       method applies predefined rules to systematically
+       create new data samples from existing ones. In the                       E. MAPPING OF DESIRED PROPERTIES, METHODS FOR AI
+       TSR use case, this might involve systematically          DATA MODEL AND RIGOR ASSIGNMENT
+       generating    variations of     traffic sign images to           The desired properties for the AI data model outlined in
+       cover different scenarios like lighting changes and            section IV-C are mapped to specific test methods mentioned
+       weather conditions                                            in section IV-D to ensure they are effectively achieved and
+•  Representativeness Testing:        Ensures the data repre-          presented in Table 1. The methods are evaluated for their
+   sents the operational design domain accurately.                   ability to support each desired property, with rigor levels
+    –  Representativeness Testing Key Attributes: Focuses         assigned to indicate their effectiveness. Please note that the
+       on key attributes to ensure representativeness. This        general rationale behind rigor assignment (i.e., R1 or R2) is
+       method checks whether key attributes in the dataset        outlined in section III-E. In this section, we detail how each
+       accurately reflect the target environment. For a TSR     method supports the desired properties.
+       classifier, this would involve testing to ensure that              Table 1 and the descriptions above illustrate how each
+       the dataset includes a representative sample of all      method    supports key  desired   safety properties such      as
+       critical traffic sign types.                                  completeness, consistency, correctness, representativeness,
+    –  Representativeness Testing All Attributes: Tests all             and independence for the ML data model. The rigor levels
+       attributes to ensure comprehensive representative-               (R1 and R2) indicate the method’s effectiveness, with R2
+       ness. This involves evaluating all attributes in the     representing a higher level of rigor.
+       dataset to ensure they represent the operational                         F. MAPPING OF ASIL LEVEL AND TEST METHODS FOR ML
+       design domain. In the TSR example, this would            DATA MODEL
+       include verifying that the dataset accurately reflects      The assignment of ASIL levels to test methods is based on the
+       all relevant environmental conditions and scenarios          rigor and criticality of each method. The assignment of ASIL
+•  Independence Testing: Checks that data samples are           levels (A or B) follows this rationale, and the overall approach
+   independent and not duplicates or overly similar.                  is based on expert judgment. Experts assess the methods by
+                                                                    considering factors such as the criticality of the function,
+    –  Independence Test on Duplicates: Identifies and                 comprehensiveness, and confidence required to meet safety
+       removes     duplicate   data    entries. This   method             standards. For ASIL A, methods that provide sufficient
+       ensures no duplicate entries exist in the dataset,            assurance for non-critical functions are highly recommended
+       maintaining data integrity. For a TSR classifier, this   (HR)  if  they are moderately     rigorous (R1). For        more
+       would involve checking for and removing identical               critical aspects requiring higher confidence, the methods
+       traffic sign images.                                                 are recommended (R). Conversely, for ASIL B, methods
+    –  Independence Test with Similarities: Ensures data                    assigned with high rigor (R2) are highly recommended
+       entries are sufficiently different from each other.                 (HR), while those with moderate rigor (R1) are simply
+       This involves checking data samples to ensure they       recommended (R).
+       are independent and not overly similar, preserving                    Table 2 presents the mapping of ASIL to the various
+       the diversity of the dataset. In the TSR use case,               test methods used for the life cycle phase prepare data.
+       this would mean verifying that traffic sign images                This table details how each method and its variants are
+       are not overly similar, preventing redundancy in the           recommended for different ASIL levels, specifically ASIL A
+       dataset.                                                    and ASIL B. A variety of methods such as consistency testing,
+•  Review: Involves stakeholders in reviewing the data and          distribution analysis, data augmentation, representativeness
+   methods to ensure completeness and correctness.              testing,  independence  testing,  and review processes   are
+    –  Review with Some Stakeholders: Involves a subset                provided in the table. For each method, Table 2 indicates
+       of stakeholders in the review process. This method               whether it is highly recommended (HR) or recommended (R)
+       includes selected stakeholders in the review to                   for ASIL A and ASIL B, helping guide the application of
+       validate the data and methods. For a TSR classifier,     these methods based on the required safety integrity level.
+       this might include experts from the development                            V. EVALUATION AND RESULTS FOR TRAINED ML MODEL
+       team reviewing the dataset for accuracy and com-               In this section, the systematic approach described in sec-
+       pleteness.                                                 tion III is applied to the second ML product life cycle phase,
+
+VOLUME 12, 2024                                                                                                           179615
+
+    P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+    TABLE 1. Mapping of desired properties and methods for ML data model.
+
+
+
+
+
+
+
+
+
+
+    TABLE 2. Test methods for the life cycle phase prepare data with ASIL mapping.
+
+
+
+
+
+
+
+
+
+
+       namely train ML model. Similar to ISO 26262, the objectives    •  Rigor Assignment: Assigning rigor levels (R1 and R2)
+   and inputs of the respective life cycle phase are defined. This       to test methods based on their effectiveness in achieving
+is followed by a definition of a set of desired properties for the       desired properties.
+     train ML model life cycle phase, and then a selection of test    •  ASIL Mapping: Recommendations for test methods
+         methods for this phase. The mapping of desired properties       based on ASIL (A or B) to guide their application in
+         and test methods for the trained ML model is subsequently       safety-critical contexts.
+        outlined. Following the rigor assignment, a mapping of the    The purpose of the life cycle phase train ML model is to
+          ASIL level (A or B) and test methods for this life cycle   enable the development of data-driven, safety-critical, and
+         phase is described. Thus, the presented approach provides   quality-managed products by providing a use-case-specific
+         a comprehensive framework for evaluating and ensuring the   ML model that has learned the required functionality and is
+           safety of trained ML models in automotive systems. This   suitable to be deployed to the target platform.
+    framework includes:                                              A. OBJECTIVES
+    •      Objectives: Clearly defined goals to ensure the trained    •  Ensure the learning progress of the required function-
+       model meets operational and safety requirements.                  ality (specified in the software requirements) from data
+    •         Inputs: Necessary data and metadata, system require-       (ML data model).
+       ments, and architectural specifications.                       •  Verify that  the learned functionality/trained model
+    •     Desired Properties: Identification of key safety proper-       fulfills the allocated software requirements according to
+        ties such as functional correctness, accuracy, robustness,       the required ASIL.
+       explainability, and uncertainty handling.                      •  Ensure that the defined safety measures resulting from
+    •  Test Methods:           Selection of appropriate methods to       safety-oriented analyses are properly implemented.
+       verify the trained model.
+    •           Mapping of Properties to Methods: Aligning desired   B. INPUTS
+       properties with     specific test methods    to ensure    a    •  ML data model (in accordance with the prepare data life
+       comprehensive evaluation.                                         cycle phase).
+
+    179616                                                                                                    VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+ •  Software requirements (including ML specifics).                          understand the reasoning behind predictions and deci-
+ •  Software unit design specification.                                 sions. Explainability refers to the transparency of the NN
+                                                                           model’s decisions and predictions. It involves ensuring
+C. DESIRED PROPERTIES FOR THE LIFE CYCLE PHASE                               that the model’s internal workings are understandable
+TRAIN ML MODEL                                                         and interpretable, enabling to     assess its     behavior,
+The following discusses the safety desired properties for                   identify potential biases or errors, and make informed
+the identified second life cycle phase, namely train ML                decisions based on its outputs [2].
+model, are discussed. Each property is introduced with a               Example:         For a TSR classifier, explainability would
+description and a simple example. The examples, based on                  involve providing insights into why the model classified
+a TSR classifier use case, provide representative scenarios            a particular image as a stop sign, potentially highlighting
+demonstrating how these properties apply in practice.              •   the features or patterns that influenced the decision.
+                                                                                Uncertainty Handling: The aim here is to implement
+ •  Functional Correctness: The aim here is to ensure that                 safety mechanisms to handle uncertainty to mitigate the
+    the trained model (e.g. Neural Network (NN)) correctly                 impact of erroneous predictions, especially in critical
+    implements     the desired functionality   and      produces           applications. Uncertainty handling involves the model’s
+    accurate predictions. Functional correctness refers to                     ability to recognize and communicate the confidence
+    the ability of the trained NN model to accurately learn                or uncertainty associated with its predictions. This is
+    and perform the required functionality specified in                 important for understanding the reliability of the model’s
+    the software requirements. It ensures that the model               outputs.
+    behaves as intended and produces correct outputs for               Example:         For a TSR classifier, uncertainty handling
+    given inputs, meeting the functional expectations of the               would involve the model providing confidence scores for
+    system.                                                            each classification, indicating how certain it is about the
+    Example: For a TSR classifier, functional correctness              identification of each traffic sign.
+    would mean that the model accurately identifies and            •   Generalization:          The aim here is to ensure that the
+    classifies     traffic signs in various    images, correctly                model is able to generalize well to unseen data or
+    recognizing the sign type and any associated actions.                 scenarios beyond the training dataset, demonstrating its
+•   Accuracy: The objective here is to make sure that the                 ability to capture underlying patterns and make reliable
+    model produces accurate predictions or classifications                    predictions beyond the training dataset. It involves
+    on unseen data, meeting specified performance metrics.                      assessing the model’s capacity to learn meaningful
+    Accuracy in the context of the NN model pertains                      representations from the data and apply them effectively
+    to the model’s ability to produce correct and reliable                to new inputs, ensuring robust performance in real-world
+    predictions or classifications for input data. It involves         applications.
+    verifying that the learned functionality or trained model                 Example: For a TSR classifier, generalization can be
+    achieves a high level of accuracy in fulfilling the                        evaluated by testing the model on images of traffic
+    allocated software requirements, as well as meeting the              signs not included in the training dataset. This includes
+    required ASIL level.                                                        signs that differ in some semantic dimensions, but
+    Example:             For a TSR classifier, accuracy would be                within the same classes. The TSR classifier should
+    measured by the percentage of traffic signs correctly                    accurately recognize and classify these unseen signs,
+    classified out of the total number of signs in the test               demonstrating its ability to generalize learned patterns
+    dataset.                                                           to new inputs.
+•   Robustness: The goal here is to design the model to be
+    robust against variations in input data and perturbations,                   D. TEST METHODS FOR THE LIFE CYCLE PHASE TRAIN ML
+    enhancing its resilience in diverse environments. The         MODEL
+    robustness of the NN model refers to its ability to           This section  outlines  the test methods selected  for       the
+    maintain performance and reliability across diverse and              train ML model life cycle phase. Each method is carefully
+    challenging conditions, including variations in input                 chosen to ensure the model meets functional correctness,
+    data, environmental factors, and operational scenarios.         accuracy, robustness, explainability, and uncertainty handling
+    A robust model can generalize well to unseen data and                   requirements. The methods are categorized and detailed
+    handle uncertainties or perturbations without significant              to provide a comprehensive framework for evaluating the
+    degradation in performance.                                   trained model.
+    Example:     For   a   TSR   classifier,   robustness  would            The selection of these methods corresponds with guide-
+    involve testing the model’s ability to correctly recognize    lines provided in           ISO 29119, Chapters 7, 8, and 9 [6].
+    traffic signs under varying lighting conditions, partial      Specifically, Chapter 7  covers  Testing and   QA of          ML
+    occlusions, and different weather scenarios.                          systems, including adversarial examples, benchmarks, and
+•   Explainability:     The aim here is to develop models               hyperparameter optimization (Sections VIII and 7.9). Chap-
+    that are explainable and transparent, enabling one to                 ter 8 emphasizes black-box testing approaches, including
+
+VOLUME 12, 2024                                                                                                             179617
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+             combinatorial and metamorphic testing (Sections 8.1 and               representing different weather conditions or times
+       8.4), while Chapter 9 focuses on white-box testing for neural           of day.
+networks,      particularly     neuron    coverage (Section  9.2.2).    •  Robustness   Testing:  Ensures    that the        ML model
+         Additionally, Annex A.8 in [6] provides guidance on machine          performs reliably under various conditions. This method
+          learning performance metrics, which is highly relevant for       evaluates  the model’s performance     under     different
+assessing the overall performance of ML models.                                perturbations and edge cases to assess its robustness,
+ •  Requirements-Based Testing:                  Ensures that the ML            ensuring it can handle reasonably expected conditions
+    model adheres to the specified software requirements.                  and environments.
+          –    No variants: This involves verifying that the trained        –       Simple Input Perturbations: This method tests the
+                   model meets all the requirements specified in the               model’s robustness by introducing simple perturba-
+                    software design documents. For example, in a TSR              tions to the input data like noise or perturbations
+                 classifier, this would mean ensuring that the model                within the ODD. For example, in a TSR classifier,
+                  accurately detects and classifies traffic signs as           this could involve slightly altering the brightness or
+                  specified in the requirements (e.g. classification              contrast of traffic sign images to test the model’s
+             accuracy 99 percent, no false positives).                         robustness.
+ •              Initial Performance Evaluation: Assesses the perfor-        –         Complex Input Perturbations: This method intro-
+                    mance of the ML model to ensure it meets initial                 duces more complex perturbations to test robust-
+    performance criteria.                                                            ness. Test the model’s performance under extreme
+             Specific tasks could include:                                       conditions, including varied lighting, outliers, and
+             ∗         Evaluating the accuracy of the neural network              inputs that significantly deviate from the training
+                   model in correctly classifying input data samples              data distribution or include substantial changes in
+                into their respective categories or classes.                         input parameters. In the TSR example, this might
+             ∗       Measuring the proportion of correctly predicted               include adding noise or occluding parts of traffic
+                       outcomes compared to the total number of test                   sign images to see how the model handles these
+                samples.                                                       challenges.
+             ∗  Evaluating     the model’s    performance    against    •       Adversarial Testing: Evaluates the model’s robustness
+                ground     truth labels or    expected outputs   to        against adversarial attacks.
+                measure its precision and correctness.                      –  Without Physical Attacks: Tests the model’s robust-
+             ∗          Conducting quantitative analysis of accuracy             ness against digital adversarial inputs. This method
+                metrics     such as    classification accuracy, pre-              tests the model’s resistance to adversarial attacks
+                        cision, recall, and F1 score to assess model               that do not involve physical alterations. Generate
+                performance.                                                   adversarial examples    using   techniques  such as
+             ∗  Conducting     accuracy testing     using a    sepa-                gradient-based optimization or evolutionary algo-
+                rate validation     and test  dataset  or    through                rithms to find input perturbations that result in
+                   cross-validation techniques to assess the model’s              incorrect predictions (e.g., generate perturbations
+                        generalization ability and performance under                   from legitimate inputs to evaluate the model’s
+                unseen data.                                                         robustness). Assess the effectiveness of defense
+          –       Without Evaluations on Data Subsets: Evaluates the                 mechanisms or adversarial training techniques in
+                   model’s performance on the entire test dataset to                  mitigating the impact of adversarial attacks on
+                 ensure overall functionality. This involves measur-              model performance. For a TSR classifier, this could
+                   ing the accuracy and other metrics of the model’s             involve generating adversarial examples digitally to
+                    predictions to create a performance baseline for           test the model’s resilience.
+                    other tests like robustness testing. This method        –  With   Physical Attacks:    Assesses the    model’s
+                   evaluates the model’s overall performance without               resilience against physical world adversarial sce-
+                    breaking down the test dataset into subsets. For                   narios. In the TSR example, this might involve
+                  a TSR classifier, this would involve assessing the            placing stickers or marks on traffic signs to test if
+             model’s accuracy across the entire test dataset.                  the model can still correctly classify them.
+          –  With Evaluations on Data Subsets: Evaluates the     •         Neuron Coverage Analysis:            There are no variants
+                 model’s performance on specific subsets of the test              envisaged for this method. This method analyzes the
+                   dataset to identify performance variations across       coverage   of neurons  during   the  model’s    operation.
+                 different data segments. This approach allows for a            Assess and increase the coverage of activated neurons
+                    more detailed analysis of how the model performs            during inference to find model weaknesses. The cover-
+                    under various conditions and data distributions.            age target should be 100% with the constraint to only
+                     In the TSR use case, this might involve testing          use in-ODD data to increase the coverage. If a coverage
+                 the model separately on subsets of the test dataset                of 100% is not achievable with in-ODD data or not
+
+179618                                                                                                                VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+                                                               desired in a specific use case, a justification needs to                  For a TSR classifier, this might involve checking the
+                                                                  be provided. For a TSR classifier, this would involve              confidence levels for standard traffic sign images
+                                                                     examining which neurons are activated by different        –                 Complex Input Data: This method evaluates the
+                                                               traffic sign images to ensure the model uses its network                       model’s confidence with more complex input data.
+    comprehensively.                                                                                                                             Analyze the model’s confidence estimates with
+                                                                  In the author’s point of view, dropout and pruning do                      complex and noisy input data to ensure robustness
+                                                                not conflict with neuron coverage analysis. Dropout and                  in varied conditions to assess the model’s ability to
+                                                                pruning aim to optimize the network architecture, while                       maintain accurate confidence levels when dealing
+                                                            neuron coverage is a test method to check if the test cases                        with inputs that deviate from the training data
+    are sufficient.                                                                                                                  distribution. In   the TSR    use     case, this    could
+ •  Explainability                                                           Testing:  Ensures  that the      decisions                    involve assessing confidence levels for images with
+    made                                                            by  the  ML model  can   be    understood       and                    multiple traffic signs or challenging environmental
+    interpreted.                                                                                                                     conditions
+    –                                                                Simple Techniques: Uses basic explainability meth-    It   is  important   to  note   that,   in  our approach,     it is
+                                                                  ods to interpret model decisions. Evaluate the inter-    assumed   that all   test  methods      applied to   the    trained
+                                                                   pretability and explainability of the neural network              model are also applied to the deployed model, in addition
+                                                                 model’s   predictions to facilitate      understanding                 to the specific test methods designed for the deployed
+                                                                      and trust in its decision-making process. Conduct            model itself. This ensures comprehensive validation through
+                                                                        thorough manual review or automated analysis of               back-to-back testing, confirming that the deployed model
+                                                                      the data model, datasets, and associated metadata          retains the functional properties and safety integrity estab-
+                                                                   to understand the data and identify potential issues    lished  during the    earlier   phase.   As     such,  the   exist-
+                                                                  or deficiencies. Use interpretability techniques such    ing  framework  provides     sufficient     validation,  and   fur-
+                                                                 as feature  attribution  methods,   saliency     maps,    ther techniques     are  not   considered      necessary   at  this
+                                                                       or attention mechanisms to visualize and explain    stage.
+                                                                      the model’s internal representations and decision
+                                                                   boundaries. For a TSR classifier, this might involve
+                                                                    using feature importance scores to show which parts    E. MAPPING OF DESIRED PROPERTIES, METHODS FOR
+                                                                 of an image influenced the classification.                TRAINED ML MODEL AND RIGOR ASSIGNMENT
+   – Advanced Techniques: Applies sophisticated explain- The desired properties for the trained ML model outlined in
+                                                                     ability techniques to provide deeper insights into              section V-C are mapped to specific test methods mentioned
+                                                                         model behavior. Employ techniques such as SHAP             in section V-D to ensure they are effectively achieved and
+                                                                       values, LIME, and deep learning interpretability              presented in Table 3. The methods are evaluated for their
+                                                                 tools  to  analyze and explain    complex        model            ability to support each desired property, with rigor levels
+                                                                        behaviors. Assess the robustness of the model’s         assigned to indicate their effectiveness. Please note that the
+                                                                       explanations under different scenarios and input          general rationale behind rigor assignment (i.e., R1 or R2) is
+                                                                        variations to ensure they remain meaningful and         outlined in section III-E. In this section, we detail how each
+                                                                       accurate. In the TSR example, this could include    method supports the desired properties.
+                                                                       using techniques like LIME9 or SHAP10 to provide
+                                                                 detailed explanations of the model’s predictions          F. MAPPING OF ASIL LEVEL AND TEST METHODS FOR
+ •                                                                  Confidence Testing: Assesses the model’s ability to    TRAINED ML MODEL
+    handle and communicate uncertainties in its predictions.–                                                                     The results from the mapping of ASIL levels and test methods
+                                                                       Simple Input Data: This method tests the model’s                  for the trained ML model, and the recommendations are
+                                                                       confidence using simple input data. Evaluate the                 shown in Table 4. The process of assigning ASIL levels
+                                                                      model’s confidence level to ensure it aligns with               to different test methods for trained ML models is based
+                                                                       the model’s performance and predictions. Measure           on the method’s rigor and its criticality in ensuring safety
+                                                                       the calibration of the model’s confidence scores                 standards. This assignment, guided by expert judgment,
+                                                                  with respect to prediction accuracy, particularly for    carefully evaluates   each   method’s      capacity to   meet   the
+                                                                      probabilistic classifiers. This can be done using            necessary confidence levels for safety. Methods categorized
+                                                                    the Calibration Error metric (defined as Confidence                   under ASIL A are recommended as highly rigorous (HR)
+                                                                 Score           − Observed Accuracy [2]). Evaluate the            for ensuring adequate assurance in less critical functions,
+                                                                       model’s ability to provide meaningful confidence                while those deemed moderately rigorous (R) are suitable
+                                                                  intervals or uncertainty bounds to indicate the reli-              for more critical functions that demand heightened confi-
+                                                                 ability of its predictions under different conditions.                 dence. Conversely, methods classified under ASIL B are
+ 9https://towardsdatascience.com/lime-explain-machine-learning-                                                                          rated as highly recommended (HR) if they exhibit high
+predictions-af8f18189bfe                                                                                                                rigor (R2), whereas those with moderate rigor (R1) are
+ 10https://shap.readthedocs.io/en/latest/                                                                                  recommended (R).
+
+VOLUME 12, 2024                                                                                                                                                                         179619
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+TABLE 3. Mapping of desired properties and methods for trained ML model.
+
+
+
+
+
+
+
+
+
+
+TABLE 4. Test methods for the life cycle phase train ML model with ASIL mapping.
+
+
+
+
+
+
+
+
+
+
+VI. EVALUATION AND RESULTS FOR DEPLOYED ML                       •  Mapping of Properties to Methods: Aligning desired
+MODEL                                                               properties with specific    test methods to ensure   a
+   In this section, the systematic approach described in sec-       comprehensive evaluation.
+tion  III is    applied to the third ML product    life cycle    •  Rigor Assignment: Assigning rigor levels (R1 and R2)
+     phase, namely deploy ML model. Similar to ISO 26262, the       to test methods based on their effectiveness in achieving
+ objectives and inputs of the respective life cycle phase are       desired properties.
+defined. This is followed by a definition of a set of desired    •  ASIL Mapping: Recommendations for test methods
+   safety properties for the deploy ML model life cycle phase       based on ASIL A or ASIL B to guide their application
+  and a selection of test methods for this phase. The mapping       in safety-critical contexts.
+      of desired properties and test methods for the deployed    The purpose of the life cycle phase deploy ML model is to
+       ML model is subsequently outlined. Following the rigor   transfer the learned ML functionality to the target platform,
+    assignment, a mapping of the ASIL level (A or B) and test   enabling the integration of this functionality into the product
+    methods for this life cycle phase is described. Thus, the   and ensuring it can be deployed alongside other software
+    presented approach provides a comprehensive framework for   units.
+  evaluating and ensuring the safety of deployed ML models in
+automotive systems. This framework includes:                    A. OBJECTIVES
+ •    Objectives: Clearly     defined goals     to ensure the    •  Ensure compatibility  of    the  model with the target
+         deployed model meets operational and safety require-       platform.
+      ments.                                                     •  Verify that the deployed model fulfills the allocated
+ •    Inputs: Necessary data and metadata, system require-          software requirements with the required ASIL.
+      ments, and architectural specifications.                   •  Ensure that the defined safety measures resulting from
+ •   Desired Properties: Identification of key safety proper-       safety-oriented analyses are properly implemented.
+   ties such as functional correctness, accuracy, robustness,
+      explainability, and uncertainty handling.                 B. INPUTS
+ •    Test Methods:       Selection of appropriate methods to    •  ML data model (in accordance with the prepare data life
+      verify the deployed model.                                    cycle phase).
+
+179620                                                                                                     VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+ •          Trained model (in accordance with the train ML model         based systems, specifically Section 8.2, addressing back-
+    life cycle phase).                                               to-back testing. This technique is critical for ensuring that
+ •             Software requirements (including ML specifics and         the deployed model’s behavior remains consistent with the
+    target platform specifics).                                        original model’s behavior, particularly after deployment on
+ •  Software unit design specification.                                  the target platform. Additionally, the methods align with
+ •  ML unit test specification of the trained ML model.                  ISO/IEC TR 5469 [3], Chapter 9, which covers verification
+                                                                    and  validation techniques. Section 9.4 emphasizes         the
+C. DESIRED PROPERTIES FOR THE LIFE CYCLE PHASE                      importance of both virtual and physical testing, ensuring that
+DEPLOY ML MODEL                                                          the deployed model not only meets functional requirements
+   In the following, the safety desired properties for the iden-    but also performs reliably in real-world environments.
+      tified third life cycle phase, namely deploy ML model, are    •          Compatibility Testing: Ensures that the deployed ML
+   discussed. Each property is introduced with a description and          model is compatible with the target platform’s hardware,
+       a simple example. The examples, based on a TSR classifier         software, operating system, and other dependencies.
+use case, provide    representative scenarios      demonstrating         –  Without AI-in-the-loop:       Verify that the deployed
+how these properties apply in practice.                                           model is compatible with the NN model by testing
+ •  Compatibility:           The goal here is to ensure that the                     the desired properties of the NN model on the
+           deployed model is compatible with the target environ-                   deployed model and analyzing the comparison for
+       ment and retains the learned functionality. Compatibility                  deviations. Perform extensive back-to-back tests
+            refers to the need to ensure that the deployed model                 with the NN model by applying all applicable test
+          works seamlessly within the target hardware, software,                 methods from the NN life cycle phase according to
+         and operational environment, maintaining the functional                  the ASIL recommendations and analyze the results
+    integrity     of the trained   ML model.    This    involves                  for unexpected deviations. Use a simulated envi-
+            verifying that the deployed model meets all relevant               ronment or the target hardware to execute the tests
+    system and software requirements.                                           on the deployed model. Verifying that the deployed
+    Example:           For a TSR classifier, compatibility would                    model is compatible with the target platform’s
+              mean that the model, when deployed from a develop-                   hardware, software, operating system, and other
+           ment environment to an in-vehicle platform, continues            dependencies without    any compatibility       issues
+      to accurately recognize and classify traffic signs without            or conflicts. Testing the model’s        compatibility
+    any degradation in performance.                                            across different relevant versions, configurations,
+•          Portability: The aim here is to ensure that the model                   and environments to ensure seamless integration
+             can be efficiently migrated or adapted to different                and interoperability. Measuring the consistency of
+    target  platforms.    Portability involves  the  ability to                   the model’s prediction across different relevant
+           transfer the trained ML model to various hardware and                   platforms, e.g., comparing the deployed model’s
+          software environments without loss of functionality or                  predictions with the NN model using back-to-back
+          performance. This includes considerations of different         –  testing
+           hardware configurations, operating systems, and soft-               With AI-in-the-loop: Verify that the deployed model
+    ware dependencies.                                                              is compatible with the NN model by testing the
+    Example:     For a     TSR     classifier, portability would                desired properties of the NN model on the deployed
+             involve ensuring that the model can be moved from a                model and analyzing the comparison for deviations.
+              high-performance server environment to an embedded                  Perform extensive back-to-back tests with the NN
+          system in a vehicle while maintaining its accuracy and                     model by applying all applicable test methods
+            efficiency. This includes evaluating metrics such as                     from the NN life cycle phase according to the
+            speed, memory usage, and resource consumption in the                  ASIL recommendations and analyze the results for
+    new environment.                                                              unexpected deviations. Use an ‘‘AI in the loop’’
+                                                                                 setup to perform the tests on the deployed model.
+                                                                            Testing real-time   compatibility and      integration
+D. TEST METHODS FOR THE LIFE CYCLE PHASE DEPLOY                                      with other system components during active ML
+ML MODEL                                                                          operations. Evaluating performance metrics under
+  This section outlines the test methods selected for the deploy                actual operating conditions to identify any issues
+      ML model life cycle phase. Each method is carefully chosen            that may arise during real-world deployment.
+         to ensure the model meets compatibility and performance    •            Portability Testing with Hardware-Related Perfor-
+      requirements on the target platform. The methods are cate-                 mance Evaluation: Assesses the performance of the
+       gorized and detailed to provide a comprehensive framework                 deployed ML model to ensure it meets the required
+       for evaluating the deployed model. The selection of these         benchmarks on the target hardware.
+      methods corresponds with guidelines provided in ISO 29119,         –  With Average Workload:           Evaluates the model’s
+        Chapter 8 [6], which focuses on black-box testing of AI-                  performance under standard operating conditions.
+
+VOLUME 12, 2024                                                                                                             179621
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+TABLE 5. Mapping of desired properties and methods for the deployed ML model.
+
+
+
+
+
+
+
+TABLE 6. Test methods for the life cycle phase deploy ML model with ASIL mapping.
+
+
+
+
+
+
+
+              Evaluate the fulfillment of nonfunctional require-   general rationale behind rigor assignment (i.e., R1 or R2) is
+             ments like speed, efficiency, resource utilization,   outlined in section III-E.
+               and scalability as part of the system or software         Table 5 and the descriptions above illustrate how each
+          requirements. Perform     the  evaluation for    rele-   method supports key properties such as compatibility and
+                vant target platforms. Measuring key performance   portability. The rigor levels (R1 and R2) indicate the method’s
+               indicators such as inference latency, throughput,   effectiveness, with R2 representing a higher level of rigor.
+                     memory usage, and CPU/GPU utilization under
+          average workloads    and   conditions.       Comparing   F. MAPPING OF ASIL LEVEL AND TEST METHODS FOR
+                   the performance of the deployed model against   THE DEPLOYED ML MODEL
+                predefined benchmarks and performance targets as   The results from the mapping of ASIL levels and test methods
+                defined in the system requirements to assess its   for the deployed ML model, and the recommendations, are
+          effectiveness and suitability for deployment.            shown in Table 6. The process of assigning ASIL levels
+    –     With High Workload:          Tests the model’s perfor-   to different test methods for deployed ML models is based
+          mance   under heavy      load  conditions to    ensure   on the method’s rigor and criticality in ensuring safety
+          robustness   and reliability.  Evaluate   the fulfill-   standards. This assignment, guided by expert judgment,
+                  ment of nonfunctional requirements like speed,   carefully evaluates  each method’s capacity to  meet     the
+            efficiency, resource utilization, and scalability as   necessary confidence levels for safety. Methods categorized
+                 part of the system or software requirements and   under ASIL A are recommended as highly rigorous (HR)
+                evaluate the model behavior under high workload.   for ensuring adequate assurance in less critical functions,
+                Measuring the impact of high workload conditions   while those deemed moderately rigorous (R) are suitable for
+                 on key performance indicators such as inference   more critical functions that demand heightened confidence.
+                  latency, throughput, memory usage, and CPU/GPU   Conversely, methods classified under ASIL B are rated as
+          utilization. Ensuring  the    model remains     stable   highly recommended (HR) if they exhibit high rigor, whereas
+          and performs   efficiently    even under       maximum   those with moderate rigor are recommended (R).
+              operational stress. Perform the evaluation for all
+          target platforms.                                        VII. DISCUSSION
+       Thus, the methods provided above ensure that the deployed   This section provides a discussion of the results obtained
+          ML model is thoroughly evaluated for compatibility and   from the systematic approach applied to various life cycle
+      performance, enabling it can be effectively integrated and   phases of ML models in automotive systems, as detailed in
+deployed on the target platform.                                   the previous sections. The phases include prepare data, the
+                                                                   trained ML model, and the deployed ML model. In this work,
+                                                                   each phase’s objectives, inputs, test methods, and desired
+E. MAPPING OF DESIRED PROPERTIES AND METHODS                       properties were rigorously defined and evaluated to ensure
+FOR THE DEPLOYED ML MODEL AND RIGOR                                the safety and reliability of ML models.
+ASSIGNMENT
+    The desired properties for the deployed ML model outlined in   A. PREPARE DATA
+      section VI-C are mapped to specific test methods mentioned   The evaluation of    the  ML data  model highlighted     the
+     in section VI-D to ensure they are effectively achieved and   critical importance of ensuring data completeness, consis-
+       presented in Table 5. The methods are evaluated for their   tency, correctness, representativeness, and independence. The
+     ability to support each desired property, with rigor levels   systematic approach can be used to effectively identify and
+  assigned to indicate their effectiveness. Please note that the   mitigate data-related issues, providing a robust foundation
+
+179622                                                                                                          VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+for subsequent phases. By ensuring high-quality data, the                   1) CHALLENGES AT ASIL C AND D LEVELS
+risk of biases and inaccuracies can be significantly reduced,               The primary challenges in extending the approach to ASIL C
+leading to more reliable and accurate ML models. This                       and D include:
+phase’s results impact the entire ML life cycle by establishing
+a solid data foundation essential for training effective and safe            •  Increased Rigor in Verification and Validation: ASIL C
+models.                                                                         and D demand higher levels of confidence in the safety
+                                                                                and reliability of the system. This necessitates more
+B. TRAIN ML MODEL                                                               rigorous verification and validation methods, including
+For the    trained    ML model, the              evaluation     framework       exhaustive testing under a wider range of conditions
+emphasized desired safety properties such as functional                         and scenarios. Techniques such as formal methods, fault
+correctness, accuracy, robustness, explainability, and uncer-                   injection testing, and more comprehensive safety case
+tainty handling. Employing the systematic approach would                     •  documentation would be required.
+enable the trained models to meet the specified software                        Enhanced Safety Measures: At these higher ASIL levels,
+requirements and perform reliably across various conditions.                    the safety measures must be more robust. This could
+The rigorous testing, including robustness and adversarial                      include additional layers of redundancy, fail-safes, and
+testing, can be used to ensure that the models handle diverse                   real-time monitoring systems to detect and mitigate
+inputs and perturbations, thus enhancing their reliability in                   potential failures. The ML models would need to be
+real-world scenarios.                                                           designed with these considerations in mind, ensuring
+                                                                                that they can operate safely even in the presence of
+                                                                                unexpected inputs or conditions.
+C. DEPLOY ML MODEL                                                           •  Stricter Requirements for Data Handling: The data
+The deployed ML model’s evaluation concentrates on safety                       used for training and testing ML models must meet
+desired    properties such as              compatibility  and portability       stricter quality and traceability requirements at ASIL
+across different hardware platforms and environments. The                       C and D. This includes ensuring that data is not only
+testing methods can be used to verify that the deployed                         complete and consistent but also fully traceable, with
+model maintains the learned functionality and performance                       documented evidence of its provenance and processing
+when deployed on the target platform. Further, employing                        history. Any biases or anomalies in the data could have
+these methods would help us ensure that the deployed                            more severe consequences at these levels, so rigorous
+model met the required ASIL levels and could be seam-                           data governance practices would be essential.
+lessly integrated into automotive systems. These results                     •  Increased Focus on Explainability and Interpretability:
+impact the final deployment phase, ensuring that the ML                         For ASIL C and D applications, it is critical that the
+models can be reliably transferred and operated in their                        decision-making processes of ML models are not only
+intended   environments                without  loss of  functionality or       accurate but also explainable. This is important for
+performance.                                                                    gaining regulatory approval and for ensuring that the
+                                                                                system’s behavior can be understood and trusted by
+                     D. CONSIDERATIONS FOR EXTENDING THE APPROACH               human operators, especially in safety-critical scenarios.
+TO ASIL C AND D LEVELS
+While   this    paper primarily focuses               on  enhancing   ISO   2) PROPOSED ADAPTATIONS
+26262 for ML-specific life cycle phases at ASIL A and B                     To extend the systematic approach to ASIL C and D, the
+levels, it is crucial to consider the implications and necessary            following adaptations are proposed:
+adaptations for higher safety integrity levels, such as ASIL C
+and D. These levels represent a more stringent requirement                   •  Formal Verification Techniques: Incorporating formal
+for safety-critical systems, where the consequences of failure                  verification techniques, such as model checking and
+are more severe, potentially leading to significant harm or                     theorem proving, could provide the additional assurance
+fatality. Extending the proposed approach to these levels                       needed for   ASIL   C and  D.   These techniques can
+requires additional rigor and verification steps to ensure the                  mathematically prove the correctness of certain aspects
+robustness and reliability of ML models in more critical                        of the system, which is particularly valuable at higher
+applications.     In the following,             some of   the  challenges       safety integrity levels.
+foreseen and proposed adaptations in extending the approach                  •  Integration  of  Advanced  Safety Mechanisms:    The
+to ASIL C and D, at this juncture, are outlined. Please                         inclusion of advanced   safety  mechanisms,  such as
+note that, at this juncture, given the lack of field data and                   runtime verification, fault-tolerant architectures, and
+real-world experience at ASIL C and D levels, this paper                        real-time anomaly detection, would be necessary to meet
+presents a foundational step for future work. Key aspects such                  the stringent requirements of ASIL C and D. These
+as redundancy and fail-operational systems, which are crucial                   mechanisms would help ensure that the system can
+at these higher levels, have yet to be fully evaluated but will                 continue to operate safely even in the presence of faults
+be prioritized in ongoing research.                                             or unexpected conditions.
+
+VOLUME 12, 2024                                                                                                               179623
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+  •  Stricter Data Governance and Management: Extending             architecture. Furthermore, the approach primarily addresses
+     the approach to higher ASIL levels would require stricter      testing activities, aligning with the right side of the V-model
+     data governance practices, including more detailed doc-        in system development processes. It does not encompass
+     umentation and traceability of data sources, processing        systematic development methods required for the left side
+     steps, and validation results. This would help ensure that     of the V-model for ML models. This includes the absence
+     the data used to train and test ML models is of the highest    of ASIL-suitable methods for requirements engineering,
+     possible quality and reliability.                              architectural design, and other preliminary  development
+                                                                    phases. Moreover, non-AI-specific data aspects, which are
+E. IMPLICATIONS                                                     highly relevant in safety-critical systems, are not covered by
+The proposed approach significantly enhances the devel-             our approach.
+opment   and     deployment of ML models   in automotive
+systems. Rigorous testing and evaluation at each life cycle         4) PRACTICAL IMPLEMENTATION CHALLENGES
+phase improve overall safety and reliability, identifying           Implementing the proposed approach in practical environ-
+and mitigating potential issues early in development. The           ments may require significant resources, including compu-
+approach supports standardization of AI testing practices           tational power and expertise. This could present challenges,
+within the automotive industry, aligning with ISO 26262,            especially for smaller organizations. Additionally, the need
+ensuring compliance, and promoting consistency in safety            for continuous updates to align with evolving ML standards
+assessments. It also provides clear guidelines for AI devel-        poses long-term sustainability concerns. Future research
+opers and safety engineers, fostering a culture of safety and       should focus on making the approach more resource-efficient
+reliability, building trust among stakeholders, and enhancing       and adaptable to various organizational capacities. Thus,
+operational safety and efficiency in automotive systems.            the limitations identified, including those related to gener-
+                                                                    alizability, quantitative measurement, flexibility, and prac-
+F. THREATS TO VALIDITY AND LIMITATIONS                              tical implementation, highlight areas for further research.
+This section discusses potential threats or limitations of the      Addressing these issues will enhance the overall applicability
+proposed approach, focusing on areas such as generaliz-             and robustness of the proposed approach across different
+ability, quantitative measurement, flexibility, and practical       domains and use cases.
+implementation.                                                     G. FUTURE DIRECTIONS
+1) GENERALIZABILITY                                                 Future work should focus on integrating the approach into
+The TSR classifier is used solely as an illustrative example        the ISO 26262 framework and certification processes, devel-
+to explain the approach, not as a comprehensive case study.         oping clear certification protocols, and creating automated
+While helpful for didactical clarity, it does not account for the   tools to streamline testing and evaluation. For instance,
+range of conditions in real-world applications, which limits        collaboration with the ISO 26262 working committee could
+generalizability. Additionally, empirical validation through        help to integrate these ML-specific life cycle phases and
+structured case studies, as outlined by [36], has not been          testing methods into the standard. This collaboration aims to
+conducted. The absence of empirical evaluation presents             standardize the approach and promote widespread adoption,
+a limitation     in assessing the practical applicability and       ultimately contributing to safer and more reliable automotive
+scalability of the approach. Future work should validate            systems. Additionally, incorporating Continuous Integra-
+the approach using diverse real-world scenarios and well-           tion/Continuous Deployment (CI/CD) pipelines will further
+designed case studies to provide stronger evidence for its          streamline the testing and deployment process, ensuring that
+effectiveness and generalizability.                                 updates and new models are seamlessly integrated while
+                                                                    maintaining rigorous safety standards. Last, but not the
+2) QUANTITATIVE MEASUREMENT CHALLENGES                              least, applying the framework to diverse ML models and
+A challenge arises from the difficulty in obtaining structured      automotive use cases will help validate its effectiveness and
+quantitative metrics to evaluate aspects such as performance,       adaptability.
+efficiency, and scalability. While qualitative insights are         VIII. CONCLUSION
+valuable, developing concrete metrics for quantitative anal-        The novel, systematic approach presented in this paper
+ysis will enhance the robustness of the approach in future          identifies and addresses the gaps in the widely adopted
+applications.                                                       standard for automotive functional safety, namely, ISO 26262
+                                                                    [1]. While standards such as ISO PAS 8800 [2] provide an
+3) FLEXIBILITY AND COVERAGE LIMITATIONS                             approach for developing AI systems, it does not provide a
+In this paper, the approach has only been applied to the level      mapping concept for ASIL classification of ML systems,
+of examples for the TSR. The approach’s flexibility needs to        revealing significant gaps. The approach elaborated in this
+be validated by e.g., applying the concept to several practical     paper outlines ML-specific life cycle phases, desired safety
+use cases with different conditions like model size or model        properties, and testing methods, supporting effectiveness
+
+179624                                                                  VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+
+
+
+
+
+
+
+
+FIGURE 6. Detailed interfaces of ML life cycle phases introduced in this paper with ISO 26262-Part 6.
+
+
+
+VOLUME 12, 2024    179625
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+
+in ensuring the safety and reliability of ML models in     REFERENCES
+automotive systems. The structured, rigorous framework             [1]  Road Vehicles—Functional Safety, Standard ISO 26262, 2018.
+provides clear guidelines for testing and evaluation, address-     [2]  Road Vehicles—Safety and AI, Standard SO Std. ISO/DPAS 8800, 2023.
+ing critical aspects and prioritizing testing efforts based on     [3]  Artificial                        Intelligence—Functional     Safety  and         AI     Systems, Standard
+function criticality. A novel mapping concept for these testing         ISO/IEC JTC1/SC2, 2024.
+methods to ASIL A/B level classification is also outlined.         [4]  Functional Safety of Electrical/electronic/programmable Electronic Safe-
+                                                                        tyrelated Systems, Standard IEC 61508-1:2010, 2010.
+Moreover, this paper ensures that each desired safety property     [5]  Road Vehicles—Functional Safety—Safety and AI for Automated Driving
+is covered by at least one test method across all three            [6]  Systems, Standard ISO Std. ISO 21 448, 2022.
+phases—data model, trained model, and deployed model.                   Software and Systems Engineering—Software Testing—Part 11: Guide-
+                                                                        lines on the Testing of AI-based Systems, Standard ISO/IEC TR 29119-
+While additional test methods can be introduced in future               11:2020, 2020.
+research, our focus was to prioritize comprehensive coverage       [7]  Information Technology—Artificial Intelligence—AI System Life Cycle
+of key safety properties. Thus, this comprehensive approach             Processes, Standard ISO/IEC JTC 1/SC 42, 2023.
+offers a valuable tool for developers and safety engineers,        [8]  Systems and Software Engineering—System Life Cycle Processes, Stan-
+                                                                        dard ISO/IEC JTC 1/SC 7, 2023.
+facilitating the safe and reliable integration of ML models        [9]  Systems                      and      Software       Engineering—Software        Life  Cycle    Processes,
+into vehicles and enhancing the safety and performance of         [10]  Standard ISO/IEC JTC 1/SC 7, 2017.
+automotive systems. We aim to collaborate with the ISO                  Information Technology—Artificial Intelligence—Artificial Intelligence
+                                                                        Concepts and Terminology, Standard ISO/IEC JTC 1/SC 42, 2022.
+26262 working committee to incorporate these enhancements         [11]  Framework                            for Artificial Intelligence  (AI)         Systems    Using    Machine
+into future iterations of the standard.                           [12]  Learning (ML), Standard ISO/IEC JTC 1/SC 42, 2022.
+APPENDIX A                                                              E. Gracic, F. Svensson, J. Ehrich, O. Beck, and M. Jansen, ‘‘Concept for
+                                                                        safety-related development of deep neural networks in the automotive,’’
+Fig. 6 provides more detail on how the introduced life cycle            in Proc. 4th Int. Conf. Multimedia Comput., Netw. Appl. (MCNA), 2020,
+phases are integrated into the traditional V-Model and aligned    [13]  pp. 10–15.
+with the life cycle phases of ISO 26262 Part 6, as an extension         (2022).                              ASAM        OpenSCENARIO.                  [Online].       Available:
+                                                                        https://www.asam.net/standards/detail/openscenario/
+to Fig. 4 in section III. In order to support the readability of  [14]  D.                          Dori, ‘‘Model-based     standards  authoring:        ISO      15288 as  a case
+Fig. 6, not all life cycle phases of ISO 26262 are displayed.           in point,’’                                       Syst. Eng., vol. 27, no. 2, pp. 302–314, Mar. 2024, doi:
+From the two life cycle phases of ISO 26262 that are part of            10.1002/SYS.21721.
+this figure, only some of the defined outcomes are displayed.     [15]  (2024).                      KI      Absicherung Project:     SAFE         AI  for      Automated Driving.
+                                                                        Accessed: Jul. 2, 2024. [Online]. Available: https://www.ki-absicherung-
+Only those outcomes are displayed, which are considered the             projekt.de/en/
+most relevant interfaces to the introduced life cycle phases.     [16]  Road                        Vehicles—Safety       and    Cybersecurity         for      Automated  Driving
+This figure assumes, that the ML model is part of the detailed          Systems—Design,                           Verification   and          Validation,   Standard        ISO/TR
+                                                                        4804:2020, 2010, p. 2020.
+design and will be tested with other SW Units according           [17]  J. Henriksson, M. Borg, and C. Englund, ‘‘Automotive safety and machine
+to ISO 26262-6-9. As seen in Fig. 6, the Software (SW)                  learning: Initial results from a study on how to adapt the ISO 26262 safety
+Detailed Design Specification serves as the branching point,            standard,’’ in Proc. IEEE/ACM 1st Int. Workshop Softw. Eng. AI Auto. Syst.
+                                                                        (SEFAIAS), May 2018, pp. 47–49.
+where it is determined whether the specification contains ML      [18]  R. Salay and K. Czarnecki, ‘‘Using machine learning safely in automotive
+components or if the traditional SW Unit Design process is              software: An assessment and adaption of software process requirements in
+followed. Please note that, while Fig. 6 is conceptual and              ISO 26262,’’ 2018, arXiv:1808.01614.
+focused on readability, we acknowledge that formal system         [19]  S.                          Mohseni,  M.  Pitale,  V.  Singh,  and    Z.        Wang,   ‘‘Practical  solu-
+                                                                        tions                       for   machine    learning  safety  in autonomous            vehicles,’’  2019,
+modeling languages such as SysML ISO/IEC 19514 [37]                     arXiv:1912.09630.
+or OPM ISO 19450 [38] may provide a more structured               [20]  J. Serna, S. Diemert, L. Millet, R. Debouk, R. S, and J. Joyce, ‘‘Bridging
+representation of the processes. The choice of a simplified             the gap between ISO 26262 and machine learning: A survey of techniques
+                                                                        for developing confidence in machine learning systems,’’ SAE Int. J. Adv.
+diagram in this case was made to ensure that the content is             Current Practices Mobility, vol. 2, no. 3, pp. 1538–1550, Apr. 2020, doi:
+easily understandable for a broad audience in the automotive            10.4271/2020-01-0738.
+safety domain.                                                    [21]  J. Thomas, ‘‘Integrating machine learning and AI in automotive safety:
+                                                                        Enhancing ISO 26262 compliance,’’ Int. J. Innov. Sci. Res. Technol., vol. 9,
+ACKNOWLEDGMENT                                                          no. 1, pp. 1–24, 2024.
+We would like to express our sincere gratitude to the anony-      [22]  F. Pourdanesh, T. Q. Dinh, F. Tagliabo, and P. Whiffin, ‘‘Failure safety
+mous reviewers for their valuable suggestions, which have               analysis of artificial intelligence systems for Smart/Autonomous vehicles,’’
+                                                                        in Proc. 24th Int. Conf. Mechatronics Technol. (ICMT), Dec. 2021, pp. 1–6.
+significantly enhanced the quality of this paper. Our thanks      [23]  S. Abrecht, A. Hirsch, S. Raafatnia, and M. Woehrle, ‘‘Deep learning safety
+also go to our colleagues from CARIAD and innotec GmbH                  concerns in automated driving perception,’’ IEEE Trans. Intell. Vehicles,
+for their insightful feedback during numerous discussions,        [24]  vol. 3, no. 1, pp. 1–12, Jun. 2024.
+                                                                        K. Radlak, M. Szczepankiewicz, T. Jones, and P. Serwa, ‘‘Organization
+which have strengthened the technical soundness of the                  of machine learning based product development as per ISO 26262 and
+paper. Additionally, we extend our appreciation to the experts    [25]  ISO/PAS 21448,’’ 2019,J.                         arXiv:1910.05112.
+from TRUSTIFAI11  a joint venture of TÜV AUSTRIA                                                    Perez-Cerrolaza, J.  Abella, M. Borg,          C.   Donzella,  J.   Cerquides,
+                                                                        F. J. Cazorla, C. Englund, M. Tauber, G. Nikolakopoulos, and J. L. Flores,
+and SCCH (Software Competence Center Hagenberg), for                    ‘‘Artificial                     intelligence    for  safety-critical systems          in  industrial  and
+their invaluable participation in the expert judgment process,          transportation domains: A survey,’’ ACM Comput. Surveys, vol. 56, no. 7,
+contributing to the evaluation of this framework.                 [26]  pp. 1–40, Apr. 2024.
+                                                                        K. Rana and N. Khatri, ‘‘Automotive intelligence: Unleashing the potential
+11https://www.trustifai.at/                                             of AI beyond advance driver assisting system, a comprehensive review,’’
+                                                                        Comput. Electr. Eng., vol. 117, Jul. 2024, Art. no. 109237.
+
+179626                                                                                                                                                             VOLUME 12, 2024
+
+P. Iyenghar et al.: Systematic Approach to Enhancing ISO 26262
+
+
+
+[27]  S. Diemert, L. Millet, J. Groves, and J. Joyce, ‘‘Safety integrity levels for         EMIL  GRACIC     received     the     Ph.D.                   degree         in
+      artificial intelligence,’’ in Proc. Comput. Saf., Rel., Security. SAFECOMP                                              computer science from the Department for Com-
+      Workshops, 2023, pp. 397–409.                                                         puter Architecture     and                    System               Programming,
+[28]  G.  Stettinger, P. Weissensteiner,    and S.   Khastgir,        ‘‘Trustworthiness     University of Kassel, Germany.
+      assurance assessment for high-risk AI-based systems,’’               IEEE Access,                                  In parallel, he worked for six years as a Research
+[29]  vol. 12, pp. 22718–22745, 2024.                                                                                   Assistant on projects for the industry partner, the
+      A. V. S. Neto, J. B. Camargo, J. R. Almeida, and P. S. Cugnasca, ‘‘Safety                                                  company HIMA, where he was involved in the
+      assurance of artificial intelligence-based systems: A systematic literature                                             chip design of HiCore2 SoC. From July 2018 to
+      review on the state of the art and guidelines for future work,’’ IEEE Access,                                          January 2020, he was with the ADAS Department,
+      vol. 10, pp. 130733–130770, 2022.                                                     Hella Aglaia,                       Berlin,   as a Functional            Safety
+[30]  S. Dey and S.-W. Lee, ‘‘Multilayered review of safety approaches for                           Manager, involved in investigating and implementing ASIL B concepts in
+      machine learning-based systems in the days of AI,’’ J. Syst. Softw., vol. 176,
+      Jun. 2021, Art. no. 110941.                                                                  the context of various perception software modules. Since February 2020,
+[31]  L.  Alzubaidi,  J. Zhang,     A. J.   Humaidi, A. Al-Dujaili,   Y.          Duan,            he has been with CARIAD SE as an AI Safety Expert focusing on processes,
+      O. Al-Shamma, J. Santamaría, M. A. Fadhel, M. Al-Amidie, and L. Farhan,                       methods, and tools for certifiable AI modules. He is the author of many
+      ‘‘Review of deep learning: Concepts, CNN architectures, challenges,                  scientific articles related to functional safety and FPGAs. His last publication
+      applications, future directions,’’          J. Big Data, vol. 8, no. 1, pp. 1–74,             about an adequate and reliable process for ML development in automotive
+      Mar. 2021, doi: 10.1186/S40537-021-00444-8.                                            still resonates within different industries as a very plausible process model.
+[32]  (2023). Automatic SPICE Process Assessment/Reference Model. [Online].                     His research interests include the implementation and evaluation of on-chip
+      Available:              https://vda-qmc.de/wp-content/uploads/2023/12/Automotive-    redundancy on the FPGA platform.
+      SPICE-PAM-v40.pdf
+[33]  M. R. Steenbergen and G. Marks, ‘‘Evaluating expert judgments,’’ Eur.
+      J. Political Res., vol. 46, no. 3, pp. 347–366, May 2007.
+[34]  L. M. Restrepo-Tamayo and G. P. Gasca-Hurtado, ‘‘Gamified focus group
+      for empirical research in software engineering: A case study,’’ in Com-               GREGOR                              PAWELKE received     the  degree         in
+      munications in Computer and Information Science. Cham, Switzerland:                                                  industrial engineering. He focused on the devel-
+      Springer, 2023, pp. 59–71.                                                                                               opment of a process model for ML development
+[35]  Failure Mode    and    Effects Analysis   (FMEA)      Handbook, 1st           ed.                                    in the automotive sector as part of his master’s
+      Berlin, Germany:   AIAG and      VDA,     Jun. 2019.  [Online].        Available:
+      https://webshop.vda.de/QMC/en/aiag-vda-fmea-handbook_eng                                                               thesis. Until 2021, he was a Quality Assurance
+[36]  B. A. Kitchenham, S. L. Pfleeger, L. M. Pickard, P. W. Jones, D. C. Hoaglin,                                             Expert with Hella Aglaia and supported teams
+      K. E. Emam, and J. Rosenberg, ‘‘Preliminary guidelines for empirical                  in achieving     their                     quality goals and             ASPICE
+      research in software engineering,’’ IEEE Trans. Softw. Eng., vol. 28, no. 8,                                        compliance. In parallel, he developed concepts to
+      pp. 721–734, Aug. 2002.                                                                                                ensure quality in development projects with ML
+[37]  Information Technology—Object Management Group Systems Modeling                                                         functionality by adapting and extending known
+      Language (OMG SysML), Standard ISO/IEC JTC1, 2017.                                            concepts and frameworks with ML specifics. Since 2021, he has been with
+[38]  Automation  Systems and     Integration—Object-Process                Methodology                    CARIAD on processes, methods and tools for the development of ML
+      (OPM), Standard ISO 19450:2024, 2024.                                                functionalities in safety-critical projects.
+
+
+
+
+                                         PADMA IYENGHAR received the B.E. degree
+                                 in computer science in India, in 2003, the M.S.
+                                  degree in computer science from the Technische
+                                    Universität Hamburg (TUHH), in 2006, and the
+                                  Ph.D. degree in computer science from the Uni-
+                        versity of Osnabrück (UOS), Germany, in 2012.
+                                      Until October 2020, she was a Postdoctoral
+                                     Researcher with UOS, where she led and con-
+                                tributed to various publicly funded research and
+                            innovation projects in collaboration with industrial
+partners. Since  2020,  she has   been      a Senior Functional Safety       and
+                Cybersecurity Consultant with innotec GmbH-TÜV Austria Group and
+             concurrently a Development Professor with the University of Applied
+            Sciences, Osnabrück, Germany, balancing her professional commitments
+   across teaching, research, and industry engagements. She has over 14 years of
+         research and development experience in model-based software development
+         and embedded software engineering and more than eight years of teaching
+experience in  various  computer   science    subjects. She has       supervised
+numerous   theses  and  published  in reputed conferences   and        journals.
+           Additionally, she is active in academic and professional communities,
+      serving as a guest editor, organizing special sessions at conferences, and
+     holding editorial and reviewer roles for various journals. At innotec GmbH,
+she has been involved in all phases of the functional safety life cycle, working
+      across industries, such as machinery, automation, railway, and automotive.
+            She leads projects pertaining to AI and functional safety and AI and
+        cybersecurity and is an active member of DKE/AK committees on functional
+      safety and AI. Her academic achievements include the Best Outgoing Student
+           Award and the University Medal for Excellence in Academics during her
+undergraduate studies.
+
+VOLUME 12, 2024                                                                                                                                           179627
+

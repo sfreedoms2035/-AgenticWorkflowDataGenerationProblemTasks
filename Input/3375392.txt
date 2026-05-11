@@ -1,0 +1,1901 @@
+        12
+
+® Fast, Accurate and Provable Triangle Counting in Fully
+        Dynamic Graph Streams
+
+        KIJUNG SHIN, KAIST
+        SEJOON OH, Georgia Institute of Technology
+        JISU KIM, Inria Saclay
+        BRYAN HOOI, National University of Singapore
+        CHRISTOS FALOUTSOS, Carnegie Mellon University
+
+        Given a stream of edge additions and deletions, how can we estimate the count of triangles in it? If we can
+        store only a subset of the edges, how can we obtain unbiased estimates with small variances?
+        Counting triangles (i.e., cliques of size three) in a graph is a classical problem with applications in a wide
+        range of research areas, including social network analysis, data mining, and databases. Recently, streaming
+        algorithms for triangle counting have been extensively studied since they can naturally be used for large
+        dynamic graphs. However, existing algorithms cannot handle edge deletions or suffer from low accuracy.
+        Can we handle edge deletions while achieving high accuracy? We propose ThinkD, which accurately
+        estimates the counts of global triangles (i.e., all triangles) and local triangles associated with each node in a
+        fully dynamic graph stream with additions and deletions of edges. Compared to its best competitors, ThinkD
+        is (a) Accurate: up to 4.3× more accurate within the same memory budget, (b) Fast: up to 2.2× faster for
+        the same accuracy requirements, and (c) Theoretically sound: always maintaining estimates with zero bias
+        (i.e., the difference between the true triangle count and the expected value of its estimate) and small variance.
+        As an application, we use ThinkD to detect suddenly emerging dense subgraphs, and we show its advantages
+        over state-of-the-art methods.
+        CCS Concepts: • Information systems → Data mining; • Theory of computation → Dynamic graph
+        algorithms; Streaming, sublinear and near linear time algorithms;
+        Additional Key Words and Phrases: Triangle counting, local triangles, edge deletions
+
+
+This work was partly supported by National Research Foundation of Korea (NRF) grant funded by the Korea government
+MSIT (No. NRF-2019R1F1A1059755) and Institute of Information & Communications Technology Planning & Evaluation
+(IITP) grant funded by the Korea government MSIT (No. 2019-0-00075-001, Artificial Intelligence Graduate School Program
+(KAIST)). This work was supported by the National Science Foundation under Grant No. CNS-1314632 and IIS-1408924.
+Research was sponsored by the Army Research Laboratory and was accomplished under Cooperative Agreement Number
+W911NF-09-2-0053.
+Authors’ addresses: K. Shin, Graduate School of AI & School of Electrical Engineering, KAIST, 291 Daehak-ro, Yuseong-
+gu, Daejeon 34141, Republic of Korea; email: kijungs@kaist.ac.kr; S. Oh, School of Computational Science and Engineer-
+ing, Georgia Institute of Technology, 756 W Peachtree St NW, Atlanta, GA 30308; email: soh337@gatech.edu; J. Kim,
+Equipe DataShape, Inria Saclay, 1 Rue Honoré d’Estienne d’Orves, Bâtiment Alan Turing, Campus de l’École Polytechnique,
+Palaiseau, Île-De-France 91120, France; email: jisu.kim@inria.fr; B. Hooi, Department of Computer Science, National Uni-
+versity of Singapore, COM1, 13 Computing Drive, Singapore 117417, Republic of Singapore; email: bhooi@comp.nus.edu.sg;
+C. Faloutsos, Computer Science Department, Carnegie Mellon University, 5000 Forbes Avenue, Pittsburgh, PA 15213-3891;
+email: christos@cs.cmu.edu.
+Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee
+provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and
+the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored.
+Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires
+prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+© 2020 Association for Computing Machinery.
+1556-4681/2020/02-ART12 $15.00
+https://doi.org/10.1145/3375392
+
+       ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:2 K. Shin et al.
+
+ACM Reference format:
+Kijung Shin, Sejoon Oh, Jisu Kim, Bryan Hooi, and Christos Faloutsos. 2020. Fast, Accurate and Provable Tri-
+angle Counting in Fully Dynamic Graph Streams. ACM Trans. Knowl. Discov. Data 14, 2, Article 12 (February
+2020), 39 pages.
+https://doi.org/10.1145/3375392
+
+1 INTRODUCTION
+Given a fully dynamic graph stream with edge additions and deletions, how can we accurately
+estimate the count of triangles in it with fixed memory size?
+  The count of triangles (i.e., cliques of size three) is a key primitive in graph analysis with a wide
+range of applications, including spam/anomaly detection [Becchetti et al. 2010; Lim et al. 2018],
+link recommendation [Epasto et al. 2015b; Tsourakakis et al. 2011], community detection [Berry
+et al. 2011], degeneracy estimation [Shin et al. 2018a], and query optimization [Bar-Yossef et al.
+2002]. In particular, many important metrics in social network analysis, including the clustering
+coefficient [Watts and Strogatz 1998], the transitivity ratio [Newman 2003], and the triangle con-
+nectivity [Batagelj and Zaveršnik 2007], are based on the count of triangles. We refer interested
+readers to [Chu and Cheng 2012; Hu et al. 2014; Kolountzakis et al. 2010; Suri and Vassilvitskii
+2011] for detailed descriptions of the applications.
+  Many real graphs are best represented as a sequence of edge additions and deletions, and they
+often need to be processed in real time. For example, many social networking service companies
+aim to detect fraud or spam as quickly as possible in their online social networks, which evolve
+indefinitely with both edge additions and deletions. Another example is to examine graphs of data
+traffic and improve the network performance in real time.
+  As a result, there has been great interest in streaming algorithms, which gradually update their
+outputs as each edge insertion or deletion is received rather than operating on the entire graph
+at once. However, existing streaming algorithms for triangle counting focus on insertion-only
+streams [Ahmed et al. 2017; Jha et al. 2013; Lim et al. 2018; Pavan et al. 2013; Shin et al. 2018b;
+Tangwongsan et al. 2013] or greatly sacrifice accuracy to support edge deletions [De Stefani et al.
+2017; Han and Sethu 2017; Kutzkov and Pagh 2014].
+  Why is it challenging to accurately estimate the count of triangles while handling deletions?
+Most existing streaming algorithms for triangle counting are randomized algorithms, whose out-
+puts are random variables. Their accuracy depends on the bias and variance of the random vari-
+ables, which are estimates of the triangle counts. State-of-the-art algorithms [De Stefani et al. 2017;
+Lim et al. 2018; Shin 2017; Shin et al. 2018b] discover a subset of triangles, within a fixed memory
+budget, and obtain unbiased estimates1 by dividing the size of the subset by the probability that
+each triangle is discovered during the process. To obtain unbiased estimates, the discovery proba-
+bility needs to be computed exactly, while to reduce variances, the discovery probability needs to
+be increased. Instead of using only the edges stored in memory, the aforementioned algorithms,
+which are for triangle counting in insertion-only streams, uses every arrived edge to improve its
+estimation, even if the edge is about to be discarded without being stored. While this idea of uti-
+lizing edges to be discarded significantly increases the discovery probability and thus reduces the
+variance of estimates, it has not been applied to triangle counting in graph streams with edge
+deletions, for which thus state-of-the-art algorithms [De Stefani et al. 2017] suffer from low accu-
+racy. A major challenge of the application is to compute the exact discovery probability, which is
+necessary to obtain unbiased estimates.
+
+1That is, the expected values of the estimates are equal to the true triangle counts.
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams 12:3
+
+  Can we accurately estimate the count of triangles in fully dynamic graph streams with edge
+additions and deletions? In this work,2 we propose ThinkD (Think before you Discard), an ac-
+curate streaming algorithm for global and local triangle counting in such a graph stream. That
+is, ThinkD maintains and updates estimates of the counts of global triangles (i.e., all triangles)
+and local triangles incident to each node. For this problem, ThinkD is the first algorithm that uti-
+lizes edges to be discarded. We first derive formulas of the exact probability that each added or
+deleted triangle is discovered when edges to be discarded are used with the following two dif-
+ferent sampling schemes: Bernoulli trials and Random Pairing (RP) [Gemulla et al. 2008]. Then,
+based on the formulas, ThinkD utilizes edges to be discarded while guaranteeing the unbiased-
+ness of its estimates. We formally prove that ThinkDfast and ThinkDacc, which are two versions
+of ThinkD based on Bernoulli trials and RP, respectively, produce unbiased estimates. We also
+prove a formula of the variance of estimates given by ThinkDfast; and the time and space com-
+plexities of ThinkDfast and ThinkDacc. Additionally, through extensive experiments using eight
+real-world graphs, we demonstrate that the estimates have smaller variances and thus smaller
+errors than estimates obtained by state-of-the-art competitors, which fail to utilize edges to be
+discarded. Specifically, ThinkD has the following strengths:
+     — Accurate: ThinkD gives up to 4× and 4.3× smaller estimation errors for global and local
+       triangle counts, respectively, than its best competitors within the same memory budget
+       (Figure 4).
+     — Fast: ThinkD scales linearly with the size of the input stream (Figure 3, Corollary 1, and
+       Theorem 4). Especially, ThinkD is up to 2.2× faster than its best competitors with similar
+       accuracies.
+     — Theoretically Sound: We prove the formulas for the bias and variance of the estimates
+       given by ThinkD (Theorems 1 and 2). In particular, we show that ThinkD always maintains
+       unbiased estimates with small variances (Figure 2).
+Additionally, as a new application, we use ThinkD to detect suddenly emerging dense subgraphs,
+and we show its advantages over state-of-the-art methods.
+  Reproducibility: The source code and datasets used in the article are available at http://dmlab.
+kaist.ac.kr/∼kijungs/codes/thinkd/.
+  The rest of the paper is organized as follows. In Section 2, we review related work. In Section 3,
+we introduce notations and the problem definition. In Section 4, we describe our proposed al-
+gorithm ThinkD and analyze its accuracy and complexity. After providing experimental results
+in Section 5, we conclude in Section 6. In Appendix A, we present a toy example that highlights
+(dis)advantages of ThinkD and its competitors. In Appendix B, we present a theoretical analysis of
+the variances of estimates given by ThinkD. In Appendix C, we extend ThinkD to triangle count-
+ing in fully dynamic multigraph streams with parallel edges. In Appendix D, we apply ThinkD to
+the task of detecting suddenly emerging dense subgraphs.
+
+2 RELATED WORK
+We review previous work on triangle counting in insertion-only or fully-dynamic graph streams.
+See Table 1 for a comparison of streaming algorithms for triangle counting.
+
+
+2This work is an extended version of [Shin et al. 2018d] with proofs, a variance analysis, additional experimental results,
+an extension of ThinkD for multigraph streams, and an application of ThinkD to detecting suddenly emerging dense
+subgraphs.
+
+       ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+   12:4    K. Shin et al.
+
+       Table 1. Comparison of Algorithms for Triangle Counting in Graph Streams
+
+
+
+
+
+
+
+
+
+
+     Counting Global Triangles        ✓   ✓                                           ✓   ✓   ✓    ✓        ✓   ✓
+     Counting Local Triangles         ✓   ✓                                               ✓   ✓    ✓    ✓
+     Handling Large Graphs**          ✓   ✓                                               ✓   ✓    ✓    ✓   ✓   ✓
+     Handling Edge Insertions         ✓   ✓                                           ✓   ✓   ✓    ✓    ✓   ✓   ✓
+     Handling Edge Deletions          ✓   ✓                                           ✓
+     Handling Parallel Edges          ✓   ✓                                               ✓   ✓         ✓   ✓
+     Guaranteeing Unbiasedness***     ✓   ✓                                           ✓   ✓   ✓    ✓        ✓   ✓
+   Note that ThinkD satisfies all the criteria while clearly outperforming Triestfd (which also satisfies all the criteria) in
+   terms of speed and accuracy.
+   *[Ahmed et al. 2017, 2014; Tangwongsan et al. 2013; Jha et al. 2013; Pavan et al. 2013].
+   **graphs that do not fit in memory.
+   ***giving estimates whose expected values are equal to the true triangle counts.
+
+   2.1 Triangle Counting in Insertion-only Graph Streams
+   In Doulion [Tsourakakis et al. 2009], each edge in the input graph is sampled independently with
+   probability r . Then, the probability that all three edges in a triangle are sampled and thus discov-
+                                                                                      3
+   ered is r 3. Based on this fact, Doulion provides 1/r times the triangle count in the graph composed
+   of the sampled edges as an unbiased estimate of the triangle count in the entire graph.3 As in
+   Doulion, once the probability that each triangle is discovered (i.e., sampled) is known, an unbiased
+   estimate is easily obtained. Since the variance of such unbiased estimates is roughly inversely pro-
+   portional to the probability that each triangle is discovered,4 many studies have focused on increas-
+   ing the probability to reduce such variance. Colorful Triangle Sampling [Pagh and Tsourakakis
+   2012] increases the probability to r 2 in a non-streaming setting by (a) coloring each node in the
+   input graph with a color chosen uniformly at random among 1/r colors and (b) sampling the edges
+   connecting nodes with the same color. Mascot [Lim et al. 2018] increases the probability to r 2 in
+   insertion-only graph streams by (a) sampling each incoming edge independently with probability
+   r                                      but (b) discovering (i.e., counting) triangles with each incoming edge before sampling or
+   discarding it. Note that, in Mascot, each triangle is discovered if and only if the first two edges of
+   the triangle are sampled (with probability r 2). Triestimpr [De Stefani et al. 2017] further increases
+   the probability in insertion-only graph streams by sampling edges using the reservoir sampling
+   [Vitter 1985], which uniformly samples as many edges as possible within a given memory budget,
+   while Mascot may discard edges even when memory is underutilized. Other approaches for in-
+   creasing the probability include (a) sampling wedges (i.e., paths of length two) in addition to edges
+
+   3The expected value of an unbiased estimate is equal to the true value.
+   4For example, in ThinkDfast, each triangle is discovered with probability r 2 in Lemma 5 and the variance of the estimate
+   is O (1/r 2) in Theorem 2.
+
+
+   ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+
+
+
+
+
+
+
+
+
+ThinkD ( Proposed )
+Triestfd
+[De Stefani et al. 2017]
+ESD
+[Han and Sethu 2017]
+Mascot
+[Lim et al. 2018]
+Triestimpr
+[De Stefani et al. 2017]
+WRS
+[Shin 2017]
+FURL
+[Jung et al. 2016]
+PartitionCT
+[Wang et al. 2017]
+
+Others ∗
+
+Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams 12:5
+
+[Jha et al. 2013; Pavan et al. 2013; Tangwongsan et al. 2013] and (b) sampling edges with different
+probabilities that depend on the counts of incident triangles and adjacent sampled edges [Ahmed
+et al. 2014, 2017].
+  In addition, regarding triangle counting in insertion-only streams, handling duplicated edges
+[Wang et al. 2017]5, exploiting temporal dependencies of edges [Shin 2017], utilizing a computer
+cluster [Shin et al. 2018b], reducing variances of estimates by combining past estimates with the
+current one (at the expense of losing unbiasedness) [Jung et al. 2016], and semi-streaming al-
+gorithms requiring multiple passes over data [Kolountzakis et al. 2010; Tsourakakis 2008] were
+discussed.
+
+2.2 Triangle Counting in Fully-dynamic Graph Streams
+The first algorithm for triangle counting in fully dynamic graph streams with edge deletions was
+proposed in [Kutzkov and Pagh 2014]. This algorithm adapts Colorful Triangle Sampling, de-
+scribed in the previous subsection, to obtain sparsified graphs in a fully dynamic graph stream.
+Then, the ratio of two-paths that are completed to triangles is estimated from these graphs. This
+estimated ratio is multiplied with an estimate of the total number of two-paths in the input graph
+to estimate the total number of triangles. This algorithm, however, is inapplicable to real-time
+applications since it expensively computes an estimate once at the end of the stream instead of al-
+ways maintaining an estimate. Moreover, in the worst case, the algorithm requires more memory
+than what is needed to store the entire input graph, as pointed out in [De Stefani et al. 2017]. ESD
+[Han and Sethu 2017] maintains the current snapshot of the input graph, which is given as a fully
+dynamic graph stream. For each change ({u, v }, ±) in the input graph, Edge Sample and Discard
+(ESD) tosses a (biased) coin. If the head comes up, ESD estimates the changes in the triangle count,
+instead of exactly computing them, by checking whether a random neighbor of node u (or v ) is
+also a neighbor of node v (or u), and updates its estimate of the triangle count. Otherwise, ESD
+does not update its estimate of the triangle count.
+  Unlike the previous algorithm, ESD always maintains its estimate of the triangle count. How-
+ever, its scalability is limited since ESD maintains the entire input graph in memory. Triestfd [De
+Stefani et al. 2017] maintains edges uniformly sampled within a given memory budget in a fully
+dynamic graph by employing RP [Gemulla et al. 2008] (see Section 4.1). Triestfd also maintains
+unbiased estimates of global and local triangle counts in the input graph, which are obtained by
+multiplying (a) the triangle counts in the graph consisting of the sampled edges and (b) the recip-
+rocal of the probability that each triangle is sampled. While Triestfd simply discards unsampled
+edges without utilizing them to update its estimates, our proposed algorithm, ThinkD, utilizes
+these unsampled edges to update estimates before discarding them to minimize information loss,
+and thus it obtains more accurate estimates than Triestfd. Although this idea of using unsampled
+edges was first used in Mascot [Lim et al. 2018] and Triestimpr [De Stefani et al. 2017], which are
+described in the previous subsection, for triangle counting in insertion-only streams, applying the
+idea to fully dynamic graph streams has remained unexplored.
+  In addition, semi-streaming algorithms, which require multiple passes over data, were developed
+for triangle counting in fully dynamic graph streams [Becchetti et al. 2010].
+
+3 NOTATIONS AND PROBLEM DEFINITION
+In this section, we first introduce notations and concepts. Then, we formally define the problem
+of triangle counting in fully-dynamic graph streams.
+
+
+    5Unlike in Appendix C, [Wang et al. 2017] aims to count triangles while ignoring duplicated edges.
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:6                                                                                          K. Shin et al.
+
+                                       Table 2. Table of Frequently-used Symbols
+                                           Symbol                                  Definition
+                            e (t )    = ({u, v }, δ )       change in the input graph G at time t
+    Notations for           G(t )     = (V (t ), E (t ) )   graph G at time t
+    Fully Dynamic           {u, v }                         edge between nodes u and v
+    Graph Streams           {u, v, w }                      triangle with nodes u, v , and w
+     (Section 3)            T (t )                          set of global triangles in G(t )
+                            T (t )[u]                       set of local triangles of node u in G(t )
+                            S                               set of sampled edges
+                            Nˆ [u]                          set of neighbors of node u in S
+    Notations for           c¯                              estimate of the count of global triangles
+    Algorithms and          c[u]                            estimate of the count of local triangles of node u
+       Analyses             r                               sampling probability in ThinkDfast
+     (Section 4)            k                               maximum number of sampled edges in ThinkDacc
+                            A(t )                           set of added triangles at time t
+                            D(t )                           set of deleted triangles at time t
+
+3.1 Notations
+Table 2 lists the symbols frequently used in the article. Consider an undirected graph G = (V, E )
+with nodes V and edges E. Each edge {u, v } ∈ E connects two distinct nodes u v ∈ V . We say
+a subset {u, v, w } ⊂ V of size 3 is a triangle if every pair of distinct nodes u, v , and w is connected
+by an edge in E. We denote the set of global triangles (i.e., all triangles) in G by T and the set of
+local triangles of each node u ∈ V (i.e., all triangles containing u) by T [u] ⊂ T .
+   Assume that the graph G evolves from the empty graph. We consider the fully dynamic graph
+stream representing the sequence of changes in G, and denote the stream by (e (1), e (2), . . .). For
+each t ∈ {1, 2, . . .}, the pair e (t ) = ({u, v }, δ ) of an edge {u, v } and a sign δ ∈ {+, −} denotes the
+change in G at time t . Specifically, ({u, v }, +) indicates the addition of a new edge {u, v } E, and
+({u, v }, −) indicates the deletion of an existing edge {u, v } ∈ E. That is, we assume that only new
+edges can be added (see Appendix C for triangle counting in a multigraph stream with parallel
+edges), and only existing edges can be deleted. We use G(t ) = (V (t ), E (t ) ) to indicate G at time t .
+    That is, E (0)     = ∅            and  E (t )        = {E (t−1) ∪ {{u, v }},   if e (t )  = ({u, v }, +),
+                                                            E (t−1) \ {{u, v }},   if e (t )  = ({u, v }, −).
+    Lastly, we let T (t )      denote the set of global triangles in G(t ) and T (t )[u] ⊂ T (t ) denote the set of
+    local triangles of each node u ∈ V (t ) in G(t ).
+
+    3.2     Problem Definition
+    In this work, we address the problem of estimating the counts of global and local triangles in a
+    fully dynamic graph stream. We assume the standard data stream model where the changes in the
+    input stream, which may not fit in memory, can be accessed once in the given order unless they
+    are explicitly stored in memory.
+
+    Problem 1 (Global and Local Triangle Counting in a Fully Dynamic Graph Stream).
+        — Given: a fully dynamic graph stream (e (1), e (   2), . . .)
+        (i.e., sequence of edge additions and deletions in graph G)
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams    12:7
+
+
+
+
+
+
+
+
+
+
+Fig. 1. Description of ThinkD and its best competitor Triestfd, which support global and local triangle count-
+ing in a fully dynamic graph stream. (a) In Triestfd, each incoming change goes through a test step (colored
+blue) and then an update step (colored green). The changes not passing the test step are simply discarded
+(see red arrows) without being utilized to update estimates. Due to this information loss, Triestfd produces
+inaccurate estimates. (b) However, in ThinkD (proposed), each incoming change goes through the update
+step (colored green) and then a test step. This guarantees that every change is used to update estimates (see
+the red arrow). ThinkDfast and ThinkDacc are distinguished by their testing scheme: tossing a biased coin
+or RP (Section 4.1).
+
+     — Maintain: estimates of global triangle count |T (t ) | and local triangle counts
+     — {(u, |T (t )[u]|)}u ∈V(ₜ ) of graph G(t ) for current t ∈ {1, 2, . . .}
+       to Minimize: the estimation errors.
+  We follow a general approach of reducing the biases and variances of estimates simultaneously
+rather than minimizing a specific measure of estimation error.
+
+4 PROPOSED METHOD: THINK BEFORE YOU DISCARD (THINKD)
+We propose ThinkD (Think before you Discard), which estimates the counts of global and local
+triangles in a fully dynamic graph stream. For estimation with limited memory, ThinkD samples
+edges and maintains those sampled edges, while discarding the other edges. The main idea of
+ThinkD is to fully utilize unsampled edges before they are discarded, as illustrated in Figure 1.
+Specifically, whenever each change in the input stream arrives, ThinkD first updates its estimates
+using the change and previously sampled edges as follows:
+     —For each observed triangle addition, increase corresponding estimates by the reciprocal of
+       the probability that the triangle addition is observed.
+     —For each observed triangle deletion, decrease corresponding estimates by the reciprocal of
+       the probability that the triangle deletion is observed.
+After that, if the change is an addition of an edge, ThinkD decides whether to sample the edge or
+not.
+
+      ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:8 K. Shin et al.
+
+   Estimates provided by ThinkD are random variables, and its estimation error depends on the
+bias (i.e., the difference between the true triangle count and the expected value of its estimate)
+and variance of the estimates. Compared to using only sampled edges, utilizing unsampled edges
+increases the probability that each triangle addition or deletion is observed and thus decreases the
+variance of estimates, which is roughly inversely proportional to the probability (see Theorem 2).
+Moreover, increasing or decreasing estimates by the reciprocal of the probability, for each trian-
+gle addition or deletion, makes the biases of estimates zero and thus enables ThinkD provides
+unbiased estimates, whose expected values are equal to the true triangle counts (see Theorem 1).
+   In this section, we present the following two versions of ThinkD: ThinkDfast and ThinkDacc.
+ThinkDfast uses a simple and fast edge sampling scheme based on Bernoulli trials, while
+ThinkDacc is based on RP, an advanced sampling scheme for fully utilizing memory within a
+given budget.6 Specifically, we focus on (a) the detailed procedures of both versions of ThinkD
+and (b) the probabilities that each triangle is discovered during the procedures. Then, based on
+the probabilities, we prove the unbiasedness of both versions of ThinkD and provide a variance
+analysis. Next, we analyze their time and space complexities. Throughout this section, we use ¯c to
+denote the maintained estimate of the count of global triangles. Likewise, for each node u, we use
+c[u] to denote the maintained estimate of the count of local triangles of node u. In addition, we let
+S be the set of currently sampled edges, and for each node u, we let Nˆ [u] be the set of neighbors
+of u in the graph composed of the edges in S. For each variable (e.g., ¯c), we use superscript (t )
+(e.g., ¯c(t )) to denote the value of the variable after the t -th element e (t ) is processed by ThinkD.
+
+4.1 Preliminaries: Random Pairing
+We first introduce RP [Gemulla et al. 2008], a sampling method that ThinkD is based on. Then,
+we prove its several properties.
+   RP is a uniform random sampling scheme that maintains a bounded sample size under an arbi-
+trary sequence of insertions and deletions. The dataset R of interest is understood as a finite set of
+distinguishable items, and the sample S is understood as a subset of R. The dataset R is initially
+empty, and evolves over time as items are inserted and deleted. In general, items that are deleted
+may be subsequently re-inserted. Following [Brown and Haas 2006], a sampling scheme is called
+uniform if the scheme producing the sample S from the dataset R satisfies that,
+        Pr [S = A] = Pr [S = B], ∀A B ⊂ R s.t. A = B. (1)
+RP is a uniform random sampling scheme with maintaining a bounded sample size, i.e., given the
+sample size bound k > 0, S k always holds.
+   To efficiently utilize the bounded memory space, RP keeps two counters for “uncompensated”
+deletions. First, the counter nb enumerates “bad” uncompensated deletions where the sample in-
+cluded the deleted item so that the sample size was decremented by 1 for the deletion. Second, the
+counter nд enumerates “good” uncompensated deletions where the sample excluded the deleted
+item so that the sample size remained the same for the deletion. Obviously, nb + nд represents the
+total uncompensated deletions.
+   RP is described in Algorithm 1. Initially, both the dataset and the sample are empty (line 2). For
+the deletion, if the sample includes the deleted item, RP removes the item from the sample and
+increments nb (line 13). If the sample excludes the deleted item, RP increments nд (line 14). For the
+insertion, if nb + nд = 0, then there is no deletion to compensate, and the insertion is processed
+by Reservoir Sampling [Vitter 1985]. That is, if the sample size has not reached its upper bound
+
+6Using RP increases the probability that each triangle addition or deletion is observed and thus further decreases the
+variances of estimates. The variances are roughly inversely proportional to the probability, as stated in Theorem 2.
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                                    12:9
+
+ALGORITHM 1: Random Pairing: Sampling method that ThinkD uses
+     Inputs: a dataset: R, a sample: S, an item to be added or deleted: a
+     Outputs: a sample after addition or deletion: S
+1 Procedure Initialize():
+2      S ← ∅, R ← ∅, nb ← 0, nд ← 0
+3 Procedure Insert(a):
+4    if nb + nд = 0 then
+5          if S < k then S ← S ∪ {a}
+6          else if a random number in Bernoulli(k/|R|) is 1   then
+7          replace a random item in S with a
+
+8    else if a random number in Bernoulli(nb /(nb + nд )) is 1 then
+9          S ← S ∪ {a}, nb ← nb − 1
+10      else nд ← nд − 1
+11 Procedure Delete(a):
+12   if a  ∈ S then
+13         S ← S \ {a}, nb ← nb + 1
+14      else nд ← nд + 1
+
+(i.e., S < k), RP adds the inserted item to S (line 5); otherwise, RP replaces a random item in S
+with the inserted item by a certain probability (lines 6–7). If nb + nд > 0, then RP tosses a coin
+with probability nb /(nb + nд ) (line 8). If the head comes up with probability nb /(nb + nд ), RP adds
+the inserted item to the sample and decrements nb (line 9). If the tail comes up with probability
+nд/(nb + nд ), RP decrements nд (line 10).
+                      In high level, RP pairs the inserted item with an uncompensated deletion if possible, and adds
+the inserted item to the sample if and only if the paired item was in the sample at the time of its
+deletion. Suppose we have nb + nд > 0 so that there are uncompensated deletions. Then for the
+insertion, RP pairs the inserted item with a randomly selected uncompensated deletion, called
+the “partner” deletion. RP adds the inserted item to the sample if and only if the partner was in
+the sample at the time of its deletion so that the deletion was “bad”. Since the partner is chosen
+among nb “bad” deletions and nд “good” deletions, the “bad” deletion is chosen as the partner with
+probability nb /(nb + nд ). To implement this, rather than tracing each partner, only the probability
+nb /(nb + nд ) needs to be traced. Hence, maintaining the counters nb and nд suffices.
+                     The uniformity of RP and the distribution of the sample size can be theoretically computed. For
+these, we let R(t ) be the dataset and S(t ) be the sample at time t . Similarly, let nb(t ) and nд(t )        be nb
+and nд at time t . Also let y(t ) = min(k, |R (t ) | + nb(t ) + nд(t ) ).
+                         The weak uniformity of RP in Lemma 1 is direct from Theorem 1 in [Gemulla et al. 2008], and
+we show the strong uniformity of RP in Lemma 2.
+     Lemma 1 (Weak Uniformity of Random Pairing).                     At each fixed time t , all equal-sized subsets
+of the dataset have the same probability to be the set of samples maintained in Algorithm 1. Formally,
+           Pr [S(t )    = A] = Pr [S(t ) = B],  ∀t ≥     1,   ∀A B ⊂ R(t ) s.t. A = B.                           (2)
+     Lemma 2 (Strong Uniformity in Random Pairing).                      At each fixed time, all equal-sized subsets
+of the dataset have the same probability to be a subset of the samples maintained in Algorithm 1.
+Formally,
+           Pr [A ⊂ S (t )] = Pr [B ⊂ S(t )],    ∀t ≥     1,   ∀A B ⊂ R(t ) s.t. A = B.                           (3)
+
+     ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:10              K. Shin et al.
+
+ ALGORITHM 2: ThinkDfast: Simple and Fast Version of ThinkD
+    Inputs: fully dynamic graph stream: (e(1), e(2), . . .), sampling probability: R
+    Outputs: estimate of the global triangle count: ¯c
+    estimates of the local triangle counts: c [u] for each node u
+ 1  S ← ∅
+ 2 for each element e(t ) = ({u, v}, δ ) in the input stream do
+ 3       Update({u, v}, δ )
+ 4       if δ  = + then Insert({u, v})
+ 5       else if δ  = − then Delete({u, v})
+ 6 Procedure Update({u, v}, δ ):             update global and local triangle counts
+ 7       compute Nˆ [u] ∩ Nˆ [v]       Nˆ [u] and Nˆ [v] are obtained from current S
+ 8       for each common neighbor w ∈ Nˆ [u] ∩ Nˆ [v] do
+ 9             if δ = + then increase ¯c , c [u], c [v], and c [w] by 1/r 2
+10             else if δ = − then decrease ¯c , c [u], c [v], and c [w] by 1/r 2
+
+11 Procedure Insert({u, v}):
+12       if a random number in Bernoulli(r ) is 1 thenS ← S ∪ {{u, v}}
+13 Procedure Delete({u, v}):
+14       if {u, v} ∈ S then S ← S \ {{u, v}}
+
+
+                                              Proof. Let eiA be the family of size-i subsets of R(t ) including A, and let eiB be the family of
+size-i subsets of R(t ) including B. Then, Equation (3) is obtained as follows:
+                                   ∑ ∑
+                Pr [A ⊂ S (t )] =                                                     Pr [C = S(t )]
+                                                            i  C ∈
+                                                               ∑
+                                   ∑ eⁱᴬ
+                                =                               Pr [C = S(t )] = Pr [B ⊂ S(t )],
+                                                            i  C ∈eiB
+
+where the second equality is from Equation (2) in Lemma 1 and |eiA | = |eiB |.
+
+                                                 Moreover, the boundedness, the expectation, and the variance of the sample size of RP in Lemma
+3 directly follow from Theorem 2 in [Gemulla et al. 2008].
+
+                                                             Lemma 3 (Boundedness, Expectation, and Variance of the sample size of Random Pair-
+ing). At each fixed time t in Algorithm 1, the sample size always satisfies
+
+                                   0 ≤ |S(t ) | ≤ k,                                         ∀t ≥ 1.
+
+Also, the expected value and the variance of the sample size are as follows:
+
+               E[|S(t ) |] =                                   |R (t|R) | +(t)n| ·b(ty) (+t)nд(t ) ,  ∀t ≥ 1.                               (4)
+
+               V ar [|S(t ) |] = (nb(t()|R+(tn)д(|t+) ) n·  y(t()t+) ·n((|Rt) )(t ) |  + nb(t ) + nд(t )   − y(t ) ) · |R (t ) | , ∀t ≥ 1.  (5)
+                                                            b       д     2         ·  (|R (t ) | + nb(t ) + nд(t ) − 1)
+
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                              12:11
+
+4.2 Simple and Fast Version of ThinkD: ThinkDfast
+ThinkDfast, which is a simple and fast version of ThinkD, is described in Algorithm 2. ThinkDfast
+initially has no sampled edges (line 1). Whenever each element ({u, v }, δ ) of the input stream
+arrives (line 2), ThinkDfast first updates its estimates by calling the procedure Update (line 3).
+Then, if the element is an addition (i.e., δ = +), ThinkDfast samples the edge {u, v } with a given
+sampling probability R (line 12) by calling the procedure Insert (line 4). If the element is a deletion
+(i.e., δ = −), ThinkDfast removes the edge {u, v } from the existing samples (line 14) by calling the
+procedure Delete (line 5).
+   In the procedure Update, ThinkDfast finds the triangles connected by the arrived edge {u, v }
+and two edges from the existing samples S (line 7). To this end, ThinkD uses the fact that each
+common neighbor w of the nodes u and v in the graph composed of the sampled edges in S
+indicates the existence of such a triangle {u, v, w }. In the case of additions (i.e., δ = +), since such
+triangles are new triangles added to the input stream, ThinkDfast increases the estimates of the
+global count and the corresponding local counts (line 9). In the case of deletions (i.e., δ = −), since
+such triangles are those removed from the input stream, ThinkDfast decreases the estimates of
+the global count and the corresponding local counts (line 10).
+   As explained in detail in Section 4.4, for unbiased estimates, the amount of change per triangle
+discovered in lines 9 and 10 should be the reciprocal of the probability that each added or deleted
+triangle is discovered. This is because this makes the expected amount of changes in the corre-
+sponding estimates for each triangle by exactly one. In ThinkDfast, each such triangle {u, v, w } is
+discovered if and only if {w, u } and {v, w } are in S, and thus the probability is r 2, as formalized
+in Lemma 5, which is based on Lemma 4. In both lemmas, we let X (t ) be the random number in
+Bernoulli (r ) drawn in line 12 while the t -th element e (t ) is processed, and we let S(t ) be S after the
+t -th element e (t ) is processed. For each edge {u, v }, we let luv(t) be the last time that {u, v } is added
+to or removed from G at time t or earlier. That is,
+    luv(t) := max({1 ≤ s ≤ t : e (s)       = ({u, v }, +) or e (s)     = ({u, v }, −)}).                        (6)
+   Lemma 4. In Algorithm 2, for each time t ≥ 1 and any edge {u, v } ∈ E (t ), {u, v } ∈ S(t ) if and only
+if X (luv(ᵗ ) ) = 1. That is,
+        {u, v } ∈ S(t ) ⇐⇒ X (lᵘᵛ(ᵗ ) )       =  1,  ∀t ≥ 1,   ∀{u, v } ∈ E (t )                                (7)
+   Proof. Note that {u, v } ∈ E (t ) implies that e (luv(ᵗ ) ) = ({u, v }, +), i.e., the edge {u, v } is added at
+time luv(t). Then {u, v } E (luv(ᵗ ) −1), and since S(s) ⊂ E(s) for all s ≥ 1, {u, v } S(luv(ᵗ ) −1) as well. There-
+fore,
+                      {u, v } ∈ S(lᵘᵛ(ᵗ ) )   ⇐⇒ X (lᵘᵛ(ᵗ ) )  = 1.                                             (8)
+Also, from Equation (6), e (s)  ({u, v }, δ ) if luv(t) < s ≤ t , and hence {u, v } is not added after time luv(t)
+in Algorithm 1. Hence for all s ∈ [luv(t), t ],
+                           {u, v } ∈ S(s)  ⇐⇒ {u, v } ∈ S(lᵘᵛ(ᵗ ) ) .                                           (9)
+    Combining Equation (8) and Equation (9) with s = t gives Equation (7).
+   Lemma 5 (Discovery Probability of Triangles in ThinkDfast). In ThinkDfast, any two dis-
+tinct edges in graph G(t ) = (V (t ), E (t ) ) are sampled with probability r 2. That is,
+    Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )] = r2  ,  ∀t ≥ 1,    ∀{u, v } {w, x } ∈ E (t ) .                     (10)
+         Proof. Applying Lemma 4 to the edges {u, v } and {w, x } gives
+    {u, v } ∈ S(t )   ⇐⇒ X (lᵘᵛ(ᵗ ) ) = 1   and         {w, x } ∈ S(t )  ⇐⇒ X (lw x(ᵗ ) ) = 1.                 (11)
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:12 K. Shin et al.
+
+Then, since X (s) ’s are independent Bernoulli (r ) and luv(t)  lwx(t) , applying Equation (11) with inde-
+pendence of X (luv(ᵗ ) ) and X (lw x(ᵗ ) ) gives
+
+        Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t ) ] = Pr [X (lᵘᵛ(ᵗ ) ) = 1 ∩ X (lw x(ᵗ ) ) = 1]
+
+        = Pr [X (lᵘᵛ(ᵗ ) ) = 1] Pr [X (lw x(ᵗ ) ) = 1] = r 2 .
+
+  (Dis)advantages of ThinkDfast: Due to its simplicity, ThinkDfast is faster than its competi-
+tors, as shown empirically in Section 5.4. However, it is less accurate than ThinkDacc, described
+in the following subsection, since it may discard edges even when memory is not full, leading to
+avoidable loss of information.
+
+4.3 Accurate Version of ThinkD: ThinkDacc
+ThinkDacc, which is an accurate version of ThinkD, is described in Algorithm 3. Unlike
+ThinkDfast, which may discard edges even when memory is not full, ThinkDacc maintains as
+many samples as possible within a given memory budget k (≥2) to minimize information loss.
+  To this end, ThinkDacc uses a sampling method called RP, described in detail in Section 4.1.
+Given a fully dynamic stream with deletions, and a memory budget k, RP maintains at most k
+samples while satisfying the uniformity of the samples. Specifically, if we let E be the set of edges
+remaining (without being deleted) in the input stream so far and S ⊂ E be the set of samples being
+maintained by RP, then the following equations hold, as shown in Lemma 2:
+
+        S k and Pr [A ⊂ S] = Pr [B ⊂ S], ∀A B ⊂ E s.t. A = B.
+
+This uniformity makes the probability that each triangle is discovered simple and computationally
+inexpensive, as shown below.
+  Updating the set S of samples using RP is described in lines 11–24. Whenever a deletion of an
+edge arrives, RP increases nb or nд depending on whether the edge is in S or not (lines 23 and
+24). Roughly speaking, nb and nд denote the number of deletions that need to be “compensated”
+by additions (lines 17–19). If there is no deletion to compensate, RP processes each addition of an
+edge as in Reservoir Sampling [Vitter 1985]. That is, if memory is not full (i.e., S < k), RP adds
+the new edge to S (line 14), while otherwise, RP replaces a random edge in S with the new edge
+with a certain probability (lines 15–16). See Section 4.1 for the definition of nb and nд, the details
+of RP, and the intuition behind the compensation; and we focus on how to use RP for triangle
+counting in the rest of this section.
+  Updating the estimates in ThinkDacc is the same as that in ThinkDfastexcept for the amount
+of change per triangle discovered in lines 9 and 10. As in ThinkDfast, for unbiased estimates, the
+amount should be reciprocal of the probability that each added or deleted triangle is discovered.
+When each element e (t ) = ({u, v }, δ ) arrives, each added or deleted triangle {u, v, w } is discovered
+if and only if {w, u } and {v, w } are in S. As shown in Lemma 7, if we let y = min(k, E + nb + nд ),
+then the probability of such an event is
+
+        p(E, nb , nд ) := E + nyb + nд × E + nyb−+1nд − 1 . (12)
+
+Lemma 7 is based on Lemma 6, and in both lemmas, we let E (t ) be the set of edges remaining
+(without being deleted) in the input graph stream after the t -th element is processed. We also let
+S(t ) ⊂ E(t ) and y(t ) be S and y after the t -th element is processed.
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                               12:13
+
+     Lemma 6 (Sampling Probability of Each Edge).                       The probability that each edge is sampled in
+    Algorithm 3 is as follows:
+
+         Pr [{u, v } ∈ S(t )] =         |E(t ) | +yn(tb()t )   + nд(t ) , ∀t ≥ 1, ∀{u, v } ∈ E (t ) .           (13)
+
+               Proof. Let 1({u, v } ∈ S(t ) ) be a random variable which is 1 if {u, v } ∈ S(t ) and 0 otherwise. By
+    definition,                         ∑
+                                    |S(t ) | =                 1({u, v } ∈ S(t ) ).                             (14)
+                                               {u,v } ∈ E(t )
+    Then, by linearity of expectation and Equation (14),
+          ∑                                                        ∑
+         E[|S(t ) |] =           E[1({u, v } ∈ S(t ) )] =          Pr [{u, v } ∈ S(t )].                        (15)
+         {u,v } ∈ E(t )                                             {u,v } ∈ E(t )
+    Then, Equation (13) is obtained as follows:
+
+         Pr [{u, v } ∈ S(t )] =         |E1(t ) |     {w,x∑               Pr [{w, x } ∈ S(t )]
+                                                                } ∈ E(t )
+                                        = E[|S(t ) |] =                      y(t )           ,
+                                                     |E(t ) |   |E(t ) | + nb(t )     + nд(t )
+                 where the first, second, and last equalities are from Equation (3), Equation (15), and Equation (4)
+    in Lemma 3, respectively.
+
+     Lemma 7 (Discovery Probability of Triangles in ThinkDacc).                       In ThinkDacc, any two distinct
+       edges in graph G(t ) = (V (t ), E (t ) ) are sampled with probability as in Equation (12). That is, if we let
+    p(t )    and S(t ) be the values of Equation (12) and S, resp., in Algorithm 3 after the t -th element e (t ) is
+    processed, then
+         Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )] = p(t ),        ∀t ≥ 1,   ∀{u, v } {w, x } ∈ E (t ) .           (16)
+   Proof. Let 1({u, v } ∈ S(t ) ) be a random variable which is 1 if {u, v } ∈ S(t ) and 0
+otherwise. For calculating Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )], we expand the covariance sum
+∑
+  {u,v }{w,x } Cov (1({u, v } ∈ S(t ) ), 1({w, x } ∈ S(t ) )) in two ways and compare them.
+   First, we use the expansion of the variance of S(t ). From Equation (14),
+        ∑
+         V ar [|S(t ) |] =              V ar [1({u, v } ∈ S(t ) )]
+                                 {u,v } ∈ E∑(t )
+                                 +         Cov (            1({u, v } ∈ S(t ) ), 1({w, x } ∈ S(t ) )),
+                                 {u,v }{w,x }
+    and hence the covariance sum can be expanded as
+          ∑
+                                                Cov (1({u, v } ∈ S(t ) ), 1({w, x } ∈ S(t ) ))
+     {u,v }{w,x }                           ∑
+         = V ar [|S(t ) |] −                                   V ar [1({u, v } ∈ S(t ) )].                      (17)
+                                      {u,v } ∈ E(t )
+    For the second term of Equation (17), V ar [x] = E[x        2
+                                                                       ] − (E[x])2 implies
+                          V ar [1({u, v } ∈ S(t ) )] = Pr [{u, v } ∈ S(t )] − Pr [{u, v } ∈ S(t )]2 .           (18)
+
+     ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:14                                 K. Shin et al.
+
+ ALGORITHM 3: ThinkDacc: Accurate Version of ThinkD
+      Inputs: fully dynamic graph stream: (e(1), e(2), . . .), memory budget: k (≥2)
+      Outputs: estimate of the global triangle count: ¯c
+      estimates of the local triangle counts: c [u] for each node u
+ 1    S ← ∅, E 0, nb ← 0, nд ← 0
+ 2 for each element e(t ) = ({u, v}, δ ) in the input stream do
+ 3       Update({u, v}, δ )
+ 4       if δ  = + then Insert({u, v})
+ 5       else if δ   = − then Delete({u, v})
+ 6 Procedure Update({u, v}, δ ):                     update global and local triangle counts
+ 7       compute Nˆ [u] ∩ Nˆ [v]               Nˆ [u] and Nˆ [v] are obtained from current S
+ 8       for each common neighbor w ∈ Nˆ [u] ∩ Nˆ [v] do
+ 9             if δ  = + then increase ¯c , c [u], c [v], and c [w] by 1/p (E, nb , nд )
+10             else if δ = − then decrease ¯c , c [u], c [v], and c [w] by 1/p (E, nb , nд )
+
+11 Procedure Insert({u, v}):
+12       EE + 1
+13       if nb + nд = 0  then
+14             if S < k then S ← S ∪ {{u, v}}
+15             else if a random number in Bernoulli(k/E) is 1  then
+16                   replace a random edge in S with {u, v}
+
+17       else if a random number in Bernoulli(nb /(nb + nд )) is 1 then
+18             S ← S ∪ {{u, v}},  nb ← nb − 1
+19       else nд ← nд − 1
+20 Procedure Delete({u, v}):
+21       EE 1
+22       if {u, v} ∈ S then
+23             S ← S \ {{u, v}},  nb ← nb + 1
+24       else nд ← nд + 1
+
+
+Hence applying Equation (13) and Equation (18) to Equation (17) gives the covariance sum as
+
+                     ∑
+                                  Cov (1({u, v } ∈ S(t ) ), 1({w, x } ∈ S(t ) ))
+ {u,v }{w,x }                     ∑
+ = V ar [|S(t ) |] −                         V ar [1({u, v } ∈ S(t ) )]
+                      {u,v∑
+ = V ar [|S(t ) |] −              } ∈ E(t )  (Pr [{u, v } ∈ S(t )] − Pr [{u, v } ∈ S(t )]2 )
+                      {u,v } ∈ E(t )
+ = V ar [|S(t ) |] − |E(t ) | ·    y(t )     ·          ((|E(t ) | + nb(t )  + nд(t ) − y(t ) ) .          (19)
+                                               |E(t ) | + nb(t )             + nд(t ) )2
+
+                  Second, we directly expand the covariance sum. Expanding the covariance sum with Cov (x, y) =
+E[xy] − E[x] · E[y] and applying Equation (13) give
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+                                             Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams      12:15
+
+          ∑
+                                              Cov (1({u, v } ∈ S(t ) ), 1({w, x } ∈ S(t ) ))
+      {u,v }{∑w,x }       (                                                                                 )
+      =                      Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )] − Pr [{u, v } ∈ S(t )] · Pr [{w, x } ∈ S(t )]
+      {u,v }{w,x }
+           ∑                                                                                                2
+      = {u,v∑}{w,x } (Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )])− y|E(t()t )·|y+(ytn)(tb(· |E)t)          +(tn) | ·д(t) (|E(t ) | − 1)
+
+      =                                               Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )]     −          .      (20)
+          {u,v }{w,x }                        ∑                                                  (|E(t ) | + nb(t ) + nд(t ) )2
+    Now, the probability sum                             {u,v }{w,x } Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )] can be obtained by com-
+                                      paring two expansions Equation (19) and Equation (20) of the covariance sum and applying Equa-
+    tion (5) in Lemma 3 as
+          ∑
+                 Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )]
+     {u,v }{w,x }
+     =     ∑              Cov (1({u, v } ∈ S(t ) ), 1({w, x } ∈ S(t ) )) + y(t ) ·(|Ey(t()t )· |E|      (t ) | ·    (|E(t ) | − 1)
+          {u,v }{w,x }                                                                                 + nb(t )     + nд(t ) )2
+       = V ar [|S(t ) |] − |E(t ) | · y(t ) · ((|E(t ) | + nb(t ) + nд(t ) − y(t ) ) + y(t ) · y(t ) · |E(t ) | · (|E(t ) | − 1)
+                                                         |E(t ) | + nb(t )  + nд(t ) )2               (|E(t ) | + nb(t ) + nд(t ) )2
+     = (|E(t )y| (+t) n· ((yt) (+t) n−(t1) )) ·· |E( (t ) | · (|E(t ) | − 1)              1  .              (21)
+                          b   д                   |E(t ) | + n(t )      + n(t )     −
+                                                                        b д                )
+    Then, Equation (16) is obtained by Equation (21) as follows:
+                                    Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )]
+
+        = |E(t ) | · (|E1 (t ) | − 1)  {u,v∑}{w,x } Pr [{u, v } ∈ S(t ) ∩ {w, x } ∈ S(t )]
+        = |E(t ) | · (|E1 (t ) | − 1) · (|E(t )y| (+t) n· b((yt) (+t) n−д(t1) )) ·· |E( (t(t) | · (|E(t ) | − 1)
+        |E ) | + nb(t ) + nд(t ) − 1)
+                              y(t )                                       y(t )     −     1
+             = |E(t ) | + nb(t )              + nд(t )              ·   |E(t ) | + nb(t ) + nд(t ) − 1 = p(t ),
+    where the first equality is from Equation (3).
+   (Dis)advantages of ThinkDacc: Within the same memory budget, ThinkDacc is slower
+than ThinkDfastsince ThinkDaccmaintains and processes more samples on average. However,
+ThinkDacc is more accurate than ThinkDfast by utilizing more samples. These are shown empir-
+ically in Section 5.3 and Section 5.4.
+   Reducing estimation errors by sacrificing unbiasedness: The estimates (i.e., ¯c and c[u]
+for each node u) in Algorithms 2 and 3 can have negative values. Since true triangle counts are
+always non-negative, lower bounding the estimates by zero always reduces the estimation errors.
+However, the estimates become biased, and Theorem 1 in the following section does not hold
+anymore.
+
+                     ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:16                                                                                                   K. Shin et al.
+
+4.4 Accuracy Analyses
+We prove that ThinkDfast and ThinkDacc maintain unbiased estimates, whose expected values are
+equal to the true global and local triangle counts. Then, we analyze the variances of the estimates
+that ThinkDfast maintains. To this end, for each variable (e.g., ¯c) in Algorithms 2 and 3, we use
+superscript (t ) (e.g., ¯c(t )) to denote the value of the variable after the t -th element e (t ) is processed.
+   We first define added triangles and deleted triangles in Definitions 1 and 2.
+   Definition 1 (Added Triangles). Let A(t ) be the set of triangles that have been added to graph G
+at time t or earlier. Formally,
+        A(t ) := {({u, v, w }, s) : 1 ≤ s ≤ t and {u, v, w } T (s−1) and {u, v, w } ∈ T (s) },
+where addition time s is for distinguishing triangles composed of the same nodes but added at
+different times.7
+   Definition 2 (Deleted Triangles). Let D(t ) be the set of triangles that have been removed from
+graph G at time t or earlier. Formally,
+        D(t ) := {({u, v, w }, s) : 1 ≤ s ≤ t and {u, v, w } ∈ T (s−1) and {u, v, w } T (s) },
+where deletion time s is for distinguishing triangles composed of the same nodes but deleted at
+different times.2
+   Similarly, for each node u ∈ V (t ), we use A(t )[u] ⊂ A (t ) and D(t )[u] ⊂ D (t ) to denote the
+added and deleted triangles with node u, respectively. Lemma 8 formalizes the relationship be-
+tween these concepts and the number of triangles.
+   Lemma 8 (Count of Triangles in the Current Graph). The count of triangles in the current
+graph equals the count of added triangles subtracted by the count of deleted triangles. Formally,
+        |T (t ) |                                       = |A (t ) | − |D(t ) |,    ∀t ≥ 1,                            (22)
+
+        |T (t )[u]| =                                   |A (t )[u]| − |D(t ) [u]|, ∀t ≥ 1, ∀u ∈ V (t ) .              (23)
+                           Proof. When t = 1, then T (1) = A(1) = D(1) = ∅ holds, and hence Equation (22) trivially holds.
+    Hence we assume that t ≥ 2 from now on. First, we show that for each time s ≥ 2,
+        |T (s) | − |T (s−1) |                                    = |A (s) \A (s−1) | − |D(s) \D (s−1) |.              (24)
+    To show this, we show the following relations,
+                                                        |A (s) \A (s−1) | = |T (s) \T (s−1) |,                        (25)
+
+                                                        |D (s) \D (s−1) | = |T (s−1) \T (s) |.                        (26)
+    For Equation (25), note that {                                                                          }
+        A(s)\A (s−1) = ({u, v, w }, s) : {u, v, w } T (s−1) and {u, v, w } ∈ T (s)
+    and      T (s)\T (s−1)     = {{u, v, w } : {u, v, w } T (s−1) and {u, v, w } ∈ T (s) }
+    hold, and hence Equation (25) holds. Similarly,{                                                        }
+        D(s) \D (s−1) = ({u, v, w }, s) : {u, v, w } ∈ T (s−1) and {u, v, w } T (s)
+
+    7Note that triangles composed of the same nodes can be added multiple times (and thus can be removed multiple times)
+    only if deleted edges are added again.
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                              12:17
+
+    and        T (s−1) \T (s)                     = {{u, v, w } : {u, v, w } ∈ T (s−1) and {u, v, w } T (s) }
+hold, and hence Equation (26) holds. Then, Equation (25) and Equation (26) imply
+        |A (s) \A (s−1) | + |T (s−1) | = |T (s) \T (s−1) | + |T (s−1) | = |T (s−1) ∪ T (s) |
+        = |T (s−1)\T (s) | + |T (s) | = |D (s) \D (s−1) | + |T (s) |,
+and hence Equation (24) holds. Then, summing up Equation (24) from s = 2 to t yields
+                                                  ∑t        ∑t
+                           |T (t ) | − |T (1) | =     |A (s) \A (s−1) | −   |D (s) \D (s−1) |.                 (27)
+                                                  s=2                     s=2
+    Then, {A (s)\A (s−1) }st=2 being disjoint over s implies
+                            ∑t                        ⋃t
+                                      |A (s) \A (s−1) | = (A(s)\A (s−1) )   = |A (t )\A (1) |,                 (28)
+                            s=2                                   s=2
+    and similarly,
+                                      ∑t
+                                                          |D (s) \D (s−1) | = |D (t )\D (1) |.                 (29)
+                                      s=2
+    holds. Then, applying Equation (28), Equation (29), and T (1) = A(1) = D(1) = ∅ to Equation (27)
+    yields that for all t  ≥ 2,
+                                          |T (t ) |               = |A (t ) | − |D(t ) |,
+    which completes the proof of Equation (22).
+                                                  For Equation (23), replacing T (s) by T (s) [u], A(s) by A(s)[u], and D(s) by D(s) [u] and repeating
+    above give a proof.
+                        Based on these concepts, we prove that ThinkDfast and ThinkDacc maintain unbiased estimates
+    in Theorem 1. For the unbiasedness of the estimate ¯c of the global count, we show that the expected
+    amount of change in ¯c for each added triangle is +1, while that for each deleted triangle is −1. This
+    follows from the fact that the amount of change in estimates for each observed triangle addition
+    or deletion is the reciprocal of the probability that each triangle addition or deletion is observed.
+    Then, by Lemma 8, the expected value of ¯c equals the true global count. Likewise, we show the
+    unbiasedness of the estimate of the local triangle count of each node by considering only the added
+    and deleted triangles incident to the node.
+                              Theorem 1 (“Any Time” Unbiasedness of ThinkD). ThinkD gives unbiased estimates at any
+    time. Formally, in Algorithms 2 and 3,
+                                       E[¯c(t )] =             |T (t ) |, ∀t ≥ 1,                              (30)
+                                    E[c (t )[u]] =     |T (t )[u]|, ∀t ≥ 1, ∀u ∈ V (t ) .                      (31)
+   Proof. Consider a triangle ({u, v, w }, s) ∈ A(t ), and let e (s) = ({u, v }, +) without loss of gen-
+erality. The amount α (s)
+        uvw of change in each of ¯c, c[u], c[v ], and c[w] due to the discovery of
+({u, v, w }, s) in line 9 of Algorithm 2 or Algorithm 3 is
+        α (s)              ⎧⎪⎪1/r 2   i f         {v, w } ∈ S(s−1) and {w, u } ∈ S(s−1) in Algorithm 2
+        uvw = ⎨⎪⎪⎩1/p0 (s−1) i f {v, w } ∈ S(s−1) and {w, u } ∈ S(s−1) in Algorithm 3
+        otherwise.
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:18                                                                                                                K. Shin et al.
+
+Then, from Equation (10) and Equation (16), the following equation holds:
+    α (s)     {                     1                                i f  {v, w } ∈ S(s−1) and {w, u } ∈ S(s−1)
+         uvw =     0P r[{v,w } ∈S(ˢ−1)∩{w,u } ∈S(ˢ−1)]               otherwise.
+Hence,
+                                            E[α (s)
+                                                            uvw ] = 1.                (32)
+                   Consider a triangle ({u, v, w }, s) ∈ D(t ), and let e (s)        = ({u, v }, −) without loss of generality. The
+amount β (s)
+                                      uvw of change in each of ¯c, c[u], c[v ], and c[w] due to the discovery of ({u, v, w }, s) in
+line 10 of Algorithm 2 or Algorithm 3 is
+         β (s) ⎧⎪⎪−1/r 2           i f  {v, w } ∈ S(s−1) and {w, u } ∈ S(s−1) in Algorithm 2
+            uvw = ⎨⎪⎪⎩−1/p0 (s−1)  i f  {v, w } ∈ S(s−1) and {w, u } ∈ S(s−1) in Algorithm 3
+             otherwise.
+Then, from Equation (10) and Equation (16), the following equation holds:
+    β (s)     {                     −1                               i f  {v, w } ∈ S(s−1) and {w, u } ∈ S(s−1)
+         uvw =     0P r[{v,w } ∈S(ˢ−1)∩{w,u } ∈S(ˢ−1)]               otherwise.
+Hence,
+                                           E[β (s)
+                                                 uvw ] = −1.                          (33)
+By definition, the following holds:     ∑                                         ∑
+             c¯(t )     =                        α (s)
+                                                            uvw      +                                 β (s)
+                                                                                      uvw .
+             ({u,v,w },s) ∈A(t )                                           ({u,v,w },s) ∈D(t )
+By linearity of expectation, Equation (32), Equation (33), and Lemma 8, the following holds:
+                                               ∑                           ∑
+         E[¯c(t )] =                    E[α (s)
+                                            uvw ]           +                      E[β (s)
+                                                                                                       uvw ]
+                                      ({u,v,w∑},s) ∈A(t )   ∑({u,v,w },s) ∈D(ᵗ )
+                  =                     1 +                                    (−1) = |A (t ) | − |D(t ) | = |T (t ) |.
+                                      ({u,v,w },s) ∈A(t )  ({u,v,w },s) ∈D(t )
+
+Likewise, for each node u ∈ V (t ), the following holds:
+                                        ∑                                                   ∑
+             c (t )[u] =                                    α (s)
+                                                                uvw          +    β (s)
+                                                                                      uvw .
+             ({u,v,w },s) ∈A(t )[u]                                               ({u,v,w },s) ∈D(t )[u]
+By linearity of expectation, Equation (32), Equation (33), and Lemma 8, the following holds:
+                             ∑                                                    ∑
+     E[c (t )[u]] =                     E[α (s)
+                                             uvw ]              +                     E[β (s)
+                                                                                  uvw ]
+                  ∑({u,v,w },s) ∈A(t )[u]     ∑                      ({u,v,w },s) ∈D(t )[u]
+    =        1 +                                                                  (−1) = |A (t )[u]| − |D(t ) [u]| = |T (t )[u]|.
+    ({u,v,w },s) ∈A(t )[u]                 ({u,v,w },s) ∈D(t )[u]
+                                      In Appendix B, we prove the formulas for the variances of estimates given by ThinkDfast. The-
+orem 2 is implied by the formulas. Note that r 2 in Equation (34) and Equation (35) is the discovery
+probability shown in Lemma 5.
+            Theorem 2 (Variance of ThinkDfast).                             Given an input graph stream, the variances of estimates
+maintained by ThinkDfast with the sampling probability R is proportional to 1/r 2. Formally, in
+Algorithm 2,
+                                              V ar [¯c(t )] = O (1/r 2     ),     ∀t ≥ 1,                                      (34)
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                                12:19
+
+           V ar [c (t )[u]] = O (1/r    2       ), ∀t ≥ 1, ∀u ∈ V (t ) .                                         (35)
+      Proof. See Theorem 5 in Appendix B.
+
+4.5 Complexity Analyses
+We analyze the time and space complexities of ThinkDfast and ThinkDacc. In our analyses, we
+use V¯ (t ) := ⋃st=1 V (s) to denote the set of nodes that appear in the t -th or earlier elements in the
+input stream.
+   Space Complexity: To process the first t elements in the input graph stream, ThinkDfast and
+ThinkDacc maintain one estimate for the global triangle count and at most |V¯ (t ) | estimates for
+the local triangle counts. In addition, ThinkDfast maintains |E(t ) | · r edges on average, while
+ThinkDacc maintains up to k edges. Thus, the average space complexities of ThinkDfast and
+ThinkDacc are O (|E(t ) | · r + |V¯ (t ) |) and O (k + |V¯ (t ) |), respectively. The complexities become
+O (|E(t ) | · r ) and O (k ) when only the global triangle count needs to be estimated.
+   Time Complexity: We prove the average time complexity of ThinkDfast in Theorem 3, which
+implies Corollary 1, and the worst-case time complexity of ThinkDacc in Theorem 4. Corollary 1
+and Theorem 4 state that, given a fixed memory budget k, ThinkDfast and ThinkDacc scale lin-
+early with the number of elements in the input stream.
+   Theorem 3 (Time Complexity of ThinkDfast). Algorithm 2 takes O (t + t 2r ) on average to pro-
+cess the first t elements in the input stream.
+   Proof. In Algorithm 2, the most expensive step in processing each element e (s) = ({u, v }, δ )
+is to intersect Nˆ [u] and Nˆ [v ] (line 7), which takes O (1 + E[|Nˆ [u]|∑+ |Nˆ [v ]|]) = O (1 + E[S]) =
+O (1 + sr ) on average. Hence, processing the first t elements takes st=1 O (1 + sr ) = O (t + t 2r ) on
+    average.
+   Collorary 1 (Time Complexity of ThinkDfast with Fixed Memory k). If r = O (k/t ) for a constant k
+(≥1), then Algorithm 2 takes O (tk ) on average to process the first t elements in the input stream.
+   Theorem 4 (Time Complexity of ThinkDacc). Algorithm 3 takes O (tk ) to process the first t
+elements in the input stream.
+   Proof. In Algorithm 3, the most expensive step in processing each element e (s) = ({u, v }, δ ) is
+to intersect Nˆ [u] and Nˆ [v ] (line 7), which takes O (1 + |Nˆ [u]| + |Nˆ [v ]|) = O (k ). Thus, processing
+    the first t elements takes O (tk ).
+
+    5 EXPERIMENTS
+    In this section, we review our experiments for answering the following questions:
+                               — Q1. Illustration of Theorems: Does ThinkD give unbiased estimates? Does ThinkD scale
+       linearly with the size of the input stream?
+      — Q2. Accuracy: Is ThinkD more accurate than its best competitors?
+      — Q3. Speed: Is ThinkD faster than its best competitors?
+                       — Q4. Effects of Deletions: Is ThinkD consistently accurate regardless of the ratio of deleted
+       edges?
+                                  — Q5. Application to Social Network Analysis: Is ThinkD useful for accurate, space-
+                             efficient, and incremental estimation of measures that are widely used in social network
+       analysis and network science?
+      Additionally, in appendices, our experiments for answering the following questions are re-
+    viewed:
+
+      ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:20                                                                                      K. Shin et al.
+
+                                               Table 3. Summary of the Real-world and Synthetic Graph Streams Used in Our
+                                                            Experiments. B: billion, M: million, K: thousand
+              Name                                   #Nodes      #Edges    Type
+              Friendster [Yang and Leskovec 2015]     65.6M        1.81B   Friendship
+              Orkut [Mislove et al. 2007]             3.07M         117M   Friendship
+              Flickr [Mislove et al. 2007]            2.30M        22.8M   Friendship
+              Patent [Hall et al. 2001]               3.77M        16.5M   Citation
+              Youtube [Mislove et al. 2007]           3.22M        9.38M   Friendship
+              BerkStan [Leskovec et al. 2009]          685K        6.65M   Web
+              Facebook [Viswanath et al. 2009]        63.7K         817K   Friendship
+              Epinion [Massa and Avesani 2005]         132K         711K   Trust
+              Random (≈ 800GB)*                          1M    0.1B-100B   Synthetic
+              *We used 4 bytes, 8 bytes, and 1 bit to represent a node, an edge, and a sign in the stream,
+              respectively.
+              If 20 bits and 40 bits were used to represent a node and an edge, the stream would become about
+              500 GB.
+                          — Q6. Speed and Accuracy in Multigraph Streams (Appendix C): Is a variant of ThinkD
+                 for triangle counting in multigraph streams (i.e., graph streams with parallel edges) faster
+             and more accurate than its best competitors?
+                              — Q7. Application to Anomaly Detection (Appendix D): Does ThinkD-Spot, which is
+                         based on ThinkD, detect suddenly emerging dense subgraphs faster and more accurately
+             than its best competitors?
+
+5.1 Experimental Settings
+Machines: We used a PC with a 3.60 GHz Intel i7-4790 CPU and 32GB RAM unless otherwise
+stated.
+  Datasets: We created fully dynamic graph streams with deletions using the real-world graphs
+listed in Table 3 as follows: (a) create the additions of the edges in the input graph and randomly
+shuffle them8, (b) choose α % of the edges and create the deletions of them, and (c) locate each
+deletion in a random position after the corresponding addition. We set α to 20% unless otherwise
+stated (see Section 5.5 for its effect on accuracy). The created streams were streamed from the disk.
+  Implementations: We implemented ThinkDfast (Section 4.2), ThinkDacc (Section 4.3),
+Triestfd [De Stefani et al. 2017], Triestimpr [De Stefani et al. 2017], ESD [Han and Sethu 2017],
+and Mascot [Lim et al. 2018] commonly in Java. In all of them, sampled edges are stored in the
+adjacency list format, and as described in the last paragraph of Section 4.3, estimates are lower
+bounded by zero unless otherwise stated.
+  Evaluation Metrics: Let x and {(u, x[u])}u ∈V be the true counts of global triangles and local
+triangles at the end of the input stream. Let ˆx and {(u, xˆ[u])}u ∈V be the corresponding estimates
+obtained by the evaluated algorithm. Then, we measured the accuracy of each algorithm using the
+following metrics:
+    — Global Error (the lower the better):
+                  √                            |x − xˆ |/x,
+    — RMSE (the lower the better):  |V |1      ∑u ∈V (x[u] − xˆ[u])2,
+
+
+8Instead, additions can be ordered chronologically when timestamps of edges are given. We obtained consistent experi-
+mental results when we ordered additions randomly and chronologically.
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams  12:21
+
+
+
+
+
+
+
+
+
+
+Fig. 2. ThinkD is provably accurate and scalable. (a, e) ThinkD is “any time”, maintaining estimates while
+the input graph evolves. (b-c, f-g) ThinkDacc is the most accurate with the smallest confidence intervals over
+the entire stream. ThinkDfast becomes more accurate than Triestfd as the input graph grows over time. (d,
+h) ThinkD provides unbiased estimates, whose expected values are equal to the true triangle counts, and
+their variances are small.
+
+     — Rank Correlation (the higher the better): Spearman’s rank correlation coefficient [Spearman
+       1904] between {(u, x[u])}u ∈V and {(u, xˆ[u])}u ∈V .
+
+5.2 Q1. Illustration of Theorems
+ThinkD gives unbiased estimates (Theorem 1). We compared 10,000 estimates of the global
+triangle count obtained by ThinkDfast, ThinkDacc, and Triestfd, whose parameters were set so
+that on average 10% of the edges are stored at the end of each graph stream. Figures 2(d) and
+2(h) show the distributions of the estimates at the end of the Facebook and Epinion datasets, re-
+spectively. The means of the estimates were close to the true triangle count, consistently with
+Theorem 1 (i.e., unbiasedness of ThinkD). Moreover, ThinkDacc and ThinkDfast gave estimates
+with smaller variances than Triestfd. Figures 2(b), 2(c), 2(f), and 2(g) show how the 95% confi-
+dence intervals, estimated from 10, 000 trials, changed over early and late parts of the datasets.
+ThinkDacc was consistently the most accurate with the smallest confidence intervals. ThinkDfast
+became more accurate than Triestfd as the input graph grew over time. The same trend can be
+seen in Figures 2(a) and 2(e), where we show how an estimate from a single trial of each algorithm
+changed over the entire datasets.
+  ThinkD scales linearly (Corollary 1 and Theorem 4). We measured the elapsed times taken
+by ThinkDfast and ThinkDacc to process all elements in graph streams with different numbers
+of elements. To measure their speeds independently of the speed of the input stream, we ignored
+time taken to wait for the arrival of elements. In both algorithms, we set k and r so that on average
+
+      ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:22    K. Shin et al.
+
+
+
+
+
+
+
+
+
+
+        Fig. 3. ThinkD is scalable. ThinkD scales linearly with the size of the input stream.
+
+107 edges are stored at the end of each input stream. Figure 3(a) shows the results in the Random
+datasets, which were created by the Erdös-Rényi model. Both ThinkDfast and ThinkDacc scaled
+linearly with the number of elements, as expected in Corollary 1 and Theorem 4. Notice that the
+largest dataset contains 100 billion elements. As seen in Figure 3(b) and Figure 3(c), we obtained
+similar trends in graph streams with realistic structures created by sampling different numbers of
+elements from the Friendster and Orkut datasets.
+
+5.3 Q2. Accuracy (ThinkD is More Accurate Than Its Competitors)
+We compared the accuracies of four algorithms that support edge deletions. As we changed the
+ratio of stored edges at the end of each input stream from 5% to 40%, we measured the accuracies
+of ThinkDfast, ThinkDacc, and Triestfd. ESD always stores the entire input stream in memory,
+and we set its parameter to 1.0 to maximize its accuracy. Each evaluation metric was averaged
+over 100 trials in the Friendster and Orkut datasets and 1,000 trials in the others.9 As seen in Fig-
+ure 4, ThinkDfast and ThinkDacc consistently gave the best trade-off between space and accuracy.
+Specifically, within the same memory budget, ThinkDacc was up to 4× and 4.3× more accurate
+than Triestfd in terms of global error and Root Mean Square Error (RMSE), respectively. Between
+our algorithms, ThinkDacc consistently outperformed ThinkDfast in terms of accuracy.
+
+5.4 Q3. Speed (ThinkD is Faster Than Its Competitors)
+We compared the speeds and accuracies of four algorithms that support edge deletions. The de-
+tailed settings were the same as those in Section 5.3 except that we measured the performance
+of ESD as we changed its parameter from 0.2 to 1.0. To measure the speeds of the algorithms
+independently of the speed of the input stream, we ignored time taken to wait for the arrival of
+elements. As seen in Figure 5, ThinkDfast and ThinkDacc consistently gave the best trade-off
+between speed and accuracy. Specifically, for the same global error and RMSE, ThinkDfast was
+up to 2.2× faster than Triestfd. Between our algorithms, ThinkDfast consistently outperformed
+ThinkDacc in terms of speed.
+
+5.5 Q4. Effects of Deletions (ThinkD is Consistently Accurate)
+We measured how the ratio of deleted edges (i.e., α in Section 5.1) in input graph streams affects
+the accuracies of the considered algorithms. In every algorithm, we set the ratio of stored edges
+at the end of each input stream to 10%. As seen in Figure 6, all algorithms that support edge
+deletions became more accurate as input graphs became smaller with more deletions. ThinkDfast
+and ThinkDacc were similarly accurate with Mascot and Triestimpr, respectively, in the streams
+without deletions. In the streams with deletions, which Mascot and Triestimpr cannot handle,
+
+
+    9We used a workstation with 2.67 GHz Intel Xeon E7-8837 CPUs and 1 TB memory for the Friendster dataset.
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams  12:23
+
+
+
+
+
+
+
+
+
+
+Fig. 4. ThinkD is accurate. ThinkD provides the best trade-off between space and accuracy. In particular,
+ThinkDacc is up to 4.3× more accurate than Triestfd within the same memory budget. Error bars denote
+±1 standard error. ESD is inapplicable to local triangle counting.
+
+       ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:24    K. Shin et al.
+
+
+
+
+
+
+
+
+
+
+Fig. 5. ThinkD is fast. ThinkD provides the best trade-off between speed and accuracy. In particular,
+ThinkDfast is up to 2.2× faster than Triestfd when they are similarly accurate. Error bars denote ±1 standard
+error. ESD is inapplicable to local triangle counting.
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams  12:25
+
+
+
+
+
+
+
+
+
+
+    Fig. 6.          ThinkD is consistently accurate regardless of the ratio of deleted edges. Error bars denote ±1
+    standard error. Triestimpr and Mascot are inapplicable when there are deletions. ESD is inapplicable to local
+    triangle counting.
+
+    ThinkDfast and ThinkDacc were 1.8 − 3.4× more accurate than Triestfd regardless of the ratio
+    of deleted edges.
+
+    5.6     Q5. Application to Social Network Analysis
+    We show that ThinkD can be used for accurate and space-efficient estimation of the following
+    measures, which are widely used in social network analysis and network science [Holland and
+    Leinhardt 1971; Kemper 2009; Luce and Perry 1949; Wasserman and Faust 1994; Watts and Strogatz
+    1998], in fully-dynamic graph streams:
+        — Transitivity Ratio (TR) [Luce and Perry 1949]: The transitivity ratio of a graph G(t )                 is
+        defined as
+                                                       6
+        TR(G(t ) ) :=               ∑v ∈V(ₜ ) (d (t )× |T (t ) |      ,
+                                                    [v ] × (d (t )[v ] − 1))
+      where d (t )[v ] is the degree of v ∈ V (t ) in G(t ).
+                        — Local Clustering Coefficients (LCC) [Watts and Strogatz 1998]: The local clustering coef-
+        ficient of each node v  ∈ V (t ) in a graph G(t ) is defined as
+                                                       2
+                                LCC(G(t ), v ) := d (t )[v ]× |T (t )[v ]| ,
+                                    × (d (t )[v ] − 1)
+      where d (t )[v ] is the degree of v ∈ V (t ) in G(t ).
+                             — Global Clustering Coefficient (GCC) [Watts and Strogatz 1998]: The global clustering
+        coefficient of a graph G(t ) is defined as
+
+        GCC(G(t ) ) := |V1(t ) | v ∑ LCC(G(t ), v ).
+        ∈V(t )
+Specifically, to estimate these graph measures, the exact degree of each node v ∈ V (t ) (i.e., d (t )[v ])
+was computed incrementally while ¯c(t ) and c (t )[u] for each node v ∈ V (t ) were computed in
+ThinkDfast, ThinkDacc, and Triestfd. Their parameters were set so that on average 30% of the
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:26                                                                                                                  K. Shin et al.
+
+         Table 4. ThinkD is Useful for Social Network Analysis (SNA).
+                  SNA   Transitivity  Global Clustering     Local Clustering
+                Measures   Ratio         Coefficients        Coefficients
+   Datasets    Evaluation  Global           Global      RMSE*             Rank
+                Metrics    Error*           Error*                   Correlation**
+                Triestfd   0.0051           0.019                0.63     0.41
+   Facebook    ThinkDfast  0.0046           0.010                0.26     0.56
+               ThinkDacc   0.0026           0.010                0.15     0.68
+                Triestfd   0.0083           0.036                0.74     0.51
+       Epinion ThinkDfast  0.0064           0.012                0.29     0.63
+               ThinkDacc   0.0038           0.014                0.17     0.74
+                Triestfd   0.0083           0.016                1.56     0.35
+   BerkStan    ThinkDfast  0.0060           0.011                0.72     0.47
+               ThinkDacc   0.0037           0.007                0.38     0.58
+  ThinkD enables accurate and space-efficient estimation of widely-used graph measures in fully-dynamic graph
+  streams.
+  *the lower the better.
+  **the higher the better.
+edges are stored at the end of each input graph stream.10 Note that incrementally computing the
+degrees of all nodes takes O (t ) time and requires O (n) space.11 Then, replacing |T (t ) | and |T (t )[v ]|
+in the above definitions by ¯c(t )                            and c (t )[v ], respectively, we estimated the measures. In all the al-
+gorithms, the additional time taken for incrementally computing the degrees of all nodes and
+estimating graph measures was negligible compared to the time taken for estimating the counts
+of triangles. To evaluate the accuracies of the estimates obtained by different algorithms, we com-
+puted the evaluation metrics defined in Section 5.1 at the end of each input stream. As summarized
+in Table 4, where each evaluation metric was averaged over 10 trials, ThinkDacc and ThinkDfast
+estimated all the considered graph measures more accurately than Triestfd within the same mem-
+ory budget.
+
+6 CONCLUSION
+We propose ThinkD, which estimates the counts of global and local triangles in a fully dy-
+namic graph stream with edge additions and deletions. We theoretically and empirically show
+that ThinkD has the following advantages:
+   — Accurate: ThinkD is up to 4.3× more accurate than its best competitors within the same
+         memory budget (Figure 4).
+   — Fast: ThinkD is up to 2.2× faster than its best competitors with similar accuracies (Figure 5).
+         ThinkD processes terabyte-scale graph streams with linear scalability (Figure 2, Corollary 1,
+         and Theorem 4).
+   — Theoretically Sound: ThinkD maintains unbiased estimates (Theorem 1) with small vari-
+         ances (Theorem 2) at any time while the input graph evolves.
+Additionally, in Appendix D, we apply ThinkD to the task of detecting suddenly emerging dense
+subgraphs and show its advantages over state-of-the-art methods.
+
+10When estimating global clustering coefficients, we computed c (t )[u] for each node u ∈ V (t ) without lower bounding it
+by zero.
+11For each addition ( {u, v }, +), increase d (t )[u] and d (t )[v] by 1, and for each deletion ( {u, v }, −), decrease d (t )[u] and
+d (t )[v] by 1.
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                       12:27
+
+            Reproducibility: The source code and datasets used in the article are available at http://dmlab.
+    kaist.ac.kr/∼kijungs/codes/thinkd/.
+
+    APPENDIX
+    A  TOY EXAMPLE FOR THINKD AND ITS COMPETITORS (TRIESTfd AND ESD)
+    Figure 7 shows an artificial graph stream that highlights the (dis)advantages of ThinkD and its
+    competitors (i.e., Triestfd and ESD). First, ESD runs out of memory (O.O.M.) at t ≥ 4 since it
+    stores all edges of the input graph. This implies that ESD has limited scalability. In the case of
+    Triestfd, its estimation at t = 7 is inaccurate since it does not update estimates if the current edge
+    (i.e., {b, c}) is not stored but discarded. On the other hand, ThinkD updates its estimates whenever
+    an update (i.e., an insertion or a deletion) arrives. Hence, ThinkDfast and ThinkDacc estimate the
+    global triangle count exactly at t = 7. ThinkDfast suffers from information loss at t = 6 and 7 since
+    it discards edges (i.e., {c, e} and {b, c}) even when the number of edges in memory is less than the
+    given budget. On the other hand, within the given memory budget, ThinkDacc tries to maintain
+    as many edges as possible in memory. Note that we set the memory budget to 3 for all methods to
+    make a fair comparison.
+
+    B  VARIANCE ANALYSIS
+    We let luv(t) be the last time that edge {u, v } is added to or removed from G at time t or earlier. For
+    each added or deleted triangle ({u, v, w }, s) ∈ A(t ) ∪ D (t ), we use 1({u,v,w },s) to denote the time
+    when its first edge has arrived and 2({u,v,w },s) to denote the time when its second edge has arrived.
+    Formally,
+
+           1({u,v,w },s)   := min (l (s)      )     2        (      )
+           uv , l (s)      ({u,v,w },s)     := median luv(     ), l (s)                (s)
+                                      vw , l (s)        s
+                                              wu    ,                             vw , lwu .
+
+    Then, we define the type of each triangle pair in Definition 3.
+
+      Definition 3 (Types of Triangle Pairs).        The type of each ordered pair of two distinct triangles
+    τ  ω ∈ A(t ) ∪ D (t ) is defined as follows:
+
+
+
+
+
+
+
+
+
+
+Fig. 7. A toy example that highlights the (dis)advantages of ThinkD and its competitors. ESD runs out of
+memory (O.O.M.) at t ≥ 4 since it stores all edges of the input graph. Triestfd is inaccurate at t = 7 since
+it does not update estimates if an incoming edge is not stored but discarded. However, ThinkDfast and
+ThinkDaccproduce accurate estimates although ThinkDfastsuffers from information loss at t = 6 and 7.
+
+       ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:28                                                                                                                                  K. Shin et al.
+
+                            ⎧⎪⎪⎪⎪⎪⎪1,   if τ  ∈ A (t )  and ω ∈ A(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 1,
+                              ⎪⎪⎪⎪⎪2,   if τ  ∈ D(t ) and ω ∈ D(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 1,
+                             ⎪⎪⎪⎪⎪⎪3,   if τ  ∈ A (t )  and ω ∈ D(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 1,
+                                   4,   if τ  ∈ D(t ) and ω ∈ A(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 1,
+        Type (τ ,ω)       = ⎨⎪⎪⎪⎪⎪⎪5,   if τ  ∈ A (t )  and ω ∈ A(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 2,             (36)
+                              ⎪⎪⎪⎪⎪6,   if τ  ∈ D(t ) and ω ∈ D(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 2,
+                              ⎪⎪⎪⎪⎪7,   if τ  ∈ A (t )  and ω ∈ D(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 2,
+                                 ⎪⎩8,   if τ  ∈ D(t ) and ω ∈ A(t ) and |{1τ , 2τ } ∩ {1ω , 2ω }| = 2,
+                                   9,   otherwise (i.e., |{    1    2
+                                                                τ ,   τ } ∩ {1ω , 2ω }| = 0).
+
+                                                         Theorem 5 (Variance of ThinkDfast). Let ni(t ) be the number of Type-i triangle pairs in A(t ) ∪
+    D(t ). Likewise, Let ni(t )[u] be the number of Type-i triangle pairs in A(t )[u] ∪ D (t )[u]. Then,
+                                         (                      )     1
+                  V ar [¯c(t )] = +|A(n(1(tt))| ++n|D2(t)(t−) |n(·t )    −−rn2r(t2) )                     ·     1 − r
+                                                                 3
+                                         + (n5(t ) + n6(t )   − n(t )    − n4(t ) ) ·                           1 −r r 2 ,   ∀t ≥ 1.                 (37)
+                                                                 7         8                                     r 2
+    Likewise,
+                                                               1  − r 2
+        V ar [c (t )[u]] =  (|A (t )[u]| + |D (t )[u]|) ·       r2
+                            + (n1 (t)[u] + n2 (t)[u] − n3 (t)[u] − n4 (t)[u]) ·                                  1 −r    r
+                            + (n5 (t)[u] + n6 (t)[u] − n7 (t)[u] − n8 (t)[u]) ·                                  1 −r2r 2 , ∀t ≥ 1,    ∀u ∈ V (t ) . (38)
+
+                                                        Proof. For each time t ≥ 1, let X (t ) be the random number in Bernoulli (r ) drawn in line 12 of
+    Algorithm 2 while the t -th element e (t ) is processed. Then, from Lemma 4,
+
+                                             {u, v } ∈ S(t )   ⇐⇒ X (lᵘᵛ(ᵗ ) )                            = 1.                                       (39)
+Now, for each τ = ({u, v, w }, s) ∈ A(t ) ∪ D (t ), let γτ be the amount of change in each of ¯c, c[u],
+c[v ], and c[w] due to the discovery of τ in line 9 or line 10 of Algorithm 2. Let δτ = +1 when
+τ ∈ A(t ), i.e., when the last edge is added, and let δτ = −1 when τ ∈ D(t ), i.e., when the last edge
+is deleted. Let {u, v } be the edge added or deleted at time s without loss of generality. Then, γτ = δrτ₂
+if both {v, w }, {w, u } ∈ S(s) and 0 otherwise. Hence, combined with Equation (39),
+
+                                                 γτ     = δτ X ( 1
+    Then from the definitions of γτ , ¯c(t )    = ∑          r 2     τ )γX , and its variance is(2τ) .                                               (40)
+                                                    ∑   τ ∈A(t )∪D(t )   τ     ∑
+        V ar [¯c(t )] =                                 V ar [γτ ] +                                                      Cov[γτ , γω ].             (41)
+                                              τ ∈A(t )∪D(t )             τ ω ∈A(t )∪D(t )
+                                                For the variance term in Equation (41), note first that applying that X (1τ ) and X (2τ ) are independent
+    Bernoulli (r ) to Equation (40) gives[δ   E[γτ ] as       ]                                              ]       ]
+        E[γτ ] = E                      rτ2 X (1τ )X (2τ )     = δrτ E [X (1τ )                                 E [X (2τ )  = δτ  .                  (42)
+                                                                    2
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams                                                                     12:29
+
+    Then, further applying δτ2 = 1 and (X (s) )2 = X (s)                      to Equation (40) and again applying that X (1τ )
+    and X (2τ )                     are independent Bernoulli (r ) give[δ 2 V ar [γτ ] as]       1       [           ]         [     ]
+                V ar [γτ ] = E[γτ2] − (E[γτ ])2 = E     τ X (1τ )X (              2    )     2     =     E 1     )
+                                                    r 4                               τ     − δτ     r 4   X (        τ              E X (2τ )  − 1
+
+                          = 1 −r2r 2 .
+
+    Hence the variance term in Equation (41) is computed as
+                      ∑                             ∑                      1    − r   2
+                  V ar [γτ ] =                                                r  2        = (|A (t ) | + |D (t ) |) · 1 − r 2 .                       (43)
+                τ ∈A(t )∪D(t )    τ ∈A(t )∪D(t )                                                                     r 2
+    For the covariance term in Equation (41), applying Equation (40) and Equation (42) and using the
+    fact that all the X (s) ’s are independent and identically distributed as Bernoulli (r ) and (X (s) )2                                         = X (s)
+    yield the Cov[γτ , γω ] as                                            [ δ     δ                               ]
+       Cov[γτ , γω ] = E[γτ γω ] − E[γτ ]E[γω ] = E τr4ω X (1τ )X (2τ )X (1ω )X (2ω ) − δτ δω
+
+                = δτ δω r14 E ⎡⎢⎢⎢⎢⎢⎣i ∈ {1γ ,2γ∏                          X (i ) ⎤⎥⎥⎥⎥  − 1
+                                                    }∪{1ω ,2ω }                      ⎥⎦
+                = δτ δω r14 i ∈ {1γ ,2γ∏                E [X (i ) ]                                 − 1 = δτ δω ( r | {1γ ,2γ r}∪{4 1ω ,2ω } |  − 1) .
+        }∪{1ω ,2ω }
+Then δτ δω = 1 if τ , ω ∈ A (t ) or τ , ω ∈ D(t ), and δτ δω = −1 if τ ∈ A (t ), ω ∈ D(t ) or τ ∈ D(t ), ω ∈
+A(t ). Hence Cov[γτ , γω ] can be calculated as
+                                                    ⎧⎪⎪⎪⎪⎪⎪⎪−1−rr1−,r ,          if Type (τ ,ω)                = 1 or 2,
+                                      Cov[γτ , γω ] = ⎪⎨⎪ 1−rr² ,                if Type (τ ,ω)                = 3 or 4,
+                                                    ⎪⎪⎪⎪⎪−r1−r²       2 ,        if Type (τ ,ω)                = 5 or 6,
+                                                    ⎪⎪⎩0,      r2                if Type (τ ,ω)                = 7 or 8,
+                                                                                 if Type (τ ,ω)     = 9.
+    Hence the covariance term in Equation (41) is computed as
+                 ∑     Cov[γτ , γω ]                                      = (n(t ) + n(t )  − n(t )           − n(t ) ) · 1 − r
+        τ ω ∈A(t )∪D(t )                                                 1             2     3                     4  r
+                                                        + (n(t ) + n(t ) − n(t )                    − n(t ) ) ·  1 − r 2 .                            (44)
+                                                                              5           6        7     8       r 2
+    Hence applying Equation (43) and Equation (44) to Equation (41) gives
+                       ∑                                                         ∑
+        V ar [¯c(t )] =                              V ar [γτ ] +                                            Cov[γτ , γω ]
+                 τ ∈A(t )∪D(t )                                       τ ω ∈A(t )∪D(t )
+        1 − r2
+        = (+|A(n(t(t))| + |D (t ) |) · r 2 +) (n1(t ) + n2(t ) − n3(t ) − n4(t ) ) · 1 −r r
+        5 + n6(t ) − n7(t ) − n(t ) · 1 − r 2 ,
+                                                                           8              r 2
+    which completes the proof of Equation (37).
+
+                                           ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:30 K. Shin et al.
+
+  For Equation (38), replacing ¯c(t ) by c (t )[u], A(t ) by A(t )[u], and D(s) by D(s) [u] and repeating
+above give a proof.
+
+C EXTENSIONS: TRIANGLE COUNTING IN FULLY DYNAMIC
+    MULTIGRAPH STREAMS
+C.1 Notations and Problem Definition
+A multigraph is a graph with parallel edges; hence, two nodes can be connected by more than one
+edge. Specifically, we define the multiplicity of an edge {u, v } by M (u, v ), which indicates a number
+of parallel edges between u and v ; then, a multigraph has at least one edge whose M (u, v ) ≥ 2.
+Meanwhile, we call a graph with no parallel edges (i.e., all M (u, v ) = 1) a simple graph.
+  Similar to the simple graph case, a fully dynamic multigraph stream represents the sequence of
+changes in a multigraph G, and we denote the stream by (e (1), e (2), . . .). As in [De Stefani et al.
+2017], we assume that a triple e (t ) = ({u, v }, l, δ ) of an edge {u, v }, a label l, which differentiates
+parallel edges, and a sign δ ∈ {+, −} arrives at each time t ∈ {1, 2, . . .}. Moreover, we assume that
+only new edges not in G (which can be parallel edges with new labels) can be added, and only
+existing edges in G can be deleted.
+  There are two ways of counting triangles in a multigraph. One way is to add the weights of
+triangles. The weight of each triangle {u, v, w } ⊂ V is defined as M (u, v ) × M (v, w ) × M (w, u ). The
+other way is to count triangles while ignoring edge multiplicity. In this article, we choose the
+former scheme, which fully reflects given information.
+  We address the problem of estimating the counts of global and local triangles in a fully dynamic
+multigraph stream, which is summarized by Problem 2. As in Section 3.2, we assume the standard
+data stream model where the elements in the input stream, which may not fit in memory, can be
+accessed once in the given order unless they are explicitly stored in memory.
+  Problem 2 (Global and Local Triangle Counting in a Fully Dynamic Multigraph Stream).
+     — Given: a fully dynamic multigraph stream with parallel edges (e (1), e (2), . . . , )
+        (i.e., sequence of edge additions and deletions in a multigraph G)
+     — Maintain: estimates of global triangle count |T (t ) | and local triangle counts
+     — {(u, |T (t )[u]|)}u ∈V(ₜ ) of graph G(t ) for current t ∈ {1, 2, . . .}
+       to Minimize: the estimation errors.
+
+C.2 Extension of ThinkDfast and ThinkDacc to a Fully Dynamic Multigraph Stream
+We extend ThinkDfast and ThinkDacc to a fully dynamic multigraph stream by making two key
+changes while keeping the other parts the same. The overall process of ThinkDfast and ThinkDacc
+for triangle counting in a fully dynamic multigraph stream is provided in Algorithm 4.
+  The first key change is to store parallel edges with their labels. Given an edge deletion, if we
+delete a parallel edge without considering labels, edges can be “overdeleted” and thus the counts of
+triangles can be underestimated. Therefore, given an edge deletion, we delete the same edge with
+the same label from memory (if it is in memory) without deleting parallel edges with different
+labels.
+  The second key change is the amount of changes in our estimates per new or deleted triangle.
+For each new observed triangle {u, v, w }, we increase the corresponding estimates by M (v, w ) ×
+M (w, u )/r 2 (in ThinkDfast) or M (v, w ) × M (w, u )/p(E, nb , nд ) (in ThinkDacc). We decrease the
+corresponding estimates by the same amounts for each observed deleted triangle {u, v, w }.
+
+
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+   Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams      12:31
+
+ALGORITHM 4: Extensions of ThinkDfast and ThinkDacc to a Multigraph
+  Inputs: fully dynamic multigraph stream: (e(1), e(2), . . .) = (({u, v}, l , δ ), . . . , ),
+       sampling probability: r (for ThinkDfast), and
+       memory budget: k (≥2) (for ThinkDacc)
+  Outputs: estimate of the global triangle count: ¯c
+       estimates of the local triangle counts: c [u] for each node u
+1 S ← ∅ (for ThinkDfast)
+2 E 0, nb ← 0, nд ← 0 (for ThinkDacc)
+3 for each element e(t ) = ({u, v}, l , δ ) in the input stream do
+    4    Update(({u, v}, l ), δ )
+    5    if δ  = + then Insert(({u, v}, l ))
+    6    else if δ  = − then Delete(({u, v}, l ))
+    7 Procedure Update(({u, v}, l , δ )):                           update global and local triangle counts
+    8               compute Nˆ [u] ∩ Nˆ [v]                     Nˆ [u] and Nˆ [v] are obtained from current S
+    9    for each common neighbor w ∈ Nˆ [u] ∩ Nˆ [v] do
+   10          if  ThinkDfast then
+   11               if δ  = + then increase ¯c , c [u], c [v], and c [w] by M (v,wr)M2 (w,u)
+   12               else if δ   = − then decrease ¯c , c [u], c [v], and c [w] by            M (v,wr)M2   (w,u)
+   13          else if   ThinkDacc then
+   14               if δ  = + then increase ¯c , c [u], c [v], and c [w] by Mp(v( | E |,,w )nMb,(wnд,u) )
+   15               else if δ   = − then decrease ¯c , c [u], c [v], and c [w] by Mp(v( | E |,,w )nMb,(wnд,u) )
+
+   16 Procedure Insert(({u, v}, l )):
+   17    if ThinkDfast then
+   18          if a random number in Bernoulli(r ) is 1 then S ← S ∪ {({u, v}, l )}
+   19    else if    ThinkDacc then
+   20          EE + 1
+   21          if nb + nд = 0   then
+   22               if S < k then S ← S ∪ {({u, v}, l )}
+   23               else if a random number in Bernoulli(k/E) is 1             then
+   24                     replace a random edge in S with ({u, v}, l )
+
+   25          else if a random number in Bernoulli(nb /(nb + nд )) is 1     then
+   26               S ← S ∪ {({u, v}, l )},    nb ← nb − 1
+   27          else nд ← nд − 1
+
+   28 Procedure Delete(({u, v}, l )):
+   29    if       ThinkDfast then
+   30          if  ({u, v}, l ) ∈ S then S ← S \ {({u, v}, l )}
+   31    else if   ThinkDacc then
+   32          EE 1
+   33          if         ({u, v}, l ) ∈ S then
+   34               S ← S \ {({u, v}, l )},    nb ← nb + 1
+   35          else nд ← nд + 1
+
+
+
+
+
+         ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:32                                                                                            K. Shin et al.
+
+         Table 5. Summary of the Real-world Multigraph Streams Used in Our Experiments.
+                                    M: million, K: thousand
+         Name                             #Nodes  #Edges  Type
+         Enron [Klimt and Yang 2004]      87.0K   1.13M   Email Network
+         DBLP [Ley 2002]                  1.28M   18.2M   Author Collaboration
+         Wikipedia [Sun et al. 2016]      2.86M   19.3M   Communication
+         Movie [Barabási and Albert 1999]  382K   33.1M   Actor Collaboration
+
+                       With the above proper changes, ThinkD maintains unbiased estimates of the global and lo-
+cal triangle counts in a given fully dynamic multigraph stream. ThinkD still requires sublinear
+memory, while the exact memory requirements depend on the sampling ratio r or the memory
+budget k. Note that we can apply the same techniques used in Section 4.4 and Section 4.5 to prove
+the accuracy and complexity of ThinkD in a multigraph stream. Specifically, we can simply treat
+parallel edges with different labels as different edges and follow the same steps in the sections.
+
+C.3     Experiments
+We empirically validate the accuracy and speed of ThinkD in order to show our extensions
+of ThinkDfast and ThinkDacc are successful. We describe our experimental settings in Sec-
+tion C.3.1. We explain the accuracy of ThinkD and other methods in Section C.3.2 and the speed in
+Section C.3.3.
+  C.3.1                    Experimental Settings:. We ran all experiments on a machine with 2.67 GHz Intel Xeon
+E7-8837 CPUs and 1 TB memory (up to 32 GB was used). The real-world multigraphs used in our
+experiments are summarized in Table 5. From them, we created fully-dynamic multigraph streams
+as in Section 5.1, while fixing α (i.e., the ratio of deleted edges) to 20%. We used Triestfd, which
+supports triangle counting in fully-dynamic multigraph streams, as the competitor of ThinkD.
+  C.3.2                            Accuracy (ThinkD is More Accurate Than Its Best Competitor). We compared the
+accuracies of ThinkDfast, ThinkDacc, and Triestfd, as we changed the ratio of stored edges at
+the end of each input stream from 5% to 40%. Each evaluation metric was averaged over 1,000
+trials in all the datasets. As seen in Figure 8, ThinkDacc consistently gave the best trade-off be-
+tween space and accuracy, followed by ThinkDfast. Specifically, within the same memory budget,
+ThinkDacc was up to 2.7× and 2.5× more accurate than Triestfd in terms of global error and
+RMSE, respectively.
+  C.3.3                       Speed (ThinkD is Faster Than Its Best Competitor). We compared the speeds and ac-
+curacies of ThinkDfast, ThinkDacc, and Triestfd. The detailed settings were the same as those in
+Section C.3.2, and we ignored time taken to wait for the arrival of elements to measure the speeds
+of the algorithms independently of the speed of the input stream. As shown in Figure 9, ThinkDfast
+consistently gave the best trade-off between speed and accuracy, followed by ThinkDacc. Specifi-
+cally, for the same global error and RMSE, ThinkDfast was up to 2.2× faster than Triestfd.
+
+D   APPLICATION: DETECTING SUDDENLY EMERGING DENSE SUBGRAPHS
+In this section, we apply ThinkD to the task of detecting dense subgraphs created within a short
+time. Specifically, we first provide a short survey on dense-subgraph detection and sliding-window
+models. Then, we propose an algorithm called ThinkD-Spot, which utilizes ThinkD to detect
+suddenly emerging dense subgraphs. Lastly, we experimentally show the advantages of ThinkD-
+Spot over state-of-the-art algorithms.
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams  12:33
+
+
+
+
+
+
+
+
+
+
+Fig. 8. ThinkD is accurate. ThinkDfast and ThinkDacc provide a better trade-off between space and accu-
+racy than Triestfd. In particular, ThinkDacc is up to 2.7× more accurate than Triestfd within the same
+memory budget.
+
+D.1 Survey on Detecting Dense Subgraphs and Sliding-Window Models
+Detecting Dense Subgraphs. Theoretical work on identifying densest subgraphs includes exact
+and approximate algorithms for static graphs [Andersen and Chellapilla 2009; Bahmani et al. 2012;
+Charikar 2000; Goldberg 1984; Khuller and Saha 2009] and approximate algorithms for dynamic
+graphs [Bhattacharya et al. 2015; Epasto et al. 2015a; McGregor et al. 2015; Nasir et al. 2017]. We re-
+fer interested readers to a survey [Lee et al. 2010]. Unusually dense subgraphs in real-world graphs
+tend to signal anomalous or fraudulent behaviors, including a “follower-boosting” service on so-
+cial media [Hooi et al. 2017; Jiang et al. 2014; Shin et al. 2018a], “copy-and-paste” bibliographies
+in citation networks [Prakash et al. 2010; Shin et al. 2018a], and websites that attempt to manipu-
+late search engine rankings [Gibson et al. 2005]. Several recent algorithms detect dense subgraphs
+or more generally dense subtensors that are created within a short time or in a temporally syn-
+chronized manner [Beutel et al. 2013; Jiang et al. 2015; Maruhashi et al. 2011; Rozenshtein et al.
+2017; Shin et al. 2018c, 2017a, 2017b]. Considering temporal aspects enables these algorithms to
+accurately identify suspicious subgraphs and subtensors, which indicate fake “Likes” on Facebook
+[Beutel et al. 2013], “edit wars” and bot activities on Wikipedia [Shin et al. 2018a, 2017b], network
+intrusions [Maruhashi et al. 2011; Shin et al. 2017a], and so on.
+
+      ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    12:34    K. Shin et al.
+
+
+
+
+
+
+
+
+
+
+Fig. 9. ThinkD is fast. ThinkDfast and ThinkDacc provide a better trade-off between speed and accuracy
+than Triestfd. In particular, ThinkDfast is up to 2.2× faster than Triestfd when they are similarly accurate.
+
+  Sliding-Window Models. Our dense-subgraph detection method, described in the following
+section, is in the timestamp-based sliding-window model [Babcock et al. 2002], where the elements
+(or edges) whose arrival timestamp is within a time interval ΔT of the current time are maintained,
+while the others are “expired” and removed. This model is different from but similar to the sequence-
+based sliding window model [Datar et al. 2002], where the most recent k elements (or edges) are
+maintained, regardless of their arrival timestamps, while the others are removed. In addition to
+sampling algorithms in both models [Babcock et al. 2002], several graph algorithms in the latter
+model have been developed for connectivity tests, graph sparsification, minimum spanning forest
+detection, and so on [Crouch et al. 2013; McGregor 2014]. Note that ThinkD is in the fully-dynamic
+graph stream model, which is more general than both sliding-windows models. Designing triangle
+counting algorithm specific to the sliding-windows models remains to be investigated as future
+work.
+
+D.2 Proposed Method: ThinkD-Spot
+We present an algorithm called ThinkD-Spot, which utilizes ThinkD to detect dense subgraphs
+that are created within a short time. ThinkD-Spot, which is described in Figure 10, tracks the
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+    Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams  12:35
+
+
+
+
+
+
+
+
+
+
+Fig. 10. Pictorial description of ThinkD-Spot, which spots suddenly emerging dense subgraphs using ThinkD.
+ThinkD-Spot maintains the estimated counts of global and local triangles created within ΔT time units.
+Spikes in the estimated count of global triangles indicate the emergence of sudden dense subgraphs, and the
+estimated counts of local triangles indicate the amount of contribution of each node to the sudden dense
+subgraphs.
+
+estimated counts of triangles using ThinkD and uses the sudden increases in the counts as the
+signal of suddenly emerging dense subgraphs.
+  Consider a graph whose edges have actual timestamps (rather than logical timestamps), and for
+each edge e, let te be its timestamp. ThinkD-Spot first creates a fully dynamic graph stream with
+deletions as follows:
+
+    (1) For each edge e, create an addition (e, +) with timestamp te ,
+    (2) For each edge e, create a deletion (e, −) with timestamp te + ΔT ,
+    (3) Sort the additions and deletions from the previous steps in the increasing order of their
+        timestamps.
+
+  Then, ThinkD-Spot processes the created stream using ThinkD (either ThinkDfast or
+ThinkDacc). This makes ThinkD-Spot maintain the estimated counts of global and local trian-
+gles created within ΔT time units. ThinkD-Spot tracks the changes in the maintained estimate
+of the global triangle count, and if a spike with the estimate greater than a given threshold θ is
+encountered, ThinkD-Spot reports the emergence of a sudden dense subgraph. At each spike,
+ThinkD-Spot returns the maintained estimates of local triangle counts as the amount of contri-
+bution of each node to the sudden dense subgraph.
+  Although we describe ThinkD-Spot in an offline setting, it can be easily extended to online set-
+tings where new edges are added to the input graph while it is being processed. In online settings,
+      ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:36                                                                                                                            K. Shin et al.
+
+  Datasets              |                Facebook                                          |                    Epinion
+  Measures                                  Running Time |                      Precision @                       | Running Time | Precision @
+                                           (milliseconds)                          Top-10                          (milliseconds)
+                                                                                                                                      Top-10
+ CROSSSPOT                                     54,975                               0.00                               11,173          0.00
+   D-CUBE                                      1,443                                0.33                                674            0.00
+   M-Biz                                       1,298                                0.31                                667            0.41
+ DENSEALERT                                    12,080                               1.00               1,843                           0.59
+ THINKD-SPOT            |                       617      |                          1.00   |                            223   |        0.75
+                            (@)                               Running Time and Accuracy Averaged over 10 Runs.
+
+     4 Anomalies (Injected Cliques)      False Alarms                                          A False Dismissals
+ Bq                                  Bea                                             Sg
+                                     gg
+ 35                                  zg                                              35
+                                     Sa@z2                                           =F                         22            [fet     dle
+ Bg 200                              3%     Hl.     SESᴮ        5 200                                           S324:
+ £3                                                                      ON                                     <2
+ gs                                                            ES
+ 30°                                     tH                                          50
+ w                                   71a)                     w     ©                                           Eg            Itt
+     2007      2008        2009      Wf      2007 2008  2009             2001                  2002 2008            2001         2002 2003
+               Year                               Year                                         Year                              Year
+     (b)   Spikes from                   (c)     Spikes from      (d)    Spikes from                              (e)            Spikes from
+             THINKD-SPOT (Facebook)  DENSEALERT (Facebook)    THINKD-SPOT (Epinion)                                               (Epinion)
+
+                                     /\ Anomalies (Nodes Forming Cliques)                  O Other Nodes
+           5                                                                                            False Alarms
+           3
+           327s                                                  3s
+           os                        3                             os
+                                                                 FEET IE²                                                       °
+           Eg                                        Ri:           =9                                           2            5,00
+           7
+           Spikes123456785610in                                    37                                   8
+                                     Count of Global Triangles                                          Spikes in Count of Global Triangles
+    Local Triangle Counts at Top-10 Spikes (g) [Local Triangle Counts at Top-10 Spikes
+                        (Facebook)                                                             (Epinion)
+Fig. 11. (a) ThinkD-Spotis fast and accurate. (b-e) The spikes in the estimated count of global triangles,
+obtained by ThinkD-Spot, indicate the injected suddenly emerging cliques more accurately than the spikes
+obtained by DenseAlert. The arrows indicate the timestamps where the cliques are injected, and the stars
+indicate the false alarms in top-10 spikes. The triangles indicate false dismissals. (f-g) The nodes forming the
+injected cliques are clearly distinguished by their estimated counts of local triangles, obtained by ThinkD-
+Spot. The plots show the distributions of the estimated counts of local triangles at the top-10 spikes in (b-e).
+
+to maintain the estimated counts of triangles created within ΔT                                        time units, ThinkD-Spot pro-
+cesses the insertion of each new edge as soon as the edge arrives, while it processes the deletion
+of the edge after ΔT    time units. While new edges need to be stored until they are removed after
+ΔT units, since they are written and deleted sequentially, they can be stored on disks.
+
+D.3     Experiments
+For empirical evaluation of ThinkD-Spot, we measured how rapidly and accurately ThinkD-Spot
+detects suddenly emerging dense subgraphs compared to its best competitors: DenseAlert [Shin
+et al. 2017b], M-Biz [Shin et al. 2018c], D-Cube [Shin et al. 2017a], and CrossSpot [Jiang et al.
+2015], all of which are designed for detecting dense subgraphs or more generally dense subtensors
+
+ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams 12:37
+
+created within a short time.12 Specifically, we randomly injected 10 cliques created within a day
+into the Facebook and Epinion datasets.13 That is, the timestamps of all edges composing each
+clique were within a day. The injected cliques were of size 6 to 15. Then, we measured the running
+time of each method and the precision at the top-10 outputs obtained by each method (i.e., the
+ratio of outputs that correspond to the injected cliques).
+   As summarized in Figure 11(a), ThinkD-Spot was the fastest and the most accurate in both
+datasets. Especially, ThinkD-Spot was 8.3 − 19.6× faster than DenseAlert, which was the sec-
+ond most accurate method. Figures 11(b)-(e) show that the spikes in the estimated count of global
+triangles obtained by ThinkD-Spot indicated the injected cliques more accurately than the spikes
+obtained by DenseAlert. Figures 11(e)-(f) show that the nodes forming the injected cliques are
+clearly distinguished by their estimated counts of local triangles, obtained by ThinkD-Spot.
+
+REFERENCES
+Nesreen K. Ahmed, Nick Duffield, Jennifer Neville, and Ramana Kompella. 2014. Graph sample and hold: A framework for
+   big-graph analytics. In KDD’14.
+Nesreen K. Ahmed, Nick Duffield, Theodore L. Willke, and Ryan A. Rossi. 2017. On sampling from massive graph streams.
+   PVLDB 10, 11 (2017), 1430–1441.
+Reid Andersen and Kumar Chellapilla. 2009. Finding dense subgraphs with size bounds. In WAW’09.
+Brian Babcock, Mayur Datar, and Rajeev Motwani. 2002. Sampling from a moving window over streaming data. In SODA’02.
+Bahman Bahmani, Ravi Kumar, and Sergei Vassilvitskii. 2012. Densest subgraph in streaming and mapreduce. PVLDB 5, 5
+   (2012), 454–465.
+Ziv Bar-Yossef, Ravi Kumar, and D. Sivakumar. 2002. Reductions in streaming algorithms, with an application to counting
+   triangles in graphs. In SODA’02.
+Albert-László Barabási and Réka Albert. 1999. Emergence of scaling in random networks. Science 286, 5439 (1999), 509–512.
+Vladimir Batagelj and Matjaž Zaveršnik. 2007. Short cycle connectivity. Discrete Mathematics 307, 3 (2007), 310–318.
+Luca Becchetti, Paolo Boldi, Carlos Castillo, and Aristides Gionis. 2010. Efficient algorithms for large-scale local triangle
+   counting. TKDD 4, 3 (2010), 13.
+Jonathan W. Berry, Bruce Hendrickson, Randall A. LaViolette, and Cynthia A. Phillips. 2011. Tolerating the community
+   detection resolution limit with edge weighting. Physical Review E 83, 5 (2011), 056119.
+Alex Beutel, Wanhong Xu, Venkatesan Guruswami, Christopher Palow, and Christos Faloutsos. 2013. Copycatch: Stopping
+   group attacks by spotting lockstep behavior in social networks. In WWW’13.
+Sayan Bhattacharya, Monika Henzinger, Danupon Nanongkai, and Charalampos Tsourakakis. 2015. Space-and time-
+   efficient algorithm for maintaining dense subgraphs on one-pass dynamic streams. In STOC’15.
+Paul G. Brown and Peter J. Haas. 2006. Techniques for warehousing of sample data. In ICDE’06.
+Moses Charikar. 2000. Greedy approximation algorithms for finding dense components in a graph. In APPROX’00.
+Shumo Chu and James Cheng. 2012. Triangle listing in massive networks. TKDD 6, 4 (2012), 17.
+Michael S. Crouch, Andrew McGregor, and Daniel Stubbs. 2013. Dynamic graphs in the sliding-window model. In ESA’13.
+   Springer, 337–348.
+Mayur Datar, Aristides Gionis, Piotr Indyk, and Rajeev Motwani. 2002. Maintaining stream statistics over sliding windows.
+   SICOMP 31, 6 (2002), 1794–1813.
+Lorenzo De Stefani, Alessandro Epasto, Matteo Riondato, and Eli Upfal. 2017. TRIÈST: Counting local and global triangles
+   in fully dynamic streams with fixed memory size. TKDD 11, 4 (2017), 43.
+Alessandro Epasto, Silvio Lattanzi, Vahab Mirrokni, Ismail Oner Sebe, Ahmed Taei, and Sunita Verma. 2015b. Ego-net
+   community mining applied to friend suggestion. PVLDB 9, 4 (2015), 324–335.
+Alessandro Epasto, Silvio Lattanzi, and Mauro Sozio. 2015a. Efficient densest subgraph computation in evolving graphs. In
+   WWW’15.
+
+12We implemented all the algorithms commonly in Java. We used ThinkDacc with k = 2000 for triangle counting in
+ThinkD-Spot, and we set ΔT to a day for both ThinkD-Spot and DenseAlert. We used the geometric average degree as
+the density measure in M-Biz and D-Cube, since this measure led to the highest accuracy. Using each of M-Biz, D-Cube,
+and CrossSpot, we detected 10 dense subgraphs. The other experimental settings were the same as those described in
+Section 5.1.
+13We used the Facebook and Epinion datasets because the edges in them have timestamps. We ignored the edges with
+missing timestamps.
+
+       ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+12:38 K. Shin et al.
+
+Rainer Gemulla, Wolfgang Lehner, and Peter J. Haas. 2008. Maintaining bounded-size sample synopses of evolving datasets.
+   The VLDB Journal 17, 2 (2008), 173–201.
+David Gibson, Ravi Kumar, and Andrew Tomkins. 2005. Discovering large dense subgraphs in massive graphs. In VLDB’05.
+Andrew V. Goldberg. 1984. Finding a Maximum Density Subgraph. Technical Report.
+Bronwyn H. Hall, Adam B. Jaffe, and Manuel Trajtenberg. 2001. The NBER Patent Citation Data File: Lessons, Insights and
+   Methodological Tools. Technical Report. National Bureau of Economic Research.
+Guyue Han and Harish Sethu. 2017. Edge sample and discard: A new algorithm for counting triangles in large dynamic
+   graphs. In ASONAM’17.
+Paul W. Holland and Samuel Leinhardt. 1971. Transitivity in structural models of small groups. Comp. Group Stud 2, 2
+   (1971), 107–124.
+Bryan Hooi, Kijung Shin, Hyun Ah Song, Alex Beutel, Neil Shah, and Christos Faloutsos. 2017. Graph-based fraud detection
+   in the face of camouflage. TKDD 11, 4 (2017), 44.
+Xiaocheng Hu, Yufei Tao, and Chin-Wan Chung. 2014. I/O-efficient algorithms on triangle listing and counting. TODS 39,
+   4 (2014), 27.
+Madhav Jha, Comandur Seshadhri, and Ali Pinar. 2013. A space efficient streaming algorithm for triangle counting using
+   the birthday paradox. In KDD’13.
+Meng Jiang, Alex Beutel, Peng Cui, Bryan Hooi, Shiqiang Yang, and Christos Faloutsos. 2015. A general suspiciousness
+   metric for dense blocks in multimodal data. In ICDM’15.
+Meng Jiang, Peng Cui, Alex Beutel, Christos Faloutsos, and Shiqiang Yang. 2014. Catchsync: Catching synchronized be-
+   havior in large directed graphs. In KDD’14.
+Minsoo Jung, Sunmin Lee, Yongsub Lim, and U. Kang. 2016. FURL: Fixed-memory and uncertainty reducing local triangle
+   counting for graph streams. Data Mining and Knowledge Discovery 33, 5 (2019), 1225–1253.
+Andreas Kemper. 2009. Valuation of Network Effects in Software Markets: A Complex Networks Approach. Springer Science
+   & Business Media.
+Samir Khuller and Barna Saha. 2009. On finding dense subgraphs. In ICALP’09. 597–608.
+Bryan Klimt and Yiming Yang. 2004. Introducing the enron corpus. In CEAS’04.
+Mihail N. Kolountzakis, Gary L. Miller, Richard Peng, and Charalampos E. Tsourakakis. 2010. Efficient triangle counting in
+   large graphs via degree-based vertex partitioning. In WAW’10.
+Konstantin Kutzkov and Rasmus Pagh. 2014. Triangle counting in dynamic graph streams. In SWAT’14.
+Victor E. Lee, Ning Ruan, Ruoming Jin, and Charu Aggarwal. 2010. A survey of algorithms for dense subgraph discovery.
+   In Managing and Mining Graph Data. 303–336.
+Jure Leskovec, Kevin J. Lang, Anirban Dasgupta, and Michael W. Mahoney. 2009. Community structure in large networks:
+   Natural cluster sizes and the absence of large well-defined clusters. Internet Mathematics 6, 1 (2009), 29–123.
+Michael Ley. 2002. The DBLP computer science bibliography: Evolution, research issues, perspectives. In SPIRE’02. Springer,
+   1–10.
+Yongsub Lim, Minsoo Jung, and U. Kang. 2018. Memory-efficient and accurate sampling for counting local triangles in
+   graph streams: from simple to multigraphs. TKDD 12, 1 (2018), 4.
+R. Duncan Luce and Albert D. Perry. 1949. A method of matrix analysis of group structure. Psychometrika 14, 2 (1949),
+   95–116.
+Koji Maruhashi, Fan Guo, and Christos Faloutsos. 2011. Multiaspectforensics: Pattern mining on large-scale heterogeneous
+   networks with tensor analysis. In ASONAM’11.
+Paolo Massa and Paolo Avesani. 2005. Controversial users demand local trust metrics: An experimental study on epinions.
+   com community. In AAAI’05.
+Andrew McGregor. 2014. Graph stream algorithms: A survey. ACM SIGMOD Record 43, 1 (2014), 9–20.
+Andrew McGregor, David Tench, Sofya Vorotnikova, and Hoa T Vu. 2015. Densest subgraph in dynamic graph streams. In
+   MFCS’14.
+Alan Mislove, Massimiliano Marcon, Krishna P. Gummadi, Peter Druschel, and Bobby Bhattacharjee. 2007. Measurement
+   and analysis of online social networks. In IMC’07.
+Muhammad Anis Uddin Nasir, Aristides Gionis, Gianmarco De Francisci Morales, and Sarunas Girdzijauskas. 2017. Fully
+   dynamic algorithm for top-k densest subgraphs. In CIKM’17.
+Mark E. J. Newman. 2003. The structure and function of complex networks. SIAM Review 45, 2 (2003), 167–256.
+Rasmus Pagh and Charalampos E. Tsourakakis. 2012. Colorful triangle counting and a mapreduce implementation. Inform.
+   Process. Lett. 112, 7 (2012), 277–281.
+Aduri Pavan, Kanat Tangwongsan, Srikanta Tirthapura, and Kun-Lung Wu. 2013. Counting and sampling triangles from a
+   graph stream. PVLDB 6, 14 (2013), 1870–1881.
+B. A. Prakash, M. Seshadri, A. Sridharan, S. Machiraju, and C. Faloutsos. 2010. Eigenspokes: Surprising patterns and com-
+   munity structure in large graphs. In PAKDD’10.
+
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+
+Fast, Accurate and Provable Triangle Counting in Fully Dynamic Graph Streams 12:39
+
+Polina Rozenshtein, Nikolaj Tatti, and Aristides Gionis. 2017. Finding dynamic dense subgraphs. TKDD 11, 3 (2017), 27.
+Kijung Shin. 2017. WRS: Waiting room sampling for accurate triangle counting in real graph streams. In ICDM’17.
+Kijung Shin, Tina Eliassi-Rad, and Christos Faloutsos. 2018a. Patterns and anomalies in k-cores of real-world graphs with
+   applications. Knowl. Inf. Syst. 54, 3 (2018), 677–710.
+Kijung Shin, Mohammad Hammoud, Euiwoong Lee, Jinoh Oh, and Christos Faloutsos. 2018b. Tri-Fly: Distributed estima-
+   tion of global and local triangle counts in graph streams. In PAKDD’18.
+Kijung Shin, Bryan Hooi, and Christos Faloutsos. 2018c. Fast, accurate, and flexible algorithms for dense subtensor mining.
+   TKDD 12, 3 (2018), 30.
+Kijung Shin, Bryan Hooi, Jisu Kim, and Christos Faloutsos. 2017a. D-Cube: Dense-block detection in terabyte-scale tensors.
+   In WSDM’17.
+Kijung Shin, Bryan Hooi, Jisu Kim, and Christos Faloutsos. 2017b. DenseAlert: Incremental dense-subtensor detection in
+   tensor streams. In KDD’17. ACM, 1057–1066.
+Kijung Shin, Jisu Kim, Bryan Hooi, and Christos Faloutsos. 2018d. Think before you discard: Accurate triangle counting in
+   graph streams with deletions. In ECML/PKDD’18.
+Charles Spearman. 1904. The proof and measurement of association between two things. AJP 15, 1 (1904), 72–101.
+Jun Sun, Jérôme Kunegis, and Steffen Staab. 2016. Predicting user roles in social networks using transfer learning with
+   feature transformation. In ICDMW’16. IEEE, 128–135.
+Siddharth Suri and Sergei Vassilvitskii. 2011. Counting triangles and the curse of the last reducer. In WWW’11.
+Kanat Tangwongsan, Aduri Pavan, and Srikanta Tirthapura. 2013. Parallel triangle counting in massive streaming graphs.
+   In CIKM’13.
+Charalampos E Tsourakakis. 2008. Fast counting of triangles in large real networks without counting: Algorithms and laws.
+   In ICDM’08.
+Charalampos E. Tsourakakis, Petros Drineas, Eirinaios Michelakis, Ioannis Koutis, and Christos Faloutsos. 2011. Spectral
+   counting of triangles via element-wise sparsification and triangle-based link recommendation. SNAM 1, 2 (2011), 75–81.
+Charalampos E. Tsourakakis, U. Kang, Gary L. Miller, and Christos Faloutsos. 2009. Doulion: Counting triangles in massive
+   graphs with a coin. In KDD’09.
+Bimal Viswanath, Alan Mislove, Meeyoung Cha, and Krishna P. Gummadi. 2009. On the evolution of user interaction in
+   facebook. In WOSN’09.
+Jeffrey S. Vitter. 1985. Random sampling with a reservoir. TOMS 11, 1 (1985), 37–57.
+Pinghui Wang, Yiyan Qi, Yu Sun, Xiangliang Zhang, Jing Tao, and Xiaohong Guan. 2017. Approximately counting triangles
+   in large graph streams including edge duplicates with a fixed memory usage. PVLDB 11, 2 (2017), 162–175.
+Stanley Wasserman and Katherine Faust. 1994. Social Network Analysis: Methods and Applications. Vol. 8. Cambridge Uni-
+   versity Press.
+Duncan J. Watts and Steven H. Strogatz. 1998. Collective dynamics of ‘small-world’ networks. Nature 393, 6684 (1998),
+   440–442.
+Jaewon Yang and Jure Leskovec. 2015. Defining and evaluating network communities based on ground-truth. KAIS 42, 1
+   (2015), 181–213.
+
+Received July 2018; revised August 2019; accepted October 2019
+
+
+
+
+
+
+
+
+
+
+    ACM Transactions on Knowledge Discovery from Data, Vol. 14, No. 2, Article 12. Publication date: February 2020.
+

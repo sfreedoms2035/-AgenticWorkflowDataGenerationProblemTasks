@@ -1,0 +1,1579 @@
+    Libraries |  pace@
+
+
+
+        MIT Open Access Articles
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-
+   Activated Object Retrieval in Homes of Older Adults
+
+
+
+    The MIT Faculty has made this article openly available. Please share
+    how this access benefits you. Your story matters.
+
+
+    Citation: Maniar, Natasha, Chan, Samantha, Zulfikar, Wazeer, Ren, Scott, Xu, Christine et al.
+    2025. "MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in
+    Homes of Older Adults."
+
+    As Published: https://doi.org/10.1145/3708359.3712151
+
+    Publisher: ACM|30th International Conference on Intelligent User Interfaces
+
+    Persistent URL: https://hdl.handle.net/1721.1/159037
+
+    Version: Final published version: final published article, as it appeared in a journal, conference
+    proceedings, or other formally published context
+
+    Terms of use: Creative Commons Attribution-Noncommercial-ShareAlike
+
+
+
+
+
+
+
+
+
+
+    l | | 1 Massachusetts Institute of Technology
+
+               MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated
+                         Object Retrieval in Homes of Older Adults
+
+        Natasha Maniar               Samantha W.T. Chan              Wazeer Zulfikar
+        MIT Media Lab         Nanyang Technological University        MIT Media Lab
+Cambridge, Massachusetts, USA  Singapore, Singapore           Cambridge, Massachusetts, USA
+    nmaniar@media.mit.edu              MIT Media Lab                  wazeer@mit.edu
+                               Cambridge, Massachusetts, USA
+                                  samantha.chan@ntu.edu.sg
+
+          Scott Ren                     Christine Xu                   Pattie Maes
+        MIT Media Lab                  MIT Media Lab                  MIT Media Lab
+Cambridge, Massachusetts, USA  Cambridge, Massachusetts, USA  Cambridge, Massachusetts, USA
+    scottren@media.mit.edu              cjx@mit.edu                pattie@media.mit.edu
+
+        Object Placing        Object Retrieval                          Proactive Safety Reminder
+
+                                                     Your keys are in the
+        kitchen near the stove                                                  “Did you remember
+                        “Pal,                        top and spice rack    to turn the stove off”
+        where are my
+                        keys”
+
+                                                     Location detected:
+                                                          Kitchen
+
+
+
+        Figure 1: MemPal object location tracking and retrieval feature
+Abstract system. We discuss further applications of MemPal’s design as a
+Older adults have increasing difficulty with retrospective mem- multi-purpose memory aid and future design guidelines to adapt
+ory, hindering their abilities to perform daily activities and posing memory assistants to older adults’ unique needs.
+stress on caregivers to ensure their wellbeing. Recent developments CCS Concepts
+in Artificial Intelligence (AI) and large context-aware multimodal
+models offer an opportunity to create memory support systems • Human-centered computing → Interaction techniques; Nat-
+that assist older adults with common issues like object finding. This ural language interfaces; Empirical studies in HCI.
+paper discusses the development of an AI-based, wearable memory
+assistant, MemPal, that helps older adults with a common problem, Keywords
+finding lost objects at home, and presents results from tests of the memory assistant, large language models, large visual language
+system in older adults’ own homes. Using visual context from a models, voice interfaces, context-aware agent, multimodal systems,
+wearable camera, the multimodal LLM system creates a real-time wearables, older adults
+automated text diary of the person’s activities for memory support ACM Reference Format:
+purposes, offering object retrieval assistance using a voice-based
+interface. The system is designed to support additional use cases Natasha Maniar, Samantha W.T. Chan, Wazeer Zulfikar, Scott Ren, Christine
+like context-based proactive safety reminders and recall of past ac- Xu, and Pattie Maes. 2025. MemPal: Leveraging Multimodal AI and LLMs
+tions. We report on a quantitative and qualitative study with N=15 for Voice-Activated Object Retrieval in Homes of Older Adults. In 30th
+        International Conference on Intelligent User Interfaces (IUI ’25), March 24–27,
+older adults within their own homes that showed improved per- 2025, Cagliari, Italy. ACM, New York, NY, USA, 23 pages. https://doi.org/10.
+formance of object finding with audio-based assistance compared 1145/3708359.3712151
+to no aid and positive overall user perceptions on the designed 1 Introduction
+        The global population of older adults is projected to reach 2.1 billion
+This work is licensed under a Creative Commons Attribution-NonCommercial- by 2050, with their ratio of the population in the USA expected to
+ShareAlike 4.0 International License. increase from 16% to 22% [1, 75]. Memory impairments, including
+IUI ’25, Cagliari, Italy Subjective Cognitive Decline (SCD), Mild Cognitive Impairment
+© 2025 Copyright held by the owner/author(s). (MCI), and diagnosed dementia, affect about one-third of this de-
+ACM ISBN 979-8-4007-1306-4/25/03
+https://doi.org/10.1145/3708359.3712151 mographic [4]. Despite these challenges, most older adults prefer
+
+
+
+
+    993
+
+IUI ’25, March 24–27, 2025, Cagliari, Italy                                                                                       Maniar, et al.
+
+   to age in place rather than in a nursing home [42] with many living                   as finding lost objects within their own home through a
+     alone [36]. Memory function is critical for their independence to              natural conversational voice interface and contextual visual
+comfortably live at home with minimal assistance[51].                                 information, requiring limited system onboarding through a
+        Older adults experience declines in retrospective memory, sig-         user-centered approach.
+  nificantly impacting daily functions like object retrieval [53, 64],       •      (2) A within-subject user study with older adult subjects in
+        significantly more than younger adults [6]. Such memory issues            their own homes that validates helpfulness of the object find-
+   not only strain individuals but also their caregivers—mostly unpaid                 ing system, increased objective performance and decreased
+        family members—who face burnout from constant monitoring [42].         recall difficulty for object finding, and qualitative analysis of
+    The economic impact of unpaid caregiving was valued at 196 billion         user preferences informing future design guidelines.
+in 1997 [5].
+      There is an opportunity to use advances in AI and conversational   2    Related Work
+ interfaces to alleviate some of these memory challenges. Specifically          Our work is inspired by previous work on wearable assistants for
+         VLMs (Vision language models) can better transform visual and       older adults as well as object-finding and lifelogging tools. Since
+   text data for contextual assistance like creating accurate activity           memory aids are typically underutilized in older adults than in
+       descriptions and LLMs can understand complex queries, necessary      younger adults [66], we explore the interaction of a multimodal user
+       for memory impaired individuals. Successful development of such        interface within the older adult population to assist with memory.
+   technology requires focusing on key needs and usability preferences
+of older adults, such as integrating natural voice interaction instead   2.1   Voice-based, Camera-based and Wearable
+   of text-based interfaces to support independent living [12, 70, 74]
+      or simplifying the onboarding process to reduce complexity [22].         Assistants for Older Adults
+            This paper presents a multimodal wearable system for older            Prior works showed positive perceptions towards voice user in-
+    adults that leverages LLM technology to assist their retrospective        terfaces (VUIs) by older adults and benefits of VUIs (e.g., Google
+        memory within their homes. Our development and testing of this           Home, Amazon Alexa, social robots) in their daily lives more so
+         system begins with a common pain point—assisting with finding         than younger adults [70]. These benefits include being assistants
+ lost objects. MemPal utilizes visual context and a voice-based, open-            for various functions such as seeking information and control-
+       ended natural language interface to help users locate misplaced       ling home devices [52, 58, 61, 71], companions to alleviate loneli-
+objects (Figure 1). It automatically logs visual information about the  ness [23, 31, 41, 63, 69], helping users develop skills [3, 10], encour-
+user’s environment (object held, location) and activities into a text-         aging physical activity [8], and providing personalized reminders
+        based diary which then integrates with a voice-queried LLM for            through AR [34]. Wearable conversational agents have been used
+   retrospective memory assistance, for example to assist with finding           to provide memory training for older adults [14–16] and monitor
+         misplaced objects. The system can possibly be further adapted     their daily physical activity [65] but these agents do not use visual
+        to address other memory issues like recalling past actions and   data for general memory assistance.
+    assisting with proactive memory, like providing proactive context-           With the integration of language models in voice assistants and
+based safety reminders.                                                          advancements in language understanding, users can converse more
+ The questions we aim to address in this research are as follows:                naturally with these agents. LLMs now have an increased ability
+  •          RQ1: What are the effects of using a voice-enabled multi-          to process larger unstructured text and provide a contextualized
+          modal LLM system for object retrieval on retrieval accuracy,          response. In this work, we implement a multi-modal real-time LLM
+            path length, cognitive task load, retrieval confidence and       voice-based assistant that includes image input as context and uses
+          recall difficulty for older adults, compared to using visual        vision language models for intelligent understanding. Although the
+    cues or no system?                                                      use of LLMs on older adults has recently been explored for fostering
+  •            RQ2: What are older adults’ perceptions and experiences              conversations such as A-CONECT [40] and Mindtalker [76], the
+              of using a voice-enabled wearable system like MemPal for          use of multimodal LLMs that can process greater context has not.
+    object retrieval and generally memory assistance?                              Previous Human-Computer Interaction (HCI) studies have mainly
+         To evaluate MemPal, we conducted a study with 15 older adults         explored camera-based systems to support remote tracking in older
+     (ages 62-96) in their own homes, simulating a near real-life set-              adults’ homes and could reduce caregiver burden via a smart-
+     ting. The study focused on assessing overall user perceptions and           connected home with camera sensors. These systems could provide
+the technical accuracy of the system in varying home environ-                  health monitoring [2], detecting anomalies in activities of daily
+    ments. Findings indicated that participants’ objective performance         living [13] and fall detection [26]. Despite this, the technology
+    in object finding tasks significantly improved with MemPal’s audio          readiness level of smart home and health monitoring technologies
+    assistance in terms of decreased search time and number of objects        for older adults has been considered low and there is limited evi-
+   retrieved as compared to no assistance, but similar to using visual      dence that they help improve quality of life [48]. Other limitations
+   aid. Perceived difficulty of recall also significantly reduced with         include the need to deploy multiple cameras to broaden monitoring
+MemPal’s assistance.                                                            coverage [37]. Wearable camera-based systems have primarily been
+ The contributions of this paper include:                                     used as lifelogging devices for supporting retrospective memory in
+                                                                             older adults (i.e. remembering past events or people’s names), such
+  •            (1) Design of an LLM-based multimodal, wearable system,           as the SenseCam [28, 39] and Autographer plus Flo [54] (both of
+             MemPal, that assists older adults with memory issues such             which are neck-worn devices), but store images as memory, and
+
+
+
+
+    994
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+approaches to text-based memory diaries require integration with                       any hand-held object is located. We also build upon Go-Finder’s
+smart homes for activity monitoring [24].                              study design [77] to test our proposed object-finding feature.
+Building upon literature, we present a combined wearable camera-
+based and voice-based system that helps older adults with object       3
+tracking and activity monitoring. To allow for both modalities, our           Design Considerations
+proposed system would store text-only data as memory unlike                          We conducted a user needs analysis through live interviews, care-
+other systems and prioritize older adult preferences for simplistic                giver and memory support groups (facilitated by a hospital network)
+interfaces [29] such as voice-based and limited onboarding.                        and asynchronous online forums with a diverse pool of older adults,
+                                                                                   caregivers, and physicians that would provide initial design speci-
+                                                                                        fications for a prototype system that supports the most common
+                                                                                       memory issues among the older adult population. Transcripts and
+2.2 Object Finding Systems                                                             forum posts were coded independently by two researchers follow-
+There are several wearable camera systems that help users find                        ing thematic analysis method [9] to generate initial themes. The
+misplaced objects but all provide visual aid either on a tablet or                      researchers then reviewed the coded data and themes to come up
+AR display and do not store long term memory to allow for chat-        with our final themes and analysis.
+based interfaces. Audio based assistance has yet to be explored.        Full compiled themes and quotes are found in Appendix A.1.
+Fiducial Marker Tracker (FMT) had a neck-worn camera and was
+tested with older adults; it required manual registration of objects   3.1      Interviews
+(placing marker tags on objects) and captured videos anytime the       3.1.1    Issues.
+objects are interacted with [46]. To recall the object’s last state
+(e.g., light: on/off), users sorted through video footage grouped by          •             Issue 1: Finding misplaced objects is a time consuming is-
+object, which might not provide a seamless experience for object                         sue. Caregivers listed the items that they often have trouble
+tracking. FMT also required installation and markers around the                              remembering and the emotional toll it takes to find them.
+house, and marker detection was heavily dependent on user’s height                          These insights suggest that location detection must be ac-
+(limited personalization). GoFinder also had a neck-worn camera                             curate and objects may be left in enclosed areas (OC8-11).
+but was registration-free and allowed users to review automatically-                           For example: "My [mother-in-law] MIL was always missing
+grouped images to find objects [77] but not categorizing the name                              her purse and was sure someone had stolen it. She would
+of the object. It was, however, only tested with young adults (18-                         ransack her room all night long. It would be in the closet.
+28 years old) and has not yet been studied with older adults. Our               This happened often." (OC8).
+proposed solution would not store any image data and provide                  •              Issue 2: Safety hazards and concerns necessitate continu-
+a more seamless user experience for older adults by only voice                                ous caregiver monitoring, which is often managed through
+based querying. Systems like LocatAR [62] or Overthere [68] either                           inefficient manual written reminders (D1, SP1, E6-8, C10,
+simplified or removed the object registration process entirely based                          C12, OC1-8). For example, "We have notes everywhere, but
+on gesturing or user motions but required an AR headset system for                             he doesn’t pay attention to any of them. Whenever he is
+continuous use posing questions about social acceptability which                            performing any action, I just watch over him and make sure
+our solution would avoid.                                                       he has what he needs" (OC6).
+ There are other camera-based systems, like CamFi, an AI-driven               •           Issue 3: Confabulation and over-reliance on subjective ques-
+system to help find lost objects in multi-user scenarios that uses                        tionnaires lead to inaccurate diagnosis of memory conditions
+stationary camera and displays objects and last-seen users of the                             and misconstrued memories (D1, D2, E6, E7, E8, SP1). For
+objects on a smartphone [78]. It has also only been tested with                          example, "My biggest issue with his memory is that he’ll tell
+younger adults who are generally more technologically savvy [59].               us he has something when he doesn’t. He lies daily." (E6).
+Other commercially-available sensor systems, like RFID tags [2, 47],
+Ultra-Wideband (UWB) Systems [30] or Wi-Fi Fingerprint-Based           3.1.2    Proposed Solutions.
+Indoor Positioning [38, 55], can track objects but require manually
+tagging of these devices to the objects.                                      •               Solution 1: Object Finder Inclusion of an object finding
+While LLMs have been used to identify the attributes of objects                              system that is voice activated and identifies within-home
+being found by a mobile robot in the FindThis system [50], none of                       location with low latency. Overall, older adults want to feel
+the works, to date, have used LLMs for helping users themselves                              independent and "they don’t want to go to a nursing home"
+to find the objects and enabled a voice-based chat interface for                (C11) so designing features that enables that is essential.
+querying and response. This work presents a system which uses                 •                 Solution 2: Activity Diary: We suggest the implementa-
+multi-modal LLM AI capabilities to support one of its key features of                          tion of an automated version of a memory diary commonly
+object finding designed specifically for older adults allowing them                          used among older individuals with poor memory (SP1), that
+to also ask follow-up questions on the whereabouts and action of                          passively logs daily activities. Objective data from at-home
+the user during misplacement. It uses visual inputs as context to                           activity monitoring can provide crucial insights to physi-
+the LLM so that no explicit object markers or tags are required. It                        cians, who are currently reliant on subjective often biased
+stores object location information as text instead of images to be                            memory recollections to diagnose potential memory condi-
+mindful of users’ privacy and to enable audio descriptions of where             tions.
+
+
+
+
+995
+
+IUI ’25, March 24–27, 2025, Cagliari, Italy Maniar, et al.
+
+3.2 Form factor only detected once the user’s hand(s) are observed as opposed to
+Based on previous works, we prioritized key design considerations continuous "video-on" to prevent unnecessary video processing
+to enhance user acceptance. Neck-worn devices are more likely since activity detection models are expensive (ex. user is walking
+worn by older adults compared to other form factors (e.g., smart through a doorway). A Vision Language Model (GPT-4V)takes an
+glasses) [67] due to higher social acceptability. Research by BMC input of tiled frames, text context of the previous activity, and a
+geriatrics proves that specifically lifelogging tools for the older prompt, and outputs activity descriptions, objects in hand, and back-
+adults are considered acceptable unless individuals are using the ground descriptions that are useful for dynamic, context-sensitive
+camera in public outside of the home [32]. MT and Go-finder also dialogues.
+performed acceptability studies and found that individuals were The detection models produce text for each frame batch, which
+more concerned with the functionality and how it could assist them is embedded and stored in a vector database to create a time-
+rather than social acceptability [46] [77]. However ideal form factor sequenced activity log. The language system powered by an LLM
+was not the focus of this paper as we just used existing hardware agent described below understands user voice queries and responds
+to test our methods and concept. accordingly using the vision context (user example in Figure 4).
+        The underlying technology architecture consisting of camera
+4 System Design and Implementation preprocessing, visual feature extraction, and LLM query/ processing
+MemPal is a wearable, multimodal memory assistant designed to are designed to be reused for multiple features besides object finding
+help older adults with self-reported memory decline locate mis- such as proactive safety reminders and retrospective recall of past
+placed objects and remember past actions within their homes through actions. Figure 15 displays the usage of visual and language system
+visual context and voice-based interface. The prototype system fea- to support context based safety reminders. Testing focused on the
+tures an egocentric camera, that captures images regularly. These object finding feature.
+images are analyzed in real-time to automatically generate a diary 4.3 Object Retrieval
+of all activities. An audio bone-conduction headset then enables
+users to voice-query this activity diary. The wearable assistant is 4.3.1 User Flow. Once the location contexts are set up during the
+accompanied by the MemPal smartphone app for initial onboarding. onboarding process, MemPal allows users to voice-query about
+System architecture illustrated in Figure 3. More details found misplaced objects without needing explicit tagging or object reg-
+in Appendix B. istration. Users activate the system using the wakeword "Pal," fol-
+        lowed by their query, such as "Pal, where are my keys?" or "I can’t
+4.1 System Onboarding find my keys, Pal." MemPal retrieves the last seen location of the
+To create a seamless and personalized setup experience of the Mem- extracted object from the activity log and responds in the format:
+Pal system for older adults, the user would take a 1-5 minute house- "Your [object] was last seen in the [detected room] near [back-
+tour video while wearing the camera, which creates a spatial repre- ground description]." If the object is unlocated, MemPal replies
+sentation of their home later used for room localization. This initial with "I’m not sure." LLMs can manage increasingly complex queries
+information provides location context critical for object retrieval. that go beyond simple object retrieval, such as "What did I do before
+Upon entering a new area, the user verbally labels and scans each I misplaced my glasses?" This functionality is essential to meeting
+room before moving to the next. After about 2 minutes of process- the needs of users, especially those with memory impairments, who
+ing, the labeled locations appear for review in the MemPal app. To may need more than basic object finding.
+accommodate different house configurations and to enable a voice Users can also ask follow-up questions without repeating the
+interface, MemPal allows users to voice-label rooms in a personal- object in search, enhancing the fluidity of the conversation (e.g.,
+ized manner (for instance labeling the entrance as parlor) to provide "Pal, can you be more specific?" or "Pal, what was I doing right
+a more familiar experience as opposed to auto-labeling rooms in a before I saw it?") due to an LLM’s ability to process long context.
+standard format for all users. Figure 2 displays the user flow of the This design, supported by the system’s chat memory, enables in-
+system onboarding process. teractions that mimic natural human dialogue powered by LLMs.
+        Figure 5 illustrates the sequence of user actions and interactions
+4.2 Activity Log for object retrieval using MemPal.
+To enable a multi-purpose memory augmentation system, Mem- 4.3.2 Language System Implementation. During object retrieval,
+Pal consists of a vision system and language system (Figure 3) to ActivitiesDB is filtered based on object metadata. If an exact match
+create an activity log. The vision system comprises of parallel real- is found, the embeddings are chronologically sorted, and the most
+time detection AI models responsible for identifying the real-time recent timestamp is returned. The format is: "Your [object] was
+location, generating background scene descriptions, and describ- last seen at [time] in the [location] near [background]." For similar
+ing both hand-held objects and the current activity of the user. objects with slightly different names, embedding similarity and
+Since MemPal uses a monocular egocentric camera for real-time retrieval-augmented generation (RAG) are used. The query is em-
+indoor location tracking, it avoids the need for sensors like GPS or bedded using OpenAI’s Ada model (text-embedding-ada-002), and
+high-compute methods like SLAM. It generates an embedding map cosine similarity scores are calculated with ActivitiesDB embed-
+using CLIP embeddings and a room adjacency list from a calibra- dings. The top k=10 most similar embeddings are selected, with
+tion video, creating a personalized spatial map of the user’s home. metadata (timestamp, location, object, background) used to aug-
+This map provides context for real-time localization. Activity is ment an LLM (OpenAI GPT-3) prompt for the last-seen details. If it’s
+
+
+
+
+    996
+
+    MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+
+     T=5
+“Living Room”
+
+        t=0-5                         t=5-12
+
+   T=0      Entrance
+  “Front        >
+Entrance”                      Living room
+
+    Step 1                                Step 2
+
+                                                 Review
+    Start Home Tour t=20-25           t=12-20  Populated
+                                            House Locations
+
+        Bath                   Bedroom
+        <
+
+
+
+                     “Master
+    “Main Bathroom”  Bedroom”
+          T=20    T=12
+
+    Figure 2: System onboarding phase: Using the MemPal app, the user first watches an instructional demo video before beginning
+    the home tour video walk-through. Once the video is processed, the verbally labeled locations are populated in the app.
+
+
+
+                                          Vision System
+
+                                         Language System
+
+           User query   Speech to text  Query Processing
+
+    Input Mic
+             Indoor         Activity
+        LocationTracking  Recognition   Daily Diary  High level
+                                                      Activity
+  Camera     Hand-held       Scene           DB          DB  Categorized Query
+        object tracking   Recognition  Visual Context             Context
+
+   Bone  Text to speech                 Response System
+Conduction        Response
+ Speaker                                      MemPal App
+
+
+Figure 3: System implementation overview highlights the use of real-time visual context through a wearable camera for a
+question-answering language system using wearable audio I/O. The visual context from the camera consists of location tracking,
+object tracking, and activity and scene recognition to create a virtual diary (Daily Diary DB) which is used later for querying.
+
+a follow-up question, prior chat history is included before invoking activity detection. An ideal form factor would attach on the user’s
+RAG. Figure 6 illustrates the retrieval workflow. clothes. We envision future iterations to the components integrated
+        into a single magnetic clip with a mic, speaker, camera, and haptic
+4.4 Prototype Apparatus and Infrastructure feedback for query activation.
+The wearable prototype system for the study consists of an iPhone Vector databases for location calibration and automated diary
+held with a magnetic clasp on a neck mount and a Bluetooth con- are persisted locally on-device while location trajectory is persisted
+nected bone conduction headset for audio input and output shown on Google Firebase Realtime database to be able to share them
+in Figure 5. The iPhone acts as an egocentric camera device cen- with authorized caregivers. User queries to MemPal are also stored
+tered between the shoulders and tilted slightly at a downward locally on-device.
+angle towards the user’s hands as it streams camera footage to 5 User study
+a server. The bone conduction headset consists of a microphone
+and speaker around the ear, non-interfering with hearing aids. For We conducted a within-subjects study with 15 older adults in their
+the first prototype we used a neck worn camera in order to keep own homes to evaluate the interaction, accuracy, and overall user
+the camera from moving but still in a position of highest FOV for experience of the MemPal system.
+
+
+
+
+    997
+
+    IUI ’25, March 24–27, 2025, Cagliari, Italy    Maniar, et al.
+
+
+    ActivitiesDB    QueriesDB
+
+
+    METADATA                                                  ACTIVITY
+    Timestamp    Location   Object   Background               CAPTION                OBJECT   QUERY                     RESPONSE
+    2024-04-05   bedroom    ring     Afigurine on the left,   The individual is      ring     hi pal where is my ring   "Your ring was last seen in the bedroom
+    13:18:11                         mirror in the center,    placing a ring on a                                       near Afigurine on the left, mirror in the
+                                     and a wall in the        wooden jewelry box                                        center, and a wall in the background",
+                                     background
+
+
+
+
+
+    2024-04-05   kitchen   not   Wooden table with           The individual walked
+    13:33:53               sure  chairs, kitchen counter
+                                                             kitchen counter
+                                 on right
+    2024-04-05   kitchen   not   with cutting board, stove   from a table to the  ]                   HighLevelActivitiesDB
+                                 Wooden cutting board on     The individual opened
+    13:34:00               sure  countertop, stove on left,  a white refrigerator
+    2024-04-05   kitchen   not   sink on right               door                    Timestamp    Activity
+    13:34:03               sure  Kitchen counter with        The individual is       2024-04-05   The user was cooking in the kitchen, adjusting stove knobs and
+                                 various bottles and a       reaching towards a      13:34:46     picking up items.
+                                 sink on the left            wooden cutting board
+    2024-04-05   entrance  not   Wooden  floor, white        The individual is
+    13:14:14               sure  walls, dining chairs and    walking through a
+                                 table visible               hallway into a dining
+    2024-04-05   kitchen   not   White stove top with        area
+                                                             The individual is
+    13:34:12               sure  wooden cutting board        turning a stove knob
+                                 and spice bottles
+
+
+
+Figure 4: An example of activity log, query log, and higher level activities extracted (from Participant 5 of user study)
+
+    Object Placing                                    Initial Query                                                     Follow up
+   “Pal,              Your keys are in the                                             “Can you be
+where are my                                                  kitchen near the stove  more specific                         They are on top
+   keys”              top and spice rack                                                  Pal?”                         of the red spice rack
+
+
+
+
+
+    Figure 5: User flow for object retrieval. When the user places an object at a location in the house, MemPal stores this information
+    which can be later retrieved during QA. The user can ask the location of the specified object as well as followup questions.
+
+
+       Chat History Context                                                                       Response System
+
+                                                                  Exact  12.3 11:59 pm kitchen            keys   stove and countertop     placed keys down on countertop
+                           LLM Categorization and Extraction      match  12.3 11:58 pm kitchen    not sure       stove and countertop    person is rinsing hands      Visual
+          Initial Query    {Category: “objects”, Object: “keys”}                     12.2 9:45 pm bedroom keys   underneath white pillow  person was making bed      Context
+       “Where are my keys”
+
+          Followup query   {Category: “followup”, Object: None}             Query Embedding                                              Nearest neighbor cosine
+                                                                                                                                                similarity
+    “Can you be more specific”                                    Find      [123,448,192, …]
+                                                                  similar         LLM                                                       Relevant Activity
+                                                                                                                                                   Logs
+                     Response
+
+    Your [object] was last seen at [time] in the [location]
+    Keys                   11:50pm   Kitchen
+    near [background]
+    Near stove, countertop and spice rack
+
+
+Figure 6: Object Retrieval Implementation: This workflow demonstrates the question and answer system specifically for object
+retrieval which uses the visual context as determined in Figure 13 to respond to user queries starting with query categorization.
+
+   The study had two parts. Part 1 tested the effectiveness of a • MemPal: with audio assistance (verbal descriptions of ob-
+voice-enabled object retrieval feature to answer RQ1, modeled after ject’s last seen location) triggered by a voice query
+the GoFinder study [77]. It had three experimental conditions and • Visual: with visual assistance of last seen tiled image of ob-
+the order was counterbalanced across participants (Figure 7): ject along with detected object label (a subsystem of MemPal
+        that is used to generate audio descriptions).
+    • Baseline: without assistance, control condition
+
+
+
+
+                                                              998
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+        The Visual condition builds off Gofinder’s Object-based aid                participant’s app screen, activity logs, and images were stored for
+system (which groups objects by visual appearance) but unlike                       manual review by two researchers post-study. Additionally, latency
+GoFinder, the objects are labelled and labels are then clustered,                      of responses were calculated from start of query to audio query
+allowing for easier search. The images are displayed on a laptop, as                     response. Individual system component latency was also calcu-
+older adults prefer larger screens like those of tablets over smart-                lated for camera pre-processing, real-time location algorithm, VLM
+phones [43] and voice descriptions were not given in this condition.                   (GPT4-V) processing, and total time for each batch of streaming
+We showed the participants the tiled image of the 235 degree view                     frames. The evaluation was conducted by two researchers who were
+since a larger camera view provided more visual context back-             independent of the data collection and blinded to the conditions.
+ground for the user to identify the location of objects. However, in
+future iterations we plan remove distortion during post processing        5.2.2   Objective Evaluation Measures.
+to avoid confusion.
+       Part 2 studied the experience and user perceptions of MemPal             •              Retrieval Accuracy: We determined whether the user cor-
+to answer RQ2.                                                                              rectly found the object within the 3 minutes of search and
+                                                                                        then calculated a percentage of total objects found/ total ob-
+5.1    Tasks                                                                              jects within each condition to determine an accuracy metric.
+The objective measures calculated during object retrieval were                  •                Path Length: Measured as the number of rooms an indi-
+meant to answer RQ1 and the subjective user experience measures                             vidual searched (based on the calibrated locations) before
+determined based on experiences with object placing and retrieval                          finding an object within the 3 minutes. For each condition,
+were meant to answer RQ2.                                                                we averaged the path length across all objects which included
+                                                                                  those that the user already remembered.
+5.1.1       Object Finding. Object Placing: We collected 20 objects
+(Figure 8) which resembled commonly misplaced objects based on                         In the MemPal condition, we included only the data points where
+survey results of recruited participants (Appendix B.2.2 and user                       MemPal accurately delivered the correct audio response for the
+research, Appendix A.1). Occasionally, an object was replaced with                   specified object. We excluded inaccurate responses as they caused
+an item from the user to enhance personalization. Participants were               participants to revert to the baseline condition, thereby minimizing
+first asked to wear the MemPal camera system and place all 20 ob-                     accuracy as a confounding factor in our evaluation of the objec-
+jects in various locations around their house (for our system to                   tive metrics. Similarly, for the Visual condition, we retained only
+auto-register the locations of objects) without any explicit label-                    data points where the visual image produced by MemPal correctly
+ing. Half were hidden, half were visible, and distributed evenly                    depicted the last observed location of the object. Furthermore, we
+across rooms to avoid overcrowding (following the GoFinder study                       excluded instances where participants did not rely on the image
+[77]). No markers were used to indicate specific locations, unlike in            for retrieval, ensuring that the analysis accurately reflects the as-
+GoFinder [77], as our study was conducted in-the-wild. This setup                 sistance’s effect on the objective metrics. We analyzed results both
+was designed to mimic real-life scenarios of the participant them-        excluding and including these data points.
+selves misplacing commonly used items in non-obvious places and
+to increase recall difficulty as much as possible given the study’s       5.2.3               Subjective Evaluation Measures. After each condition, we
+short duration.                                                                         measured self-perceived task load (using Raw NASA-TLX), confi-
+Object Retrieval: 40 minutes after the object placing task, partic-          dence of retrieval (7-point Likert scale), and recall difficulty (7-point
+ipants were asked to retrieve 20 objects from randomized conditions                   Likert scale) through written questionnaires as seen in Appendix
+(6-7 objects each). The researcher specified the target object, and                    C.3 (following the evaluation metrics in Memoro, memory augmen-
+participants had up to 3 minutes to search, simulating a hurried          tation device study [79]).
+search as in previous studies [77].                                                    After all conditions were completed for object finding, we mea-
+5.2    Measures                                                                      sured the user experience and long-term potential use of just the
+                                                                                   MemPal condition with questions rated on a 7-point Likert scale. To
+5.2.1      Technical Evaluation. We annotated whether the audio re-                  evaluate the perceived helpfulness of MemPal’s audio descriptions
+sponse from MemPal accurately represented each object’s last seen                     versus visual images, we measured reliance on one type of assis-
+location. Audio responses were categorized in the following (1)                     tance versus the other as well as overall usefulness of the camera
+Correct: if the detected location and scene description of the back-               feed both on a 7-point Likert scale. Full questionnaires are in the
+ground accurately reflected the object’s location, (2) Incorrect Loca-                   Appendix C.1. Open-ended written feedback on overall thoughts
+tion: if the object was correctly categorized in the last seen times-     and improvements were collected.
+tamp so a correct description was generated but the Indoor location
+algorithm detected the incorrect location, (3) Object misidentified: If   5.2.4           Overall System Usability and Experience. After the study was
+the object was correctly identified at some timestamp but misiden-                complete, we asked participants to complete a system usability scale
+tified at t-1 timestamp, (4) No object detected: if the object was                 assessment (SUS) [11] and rate the overall usefulness of the entire
+not contained in the ActivitiesDB log metadata. For the Visual                     MemPal system in their everyday lives using a 7-point Likert scale.
+condition, a similar analysis was performed which evaluated the                         Then, we interviewed participants on their experience with the
+accuracy of solely the VLM system so camera image responses                         system, overall feedback and thoughts on privacy and data sharing.
+were categorized into the same (3) and (4) categories. Data for each      Full list of questions is in Appendix C.2.
+
+
+
+
+999
+
+    IUI ’25, March 24–27, 2025, Cagliari, Italy    Maniar, et al.
+
+        Condition 2: MemPal        Condition 3: Visual
+
+
+
+   Your book is in the
+bedroom near the lamp and
+blue and yellow patterned  Book
+   sheets on the left”
+
+
+
+
+
+
+
+
+    Figure 7: The user interaction for each memory assistance condition during the object search process. (Left) The MemPal
+    condition provides audio descriptions; (Right) The Visual condition displays a tiled image of the object’s last seen location.
+
+
+
+
+
+
+
+
+
+
+Figure 8: Object set used during the study for each participant are shown below: folder, cup, phone, bottle, medication, glasses,
+headphones, book, charger, remote, ID card, ring, wallet, watch, magnifying glass, tape, scissors, ruler, mouse, keys.
+
+5.3 Procedure within the 3 conditions: (1) Baseline, (2) MemPal, (3) Visual. Lastly,
+The study was conducted in the older adults’ homes within one we asked participants about their general feedback and concerns
+floor and took about 2.5 hours (Figure 9). Demographic information on the overall system through an interview.
+was collected in the pre-screening questionnaire and follow-up
+emails. At the start of the study, a Mini Mental State Examination 5.4 Participants
+(MMSE) screening [21] was administered to assess baseline cogni-
+tive level. Then, participants were asked to use the MemPal app to Participants were recruited through local hospital-led memory sup-
+walk through the setup phase which included reading instructions, port groups, email lists, caregiver support groups, social media,
+watching an example video, and taking a video of their home while and partnering with senior communities. There were 15 partici-
+verbally labeling certain rooms as described in Figure 2. Following pants (9 female, 6 male, age range = 62 to 96, 𝑀=74.9, 𝑆𝐷=8.6).
+that, participants performed the object placing task. Next, they Participants were fluent or native English speakers with normal or
+took a 30 minute break to experiment with some other prototyped corrected-to-normal hearing and vision. All participants lived in
+features like safety reminders and a summmarizer without formal either apartments or homes (8 in homes, 7 in apartments) with an
+testing. After another 10-minute break (which is about 40 minutes average of 5.13 rooms. Appendix 17 shows distribution of rooms
+after the object placing task), participants retrieved the objects across participant homes. Participants were asked about their cog-
+        nitive ability and varied between normal cognitive ability (n=8),
+
+
+
+
+    1000
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+
+
+   MMSE  Calibration                     Safety                      Summarizer      Object Retrieval      Feedback
+Screening   Phase      Object Placing  reminders                                                           interview
+                                                               Survey    Survey        Survey
+ [10 min]  [10 min]      [20 min]       [10 min]                      [10 min]   [10 min] x 3 conditions   [20 min]
+
+    [2.5 hours]
+
+    Figure 9: Procedure flow of the 2.5 hour study within each participant’s home. All surveys took around 5 minutes.
+
+subjective cognitive decline (SCD) (n=4), and Mild Cognitive Impair-     6.2     Object Retrieval
+ment (MCI) (n=3). Additionally, participants rated the frequency of      Based on Section 6.1, 28% of data from the MemPal condition and
+various actions, including: misplacing objects, forgetting to bring      47% from the Visual condition were inaccurate and thus, excluded
+intended items, forgetting intended actions, forgetting errands,         from analysis to accurately assess the effects of assistance modes
+forgetting medications, and forgetting intended purchasing. The          on the objective measures: retrieval accuracy and path length. We
+study received ethics approval from the university ethics review         report the results for this set of data and any differences in results
+board, and participants gave written consent to participate with         with all data (regardless of accuracy).
+knowledge of what data was being stored and how it was processed.
+Participants received 45 USD worth of compensation for completing        6.2.1   Retrieval Accuracy higher with MemPal than Baseline. Ac-
+the study. Participant demographic data can be viewed in Appendix        cording to the Shapiro-Wilk test, the retrieval accuracy was not
+5.                                                                       normally distributed (𝑝 <.05). A Friedman test showed a signifi-
+                                                                         cant difference in retrieval accuracy between conditions (𝑋 2=14.8,
+6     Results                                                            𝑝 <.001). A post-hoc analysis using Wilcoxon signed-rank tests
+We analyzed the results from the user study to evaluate the overall      after Bonferroni correction showed that users had significantly
+system’s technical accuracy within different real-life settings, ob-     higher retrieval accuracy with MemPal than Baseline (𝑝 =.015) but
+jective effects on object retrieval, and subjective user perceptions     no significant differences for the other condition pairs: Baseline-
+and experience for the overall system.                                   Visual (𝑝 =.087), MemPal-Visual (𝑝 =1.03). Baseline (𝑀=.81, 𝑆𝐷=.18),
+                                                                         MemPal (𝑀=.97, 𝑆𝐷=.07), Visual (𝑀=.95, 𝑆𝐷=.11). When includ-
+                                                                         ing all data regardless of accuracy, differences between Baseline
+6.1     Technical Evaluation of System                                   and MemPal loses significance (𝑝 =.054), and difference between
+As part of the user study, we conducted a technical evaluation of        Baseline-Visual is significant (𝑝 =.02).
+the Object Finding system to understand the performance within           6.2.2   Path Length lower with MemPal and Visual than Baseline:
+different environments and in real world conditions.                     Path length did not meet the normality assumption (𝑝 <.05). A
+6.1.1    Object Finding: The results in Table 1 include analyses from    Friedman test showed statistical differences between conditions
+all objects that were retrieved during the MemPal and Visual condi-      for this measure (𝑋 2=17.7, 𝑝 <.001). A post-hoc analysis using a
+tions. Count refers to all trials within each category and total count   Wilcoxon signed-rank test after Bonferroni correction showed
+refers to responses within each condition. Since Visual is a subset      that the path length for MemPal was significantly lower than
+of the MemPal condition, there were 145 trials that evaluated the ac-    Baseline (𝑝 =.014), and path length for Visual was significantly
+curacy of visual images and 92 trials which evaluated the accuracy       lower than Baseline (𝑝 =.0066). There was no significant difference
+of audio responses based on those images. MemPal’s accuracy of           between MemPal-Visual (𝑝 =2.053). Figure 10 consists of the bar
+audio descriptions was 72% and Visual images was 53%. Inaccurate         charts and mean of these objective metrics for each condition. Base-
+responses were mainly due to misidentified objects of 24%, which         line (𝑀=1.93, 𝑆𝐷=.69), MemPal (𝑀=1.10, 𝑆𝐷=.33), Visual (𝑀=1.09,
+suggests more fine grained object detection. The location algorithm      𝑆𝐷=.19). When including all data regardless of accuracy, the same
+given the initial calibration video performed correctly 78% of the       condition pairs remain significant (𝑝 <.05) with slight adjustments
+time.                                                                    to the level of significance: Baseline-MemPal (𝑝 =.007) and Baseline-
+                                                                         Visual (𝑝 =.01).
+
+6.1.2       Latency: We evaluated the latency for the language system    6.2.3   No difference in Task Load between conditions. A repeated
+and vision system separately. Latency for the language system was        measures ANOVA (𝑝 =.031) showed significant differences in task
+calculated by the query response time (time of audio output) - query     load (RTLX) scores between conditions. A post-hoc analysis using
+start time (time of audio input). From 204 interactions across all       pairwise t-tests with Bonferroni correction indicated that no con-
+user studies the mean of query-response time was 2.17𝑠 and SD of        dition pairs were significant: Baseline-MemPal (𝑡=1.47, 𝑝 =0.486)
+0.68𝑠. The vision system latency was calculated by first evaluating     Baseline-Visual (𝑡=2.44, 𝑝 =.087) MemPal-Visual (𝑡=1.60, 𝑝 =0.398).
+latency for each individual component and total processing time of       Baseline (𝑀=56.1, 𝑆𝐷=18.3), MemPal (𝑀=50.5, 𝑆𝐷=17.8), Visual
+each query to then be inserted in the database (Table 3).                (𝑀=44.4, 𝑆𝐷=13.4).
+
+
+
+
+1001
+
+    IUI ’25, March 24–27, 2025, Cagliari, Italy        Maniar, et al.
+
+        Correct (MemPal) Correct (Visual) Incorrect location No object detected Object misidentified
+   Count      66     28     20     18     22
+Total Count   92     53     92    145     92
+Percent (%)  72%    53%    22%    12%    24%
+    Table 1: Object Retrieval Accuracy for MemPal and Camera Conditions
+
+
+   Statistic  Correct  Incorrect activity detected  No activity detected
+ Mean Accuracy  0.85               0.03                     0.12
+     Stdev      0.17               0.10                     0.17
+ Count Detected  28                 1                        4
+Total Reminders  33                 33                       33
+    Table 2: Overview of the Safety Reminders Accuracy (P5-P15)
+
+
+                                  Locations  VLM  Total Time
+       Mean Process Time (s)        0.429     11    5.689
+       Stdev Process Time (s)       0.328   4.105   1.975
+   Total Process Calls (avg/user)  724.333  85.266  97.267
+   Total Pre-processing Time (s) 9.82
+        Total Full Time (s)         26.16
+    Table 3: Device Processing Time
+
+
+
+    A. Retrieval Accuracy    B. Path Length
+
+
+
+
+
+
+
+
+
+
+        Figure 10: Retrieval Accuracy and Path length. ∗: p<.05, ∗∗: p<.001
+
+6.2.4 No difference in rated Confidence between conditions. There Figure 11. A post hoc Wilcoxon signed rank analysis after Bonfer-
+was a significant main effect in the confidence of finding objects roni correction showed that the recall difficulty for both MemPal
+between conditions from a Friedman test (𝑋 2=8.84, 𝑝 =0.012). How- (𝑝 =.022) and Visual (𝑝 =.0064) was significantly lower than Baseline.
+ever, a post hoc Wilcoxon signed rank analysis after Bonferroni However, recall difficulty for MemPal was not significantly differ-
+correction determined no condition pairs were significant: Baseline- ent than Visual (𝑝 =0.119). Baseline (𝑀=3.93, 𝑆𝐷=1.67), MemPal
+MemPal (𝑋 2=26.0, 𝑝 =0.91) Baseline-Visual (𝑋 2=13.0, 𝑝 =0.06) MemPal- (𝑀=2.87, 𝑆𝐷=1.81), Visual (𝑀=2.07, 𝑆𝐷=1.10).
+Visual (𝑋 2=2.0, 𝑝 =0.212). Baseline (𝑀=4.87, 𝑆𝐷=1.19), MemPal
+(𝑀=5.27, 𝑆𝐷=1.53), Visual (𝑀=5.87, 𝑆𝐷=0.92). 6.3 User Experience for MemPal
+6.2.5 Recall Difficulty lower with MemPal and Visual than Base- We analyzed overall user experience as shown in Figure 12.
+line. A Friedman test showed significant differences in the recall For the Object Retrieval feature, just using MemPal’s audio de-
+difficulty of finding objects between conditions (𝑋 2=15.3, 𝑝 =.0005, scriptions, we found the mean scores across the categories ranked
+
+
+
+
+    1002
+
+    MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+
+    A. Raw NASA TLX    B. Confidence    C. Recall
+
+
+
+
+
+
+
+
+
+
+    Figure 11: Raw NASA TLX for task load [0-100], confidence [1-7], difficulty to recall [1-7]. ∗: p<.05, ∗∗: p<.001
+
+
+    A. Object Retrieval
+
+
+
+
+
+
+
+
+
+
+        Figure 12: Categorized user perception and experience levels using [1-7] Likert scale.
+
+highest to lowest: Helpfulness (𝑀=5.20, 𝑆𝐷=1.66), Ease of use (𝑀=5.07, affected the overall SUS (usability) score. We found a moderate
+𝑆𝐷=1.87), Usage propensity (𝑀=4.67, 𝑆𝐷=2.02), Response satisfac- negative Pearson’s correlation between MMSE results and SUS
+tion (𝑀=4.86, 𝑆𝐷=1.61), Appropriate Response Length (𝑀=4.87, scores (r = -0.6064, p = 0.04795). This indicates that participants
+𝑆𝐷=1.36), and Trust (𝑀=4.73, 𝑆𝐷=1.83). Additionally, we found who scored higher in MMSE (better cognitive function) tended to
+the mean scores for usefulness of the Visual condition (𝑀=5.57, give the system lower SUS scores.
+𝑆𝐷=0.97) and reliance on Visual vs MemPal (𝑀=4.93, 𝑆𝐷=1.49). We
+found weak correlations between users’ MMSE results and their 6.5 Qualitative Feedback
+other perceptions of the system (Helpfulness r = -0.171, Ease of use Open feedback and interview transcripts were coded independently
+r = -0.356, Usage propensity r = -0.0442, Response satisfaction r = by two researchers following thematic analysis method [9] to gen-
+0.0802, Appropriate Response Length r = -0.136, Trust r = 0.0235, erate initial themes. The researchers then reviewed the coded data
+usefulness r = 0.252) using Pearson’s correlation tests. and themes to form our final analysis and themes.
+6.4 System Usability 6.5.1 Positive System Feedback. Several participants reacted
+        positively to the system (P11, P14, P7, P13): “I think this is so phe-
+MemPal’s overall system had a mean system usability score (SUS) nomenal and easy to use” (P14) and “at some point everyone is
+of 69.375 (𝑆𝐷 = 17.3) and overall usefulness in everyday life had a going to need a MemPal” (P11). Participants thought the system
+mean value of 6.0 (𝑆𝐷 = 1.51). Following Go-Finder’s study report onboarding phase was “ok” (P1, P7, P9, P10) and P10 liked that he
+on usability [77], we summarize each participant’s SUS scores, age could create “personal labels” of locations in his home. Participants
+and average accuracy of MemPal in Table 4. We did not have SUS felt that the object retrieval system was ‘helpful” (P7, P10, P11,
+scores for P3, P9 and P13 as they thought that the system was too P14, P8) and P4 remarked that it was a“great feature”. P15 com-
+early in development and opted to not complete the scale. A lower mented that “It’s really amazing that it can do that, that the system
+accuracy of MemPal as well as higher MMSE scores might have can know where my objects are”. A few also mentioned that just
+
+
+
+
+    1003
+
+    IUI ’25, March 24–27, 2025, Cagliari, Italy        Maniar, et al.
+
+       Participants     Overall SUS  Age  Accuracy
+      Participant 1         67.5      77    0.67
+      Participant 2         42.5      62    0.71
+      Participant 3         N/A       73    0.29
+      Participant 4         82.5      67    0.67
+      Participant 5         62.5      78    0.86
+      Participant 6          55       76    0.71
+      Participant 7          70       73    0.71
+      Participant 8          85       80    0.67
+      Participant 9         N/A       70    0.83
+      Participant 10        82.5      77    1.00
+      Participant 11         40       96    0.67
+      Participant 12         90       66    1.00
+      Participant 13        N/A       87    0.33
+      Participant 14         90       67    1.00
+      Participant 15         65       74    0.43
+           Mean            69.375   74.27   0.71
+    Standard Deviation  17.32460809  7.45   0.21
+    Table 4: Summary of Users’ SUS Scores, Age, and Accuracy of MemPal. Participants with N/A for SUS opted not to complete the
+    SUS scale. Lower accuracy of MemPal might have affected SUS score.
+
+
+wearing MemPal would increase awareness of placing objects (P6, where they would need “more instruction and demonstration” (P11,
+P2, P13): “A new system makes you more conscious about hiding P14) or potentially “would need a caregiver to do it” (P8).
+things” (P6). Additionally, participants preempted potential other
+positive impacts of the system like “learning your behavior and 6.5.5 Optionality in visual vs audio assistance. :Participants
+help you have better habits”(P2) and that it could “give suggestion found that having the option of using MemPal or Visual or both
+to reduce forgetting objects” (P14). would to be most useful (P2, P3, P9, P11, P14, P15) since both modal-
+6.5.2 Improve wearable device comfort. Although MemPal ities offered their own benefits and drawbacks. For the visual mode,
+was not designed for optimal comfort, participants mentioned that users noted that "fisheye lenses are difficult to understand" (P3),
+the camera was bulky and not as lightweight (P5, P7, P10, P14, P12) suggesting that the lens distortion may make it harder for them
+but still thought the current“pendant idea is nice” (P5) and bone to match the view to their real-world perception of the space in
+conduction headset ” did not interfere with hearing aid ” (P5), and their home. Additionally, visuals provide more information than
+glasses can be confusing” (P14). a short audio description could provide like ”[capturing] exactly
+        which drawer” the object was at (P14). For the audio mode, users
+6.5.3 Improve accuracy. (1) Speech Recognition: Participants commented that the assistance is “less helpful when relying only
+mentioned that speech recognition could be improved especially on verbal description. Pictures are also helpful” (P2) even though
+for the ’Pal’ wake-word detection (P7, P9, P13) sometimes queries verbal descriptions provided the better speed needed for object
+"taking multiple tries" (P8) especially for those with "poor pronunci- finding: “speed is as important as accuracy” (P14) and users might
+ation" (P11). (2) Insufficient audio descriptions: Many preferred the “sometimes forget the name of the object you are looking for” (P7).
+descriptions to be more specific but still succinct, such as “know-
+ing which drawer” (P14), being able to “identify colors” (P1, P4), 6.5.6 Privacy and Data Sharing. Most participants were com-
+differentiate between similar objects, hidden versus not hidden ob- fortable with their data about their ’activity log’ being shared with
+jects, and “height from the ground” (P3) which the current system their caregiver(s) and physician(s) (P2, P4-P10, P12-P15). Partici-
+couldn’t provide. However, P14 said “There’s a fine balance between pants thought that it was “necessary” (P5, P15), P10 remarked that
+how detailed it should be (P14)“. (3) Inaccurate Responses: A few it was about weighing “privacy versus safety issues” and P14 felt
+participants felt that MemPal was still an “early stage development” that “privacy is a thing of the past”. P15 mentioned “when you go
+(P11) and “not accurate enough yet” (P13). This also made it “too to your doctor, you sort of like aren’t quite sure about it so you
+hard to tell” how useful the system could be (P3). want the data and they really know” and P14 said “definitely want
+        the caregiver to know just [when] like you have a child”. However,
+6.5.4 Improve system learning curve. : Participants (P6, P7, a few said it depends on various factors (P1, P3, P11): “I wouldn’t
+P4) also felt like they needed “to get used to the device” since want to have constant monitoring. It just depends on level of cog-
+“everything is so new” (P6), specifically for object retrieval where P7 nition and degree of supervision. If my husband was living alone
+felt the “need to be instructed for how to place things” so that the then constant supervision is needed” (P1), and “maybe in the future
+object is in sight of the camera and the system onboarding phase with doctors or caretakers but now [I] only [want it] personal” (P3).
+
+
+
+
+    1004
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+Additionally participants felt that body worn cameras were less 68 [7, 11] and approaches the threshold of 70, which is considered
+intrusive than smart home cameras (P1,P14). indicative of good usability [45]. However low usability scores are
+        attributed to potentially more critical feedback from those with high
+7 Discussion MMSE scores which positively suggests those with lower MMSE
+7.1 MemPal Helpfulness for Object Finding (MCI and SCD) find the system more useful. This is an encourag-
+Regarding RQ1: “What are the effects of using the MemPal voice- ing result, particularly given that MemPal is in its early stages of
+based system for object retrieval on retrieval accuracy, path length, development. Comparatively, MemPal’s usability score is modestly
+cognitive task load, retrieval confidence and recall difficulty for lower than that of GoFinder [77], which recorded a SUS score of 75.4.
+older adults, compared to using visual cues or no system?”, showed However, it is important to note that GoFinder was not evaluated
+that MemPal’s audio descriptions improve object retrieval perfor- amongst older adults or those with limited technology experience.
+mance compared to using no system by increasing the rate of correct The lower usability scores observed with MemPal may be partly
+object identification (retrieval accuracy) and reducing the average attributed to its initial form factor, which some participants found
+number of rooms searched (path length) as well reduced perceived uncomfortable, as well as varying levels of technological familiarity
+difficulty in remembering object locations (recall difficulty). Both among the participants. As participants mentioned, due to hear-
+assistance modes supported users in similar ways, suggesting that ing aid constraints, vision impairments, and different types of hair
+participants could retrieve objects effectively using either visual or within this pilot population, a body-worn camera with either a clip
+audio cues. The visual condition decreased path length and recall or magnetic attachment seemed to be most feasible.
+difficulty compared to using no system. This is consistent with MemPal is designed to enhance independence by addressing crit-
+the results from the GoFinder study which also showed retrieval ical pain points identified through our initial interviews. Given the
+performance improvements with their visual condition compared diverse preferences regarding format of descriptions and modality
+to no system [77]. We note that the results discussed are based on of assistance, the system should offer options and customization.
+our analysis that included trials where participants used the correct This approach will allow us to tailor the system more closely to
+feedback from each of the assistance modes. Reduced path length, user needs.
+a proxy for time spent searching, suggests that specifying the room In designing a wearable camera system that uses visual context,
+helps significantly narrow the search, a benefit derived from the we only stored textual information (anoymized and securely stored
+room localization method but as noted in Qualitative Feedback, in a protected database) and creating a voice interface that could
+descriptive context is most valuable either with better descriptions easily interpret this textual data [25]. The system also complies
+or high quality wide-angle images. In addition, there were no signif- with ethical guidelines for LLMs in healthcare [35]. We found that
+icant differences in path length nor recall difficulty between the two participants were very comfortable sharing this text-based data
+assistance modes, indicating that participants performed similarly with their caregivers and providers as well as storing only text-
+for visual and audio. based data on the system, whereas they mentioned that having
+   Task load and retrieval confidence did not have significant dif- alternative smart home camera systems that are not egocentric or
+ferences across conditions. The lack of difference in task load may systems that store continuous camera data may feel uncomfortable
+stem from speech recognition issues in the MemPal condition and (P1). Additionally, ease of use amongst old adults is imperative
+difficulties in object localization within the visual images in the which requires voice-activation and we found that MemPal had
+Visual condition, which could be blurry or distorted by fish-eye a high ease of use score which proves that voice-based systems
+lenses as noted in participants’ Qualitative Feedback. Despite these for object retrieval are easy to use M=5.38. Participants were also
+issues, participants valued the optional visual aid for its clarity in satisfied by the responses (M=5.17) due to its low latency with an
+providing room-specific details and some found it useful (𝑀=5.57 of average response time of 2.2s as well as appropriate length (M=5.17).
+7). Similar to findings from previous works [49], solely using visual Lastly, we wanted to ensure a smooth setup process that is user-
+aids may not be ideal for older adult users who prefer voice-driven friendly especially since systems like FMT did not test the initial
+systems. Moreover, visual aids raise concerns about privacy and installation stage that requires users to set up markers around their
+increased storage needs which MemPal aimed to avoid. Therefore, home to track activity [46] so by introducing participants to the
+users who have vocal deterioration or have trouble with language system onboarding stage we were able to develop and pilot a quick
+like P9 and P11 may prefer visual images and users who have poor setup process. Most participants were satisfied with the location
+eyesight or do not like interacting with tablet devices may prefer setup without needing much direction.
+audio output. Future work can include diving into preferences and 8
+perceptions of older adult users regarding using an optimal com- Future Work and Limitations
+bination of both audio and visual aids in object retrieval tasks to The aim of this work was to create a first, working prototype that
+tailor more user-friendly assistance technologies. can be tested by the target user group, older adults,in their homes
+        for feedback and suggest future design guidelines rather than create
+7.2 MemPal Feature experience the most accurate system.
+Regarding RQ2: “What are older adults’ perceptions and experiences
+of using a voice-enabled wearable assistant for object retrieval?”, 8.1 Limitations
+older adults rated MemPal with an average usability (SUS) score of 8.1.1 Technical Accuracy and System Limitations. There were tech-
+69.375. This score is slightly above the average SUS benchmark of nical limitations in the accuracy of the system particularly room
+
+
+
+
+    1005
+
+IUI ’25, March 24–27, 2025, Cagliari, Italy                                        Maniar, et al.
+
+localization, object detection, and speech recognition, which af-        8.3  Future Directions for MemPal
+fected user experiences as well as system limitations such as low        As both a Remote Patient Monitoring (RPM) tool and a wearable
+wearable device comfort, system learning curve, and less descriptive     agent, MemPal has significant potential for expansion. The safety
+responses. While the location algorithm worked for a variety of lay-     reminder workflow designed in Figure 15 could integrate with voice-
+outs and lighting, it was not generally adaptable to every layout we     inputted daily schedules or calendars for context-based proactive
+encountered in our user study. The positioning of the camera also        event reminders or task sequence boards for proactive task assis-
+presented challenges, as it influenced the detection of objects and      tance. These could also be implemented using synthesized voices
+locations, depending on the FOV especially for hidden locations.         of people whom older adults are familiar with, such as friends or
+The participant feedback revealed that users must be consciously         family members [18]. MemPal could facilitate everyday tasks for
+aware of placing objects in front of the wearable camera-based           individuals with memory impairments by leveraging MemPal’s task
+system for it to effectively assist them. As a voice-enabled system,     logging and LLM query-response infrastructure to understand ac-
+it struggled to adapt to various accents and slurred speech, affecting   tions, activities, and predict the next sequence of steps. Additionally,
+its ability to understand queries from certain users.                    more fine-grained activity features (such as time taken per activity
+                                                                         step) could be used to objectively assess Instrumental Activities of
+8.1.2   Study Design. One limitation of the object retrieval study de-   Daily Living (IADL) performance, a common measure for memory-
+sign was that participants occasionally remembered where objects         impaired individuals [33]. MemPal’s query log of voice interactions
+were placed since they placed the objects themselves and retrieved       could also be utilized to diagnose conditions such as dementia or
+within 30 minutes. Although an ideal study design would have             depression [44] by analyzing speech-to-text patterns. Considering
+increased the time length to days between placing and retrieval,         the challenges older adults users may face with voice queries, alter-
+this led to other confounding factors.                                   native input modalities like haptic touch or silent speech should be
+                                                                         explored. Lastly, physicians and speech therapists have highlighted
+                                                                         the ability of using a system like MemPal in aiding cognitive reha-
+8.2     Future Work                                                      bilitation through a quiz format, improving memory rather than
+                                                                         just supporting it.
+8.2.1   Future System Improvements. Future iterations of a wear-
+able memory aid system could incorporate a queryless interface for       8.4   Implications of Future Assistive
+older adults who may have trouble with speech. A queryless system              Technologies for Older Adults
+for object retrieval could use biomarkers or eye tracking to detect      With the rise of LLMs, MemPal demonstrates how multimodal,
+confusion, thereby initiating assistance automatically. Real-time        context-aware technology using LLMs and VLMs can enhance as-
+task help tailored to the activities of each participant and verbal      sistive systems for older adults. Future research should further
+feedback loops could further improve user interaction. The cali-         explore the use of multimodal large models to support multifac-
+bration experience could be refined by including specific furniture      eted daily living needs. Advancements should prioritize minimalist
+items and sub-room areas that are unique to each household. To im-       interfaces and even queryless functionality, addressing unique chal-
+prove privacy and battery life, future enhancements could include        lenges identified in our study, such as language variations and
+moving machine learning processing to on-device smaller mod-             speech issues among older adults. Additionally, systems should
+els, which would eliminate the need for processing video through         aim to facilitate behavior change and memory training [17, 19],
+closed-source models as was done in this early-stage study, which        considering older adults’ reluctance to seek help and their tendency
+participants consented to. Lastly, to adapt to the large diversity in    to overestimate their memory. Finally, ensuring privacy is crucial;
+older adults’ preferences and needs, such systems should be able to      future models should focus on protecting user data by limiting
+adapt to suit different stages of memory conditions (ex. providing       information sharing to text only and avoiding image-based data to
+both Visual and Audio modes as options for object retrieval and          maintain user confidentiality.
+multiple context options for safety reminders).
+                                                                         9    Conclusion
+8.2.2   Future Study Design.   A long term study to extend the feature   In this work, we designed and evaluated a wearable camera-based
+set of testing including proactive safety reminders and retrospective    and voice-enabled memory assistant, MemPal, with older adults
+task recall and summarization will prove the system’s effectiveness      within their own homes to address their most common pain points
+of general task assistance beyond object retrieval. A longitudinal       regarding ensuring independence like assisting with object finding
+study exploring long term impacts on memory due to potential             based on analysis from pre-study interviews, forums and literature.
+over-reliance on wearable memory assistants and unintended uses          Through investigating the effect of voice-enabled queries with Mem-
+potentially as social companions will help in more robust, user-         Pal for object retrieval and comparing it to no assistance and visual
+centric designs of the system. Testing on specific sub-populations       assistance (RQ1), findings show that MemPal improved retrieval
+such as people with dementia and Alzheimer’s patients who have           performance and reduced recall difficulty compared to no aid but
+advanced-stage memory conditions can further provide useful in-          similar to visual aid. Although a prototype, the results also show
+sight. Long term use could also facilitate the learning of behavior in   that older adults found MemPal usable and highly useful (RQ2)
+order to suggest better habits and placements of objects to reduce       but customization is important. Through this work, we contribute
+the frequency of memory errors.                                          towards understanding user design specifications of older adults in
+
+
+
+
+        1006
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults                                IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+                            their own homes and designing a LLM-based multimodal wearable  [22] Daniel Collerton, Emily Forster, and Derek Packham. 2014.           An exploratory
+                      system that facilitates object retrieval assistance. We provide the           study of the effectiveness of memory aids for older people living in supported
+                           opportunity to extend upon MemPal’s technology and user inter-   accommodation. Journal of Applied Gerontology 33, 8 (2014), 963–981.
+                         face, enabling general memory assistance. This work represents a    [23] Cynthia F Corbett, Pamela J Wright, Kate Jones, and Michael Parmer. 2021. Voice-
+                                                                                                    activated virtual home assistant use and social isolation and loneliness among
+                      crucial first step toward a general personal memory agent for older   older adults: mini review. Frontiers in Public Health 9 (2021), 742012.
+adults, supporting independent and safe living at home.                                                [24] Jessamyn Dahmen, Bryan Minor, DJ Cook, Thao Vo, and Maureen Schmitter-
+                                                                                                         Edgecombe. 2018. Design of a smart home-driven digital memory notebook to
+                                                                                                   support self-management of activities for older adults. Gerontechnology (2018).
+                                                                                              [25] Nigel Davies, Adrian Friday, Sarah Clinch, Corina Sas, Marc Langheinrich, Geoff
+References                                                                                        Ward, and Albrecht Schmidt. 2015. Security and privacy implications of pervasive
+                                                                                            memory augmentation. IEEE Pervasive Computing 14, 1 (2015), 44–53.
+ [1] 2022.    U.S.    - seniors  as a  percentage   of the   population        1950-2050.        [26] Koldo De Miguel, Alberto Brunete, Miguel Hernando, and Ernesto Gambao. 2017.
+  https://www.statista.com/statistics/457822/share-of-old-age-population-                          Home camera-based fall detection system for the elderly. Sensors 17, 12 (2017),
+  in-the-total-us-population/ Accessed: 2023-12-13.                                         2864.
+               [2] Gregory D Abowd, Aaron F Bobick, Irfan A Essa, Elizabeth D Mynatt, and          [27] Deepgram. 2024. Deepgram Speech-to-Text API. https://deepgram.com/product/
+               Wendy A Rogers. 2002. The aware home: A living laboratory for technologies   speech-to-text Accessed: 2024-04-30.
+              for successful aging. In Proceedings of the AAAI-02 Workshop “Automation as         [28] Lydia Dubourg, Ana Rita Silva, Christophe Fitamen, Chris JA Moulin, and Cé-
+  Caregiver. 1–7.                                                                           line Souchay. 2016. SenseCam: A new tool for memory rehabilitation?              Revue
+                [3] Mohammad Rafayet Ali, Kimberly Van Orden, Kimberly Parkhurst, Shuyang   Neurologique 172, 12 (2016), 735–747.
+                Liu, Viet-Duy Nguyen, Paul Duberstein, and M Ehsan Hoque. 2018. Aging and             [29] Samira Farivar, Mohamed Abouzahra, and Maryam Ghasemaghaei. 2020. Wear-
+      engaging: A social conversational skills training program for older adults. In 23rd            able device adoption among older adults: A mixed-methods study. International
+  International Conference on Intelligent User Interfaces. 55–66.                           Journal of Information Management 55 (2020), 102209.
+ [4] Alzheimer’s Association. 2023.           2023 Alzheimer’s disease facts and figures.         [30] Robert J Fontana and Steven J Gunderson. 2002. Ultra-wideband precision as-
+  Alzheimer’s & Dementia 19 (2023), 1598–1695.          https://doi.org/10.1002/alz.13016               set location system. In 2002 IEEE Conference on Ultra Wideband Systems and
+               [5] Peter S Arno, Carol Levine, and Margaret M Memmott. 1999. The Economic   Technologies (IEEE Cat. No. 02EX580). IEEE, 147–150.
+          Value Of Informal Caregiving: President Clinton’s proposal to provide relief to          [31] Norina Gasteiger, Kate Loveys, Mikaela Law, and Elizabeth Broadbent. 2021.
+        family caregivers opens a long-overdue discussion of this “invisible” health care           Friends from the future: a scoping review of research into robots and computer
+  sector.  Health Affairs 18, 2 (1999), 182–188.                                              agents to combat loneliness in older people. Clinical interventions in aging (2021),
+         [6] David A Balota, Patrick O Dolan, and Janet M Duchek. 2000. Memory changes in   941–971.
+  healthy young and older adults. The Oxford handbook of memory (2000), 395–410.                [32] Olga Gelonch, Mireia Ribera, Núria Codern-Bové, Sílvia Ramos, Maria Quintana,
+     [7] Aaron Bangor, Philip T Kortum, and James T Miller. 2008. An empirical evaluation            Gloria Chico, Noemí Cerulla, Paula Lafarga, Petia Radeva, and Maite Garolera.
+  of the system usability scale.        Intl. Journal of Human–Computer Interaction 24, 6           2019. Acceptability of a lifelogging wearable camera in older adults with mild
+  (2008), 574–594.                                                                                  cognitive impairment: a mixed-method study. BMC geriatrics 19, 1 (2019), 1–10.
+            [8] Timothy W Bickmore, Lisa Caruso, Kerri Clough-Gorr, and Tim Heeren. 2005.    [33] Hui Jun Guo and Amit Sapra. 2020. Instrumental activity of daily living. (2020).
+  ‘It’s just like you talk to a friend’relational agents for older adults.    Interacting                [34] Matthew Allan Hamilton, Anthony Paul Beug, Howard John Hamilton, and
+  with Computers 17, 6 (2005), 711–735.                                                                Wil James Norton. 2021. Augmented Reality Technology for People Living with
+     [9] Virginia Braun and Victoria Clarke. 2006. Using thematic analysis in psychology.           Dementia and their Care Partners. In Proceedings of the 2021 5th International
+  Qualitative research in psychology 3, 2 (2006), 77–101.                                            Conference on Virtual and Augmented Reality Simulations (Melbourne, VIC, Aus-
+      [10] Robin N Brewer and Anne Marie Piper. 2017. xPress: Rethinking design for aging            tralia) (ICVARS ’21). Association for Computing Machinery, New York, NY, USA,
+              and accessibility through an IVR blogging system. Proceedings of the ACM on   21–30. https://doi.org/10.1145/3463914.3463918
+  Human-Computer Interaction 1, CSCW (2017), 1–17.                                      [35] Stefan Harrer. 2023. Attention is not all you need: the complicated case of ethically
+[11] John Brooke et al. 1996. SUS-A quick and dirty usability scale. Usability evaluation          using large language models in healthcare and medicine. EBioMedicine 90 (2023).
+  in industry 189, 194 (1996), 4–7.                                                              [36] Phyllis Braudy Harris. 2006. The experience of living alone with early stage
+              [12] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan,           Alzheimer’s disease: What are the person’s concerns? Alzheimer’s Care Today 7,
+               Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda   2 (2006), 84–94.
+           Askell, et al. 2020. Language models are few-shot learners. Advances in neural              [37] Moh Khalid Hasan, Md Shahjalal, Mostafa Zaman Chowdhury, and Yeong Min
+  information processing systems 33 (2020), 1877–1901.                                            Jang. 2019. Real-time healthcare data transmission for remote patient monitoring
+     [13] Marco Buzzelli, Alessio Albé, and Gianluigi Ciocca. 2020. A vision-based system   in patch-based hybrid OCC/BLE networks. Sensors 19, 5 (2019), 1208.
+  for monitoring elderly people at home.   Applied Sciences 10, 1 (2020), 374.                [38] Suining He and S-H Gary Chan. 2015. Wi-Fi fingerprint-based indoor positioning:
+                [14] Samantha WT Chan, Shardul Sapkota, Rebecca Mathews, Haimo Zhang, and             Recent advances and comparisons. IEEE Communications Surveys & Tutorials 18,
+           Suranga Nanayakkara. 2020. Prompto: Investigating receptivity to prompts based   1 (2015), 466–490.
+              on cognitive load from memory training conversational agent. Proceedings of        [39] Steve Hodges, Lyndsay Williams, Emma Berry, Shahram Izadi, James Srinivasan,
+        the ACM on interactive, mobile, wearable and ubiquitous technologies 4, 4 (2020),                Alex Butler, Gavin Smyth, Narinder Kapur, and Ken Wood. 2006. SenseCam: A
+  1–23.                                                                                              retrospective memory aid. In UbiComp 2006: Ubiquitous Computing: 8th Interna-
+             [15] Samantha WT Chan, Haimo Zhang, and Suranga Nanayakkara. 2019. Prospero:            tional Conference, UbiComp 2006 Orange County, CA, USA, September 17-21, 2006
+             A personal wearable memory coach. In Proceedings of the 10th Augmented Human   Proceedings 8. Springer, 177–193.
+  International Conference 2019. 1–5.                                                               [40] Junyuan Hong, Wenqing Zheng, Han Meng, Siqi Liang, Anqing Chen, Hiroko H.
+[16] Samantha W. T. Chan. 2020.                Biosignal-Sensitive Memory Improvement and                     Dodge, Jiayu Zhou, and Zhangyang Wang. 2024. A-CONECT: Designing AI-
+               Support Systems. In Extended Abstracts of the 2020 CHI Conference on Human               based Conversational Chatbot for Early Dementia Intervention. In ICLR 2024
+               Factors in Computing Systems (Honolulu, HI, USA) (CHI EA ’20). Association             Workshop on Large Language Model (LLM) Agents. https://openreview.net/forum?
+  for Computing Machinery, New York, NY, USA, 1–7.               https://doi.org/10.1145/   id=rACfuoNKBU
+  3334480.3375031                                                                                         [41] Valerie K Jones, Michael Hanus, Changmin Yan, Marcia Y Shade, Julie
+[17] Samantha W.     T.   Chan,  Thisum  Buddhika,    Haimo  Zhang,   and         Suranga   Blaskewicz Boron, and Rafael Maschieri Bicudo. 2021.               Reducing loneliness
+          Nanayakkara. 2019. ProspecFit: In Situ Evaluation of Digital Prospective Memory           among aging adults: the roles of personal voice assistants and anthropomorphic
+         Training for Older Adults. Proc. ACM Interact. Mob. Wearable Ubiquitous Technol.   interactions.  Frontiers in public health 9 (2021), 750736.
+  3, 3, Article 77 (Sept. 2019), 20 pages. https://doi.org/10.1145/3351235                        [42] Judith D Kasper, Vicki A Freedman, Brenda C Spillman, and Jennifer L Wolff.
+            [18] Sam W. T. Chan, Tamil Selvan Gunasekaran, Yun Suen Pai, Haimo Zhang, and            2015. The disproportionate impact of dementia on family and unpaid caregiving
+              Suranga Nanayakkara. 2021. KinVoices: Using Voices of Friends and Family in   to older adults. Health Affairs 34, 10 (2015), 1642–1649.
+           Voice Interfaces. Proc. ACM Hum.-Comput. Interact. 5, CSCW2, Article 446 (Oct.            [43] Sunyoung Kim, Willow Yao, and Xiaotong Du. 2022. Exploring older adults’
+  2021), 25 pages.     https://doi.org/10.1145/3479590                                             adoption and use of a tablet computer during COVID-19: longitudinal qualitative
+           [19] Wei Ting Samantha Chan. 2022. Augmenting Human Prospective Memory through   study. JMIR aging 5, 1 (2022), e32957.
+  Cognition-Aware Technologies. Ph. D. Dissertation. ResearchSpace@ Auckland.                       [44] M Rupesh Kumar, Susmitha Vekkot, S Lalitha, Deepa Gupta, Varasiddhi Jaya-
+           [20] Sijie Cheng, Zhicheng Guo, Jingwen Wu, Kechen Fang, Peng Li, Huaping Liu,                    suryaa Govindraj, Kamran Shaukat, Yousef Ajami Alotaibi, and Mohammed
+                 and Yang Liu. 2023. Can Vision-Language Models Think from a First-Person                Zakariah. 2022. Dementia detection from speech using machine learning and
+  Perspective? arXiv preprint arXiv:2311.15596 (2023).                                      deep learning architectures. Sensors 22, 23 (2022), 9311.
+      [21] Joseph R Cockrell and Marshal F Folstein. 2002. Mini-mental state examination.  [45] James R Lewis. 2018. The system usability scale: past, present, and future. Inter-
+  Principles and practice of geriatric psychiatry (2002), 140–141.                          national Journal of Human–Computer Interaction 34, 7 (2018), 577–590.
+
+
+
+
+
+
+                                 1007
+
+    IUI ’25, March 24–27, 2025, Cagliari, Italy    Maniar, et al.
+
+
+        [46] Franklin Mingzhe Li, Di Laura Chen, Mingming Fan, and Khai N Truong. 2019.     companionable agents to support isolated older adults.         ACM Transactions on
+    FMT: A wearable camera-based object tracking memory aid for older adults. Pro-          Interactive Intelligent Systems (TiiS) 8, 3 (2018), 1–27.
+    ceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies      [70] Brodrick Stigall, Jenny Waycott, Steven Baker, and Kelly Caine. 2019.     Older
+    3, 3 (2019), 1–25.                                                                        adults’ perception and use of voice user interfaces: a preliminary review of the
+          [47] Chi-yau Lin, Chia-nan Ke, Shao-you Cheng, Jane Yung-jen Hsu, and Hao-hua       computing literature. In Proceedings of the 31st Australian Conference on Human-
+    Chu. 2005.             Object reminder and safety alarm. In Embedded and Ubiquitous     Computer-Interaction. 423–427.
+    Computing–EUC 2005 Workshops: EUC 2005 Workshops: UISW, NCUS, SecUbiq,                 [71] Christiana Tsiourti, Emilie Joly, Cindy Wings, Maher Ben Moussa, and Katarzyna
+    USN, and TAUES, Nagasaki, Japan, December 6-9, 2005. Proceedings. Springer,              Wac. 2014. Virtual assistive companions for older adults: qualitative field study
+    499–508.                                                                                    and design implications. In Proceedings of the 8th International Conference on
+[48] Lili Liu, Eleni Stroulia, Ioanis Nikolaidis, Antonio Miguel-Cruz, and Adriana Rios     Pervasive Computing Technologies for Healthcare. 57–64.
+    Rincon. 2016. Smart homes and home health monitoring technologies for older           [72] Jonathan Ventura, Clemens Arth, Gerhard Reitmayr, and Dieter Schmalstieg. 2014.
+    adults: A systematic review. International journal of medical informatics 91 (2016),          Global localization from monocular slam on a mobile phone. IEEE transactions
+    44–59.                                                                                  on visualization and computer graphics 20, 4 (2014), 531–539.
+      [49] Mingzhou Liu, Caixia Wang, and Jing Hu. 2023. Older adults’ intention to use   [73] Dibia Victor. 2017.         HandTrack: A Library For Prototyping Real-time Hand
+    voice assistants: Usability and emotional needs. Heliyon 9, 11 (2023).                  TrackingInterfaces using Convolutional Neural Networks.          GitHub repository
+     [50] Arjun Majumdar, Fei Xia, Dhruv Batra, Leonidas Guibas, et al. 2023. Findthis:        (2017). https://github.com/victordibia/handtracking/tree/master/docs/handtrack.
+    Language-driven object disambiguation in indoor environments. In 7th Annual             pdf
+    Conference on Robot Learning.                                                        [74] Bryan Wang, Gang Li, and Yang Li. 2023. Enabling conversational interaction with
+       [51] Jenna Asha Malini Marchant and Kristine N Williams. 2011. Memory matters in       mobile ui using large language models. In Proceedings of the 2023 CHI Conference
+    assisted living. Rehabilitation Nursing 36, 2 (2011), 83–88.                            on Human Factors in Computing Systems. 1–17.
+              [52] Siddharth Mehrotra, Vivian Genaro Motti, Helena Frijns, Tugce Akkoc,     [75] World Health Organization. 2024. Ageing and Health. https://www.who.int/news-
+    Sena Büşra Yengeç, Oguz Calik, Marieke MM Peeters, and Mark A Neerincx. 2016.           room/fact-sheets/detail/ageing-and-health. Accessed: 2024-05-01.
+    Embodied conversational interfaces for the elderly user. In Proceedings of the 8th     [76] Anna Xygkou, Chee Siang Ang, Panote Siriaraya, Jonasz Piotr Kopecki, Alexandra
+    Indian Conference on Human-Computer Interaction. 90–95.                                 Covaci, Eiman Kanjo, and Wan-Jou She. 2024.             MindTalker: Navigating the
+   [53] Jacqueline Mogle, Jennifer R Turner, Sakshi Bhargava, Robert S Stawski, David M              Complexities of AI-Enhanced Social Engagement for People with Early-Stage
+    Almeida, and Nikki L Hill. 2023. Individual differences in frequency and impact               Dementia. In Proceedings of the CHI Conference on Human Factors in Computing
+    of daily memory lapses: results from a national lifespan sample. BMC geriatrics         Systems. 1–15.
+    23, 1 (2023), 670.                                                                          [77] Takuma Yagi, Takumi Nishiyasu, Kunimasa Kawasaki, Moe Matsuki, and Yoichi
+        [54] Sue Molesworth and Lisa Sharrock. 2016. An Evaluation of" Autographer plus      Sato. 2021. GO-finder: a registration-free wearable system for assisting users in
+    Flo. (2016).                                                                            finding lost objects via hand-held object discovery. In 26th International Confer-
+       [55] Mohammad Nabati and Seyed Ali Ghorashi. 2023. A real-time fingerprint-based     ence on Intelligent User Interfaces. 139–149.
+    indoor positioning using deep learning and preceding states. Expert Systems with          [78] Ge Yan, Chao Zhang, Jiadi Wang, Zheng Xu, Jianhui Liu, Jintao Nie, Fangtian
+    Applications 213 (2023), 118889.                                                                    Ying, and Cheng Yao. 2022. CamFi: An AI-driven and Camera-based System
+      [56] Tushar Nagarajan, Santhosh Kumar Ramakrishnan, Ruta Desai, James Hillis, and          for Assisting Users in Finding Lost Objects in Multi-Person Scenarios. In CHI
+    Kristen Grauman. 2024. EgoEnv: Human-centric environment representations                Conference on Human Factors in Computing Systems Extended Abstracts. 1–7.
+    from egocentric video.         Advances in Neural Information Processing Systems 36        [79] Wazeer Zulfikar, Samantha Chan, and Pattie Maes. 2024. Memoro: Using Large
+    (2024).                                                                                        Language Models to Realize a Concise Interface for Real-Time Memory Augmen-
+    [57] Jim Nilsson and Tomas Akenine-Möller. 2020. Understanding ssim. arXiv preprint     tation. arXiv preprint arXiv:2403.02135 (2024).
+    arXiv:2006.13846 (2020).
+   [58] Katherine O’Brien, Sophia W Light, Sara Bradley, and Lee Lindquist. 2022. Opti-
+    mizing voice-controlled intelligent personal assistants for use by home-bound         A                Appendix
+    older adults. Journal of the American Geriatrics Society 70, 5 (2022), 1504–1509.
+     [59] Katherine E Olson, Marita A O’Brien, Wendy A Rogers, and Neil Charness. 2011.   A.1  Interviews
+    Diffusion of technology: frequency of use for younger and older adults. Ageing
+    international 36, 1 (2011), 123–145.                                                                     For the live interviews, our feedback group included four neurol-
+    [60] OpenCV. 2023. Camera Calibration. https://docs.opencv.org/4.x/dc/dbb/tutorial_                          ogists (D) and one speech pathologist (SP) who have extensive
+    py_calibration.html. Accessed: 2024-04-29.                                                              experience with over 100 patients facing neurogenic disorders. Ad-
+         [61] Christiane Opfermann, Karola Pitsch, Ramin Yaghoubzadeh, and Stefan Kopp.
+    2017. The Communicative Activity of" Making Suggestions" as an Interactional                                ditionally, we gathered insights from caregiver support groups
+    Process: Towards a Dialog Model for HAI. In Proceedings of the 5th International                            comprising 12 caregivers (C) where 8 were healthy older adults
+    Conference on Human Agent Interaction. 161–170.                                                              themselves and memory support groups including 12 individuals
+       [62] Hiroto Oshimi, Monica Perusquía-Hernández, Naoya Isoyama, Hideaki Uchiyama,
+    and Kiyoshi Kiyokawa. 2023. LocatAR: An AR Object Search Assistance Sys-                                  with memory decline (E), facilitated through a hospital network.
+    tem for a Shared Space. In Proceedings of the Augmented Humans International                              We also engaged with individuals with memory loss (OE) and care-
+    Conference 2023. 66–76.
+     [63] Alisha Pradhan, Leah Findlater, and Amanda Lazar. 2019. " Phantom Friend" or"   givers (OC) through anonymous online forums.
+    Just a Box with Information" Personification and Ontological Categorization of                                 Guiding questions for each demographic were used to extract
+    Smart Speaker-based Voice Assistants by Older Adults.        Proceedings of the ACM   insights:
+    on human-computer interaction 3, CSCW (2019), 1–21.
+      [64] Laura Ramos, Elise Van Den Hoven, and Laurie Miller. 2016. Designing for the     For caregivers, speech pathologists, and physicians:
+    Other’Hereafter’ When Older Adults Remember about Forgetting. In Proceedings
+    of the 2016 CHI Conference on Human Factors in Computing Systems. 721–732.              •  What are the current memory support tools used?
+         [65] Adrián Valera Román, DP Martınez, AL Murciego, Diego M Jiménez-Bravo, and     •                        What is the most difficult part of caregiving and provide
+    Juan F de Paz. [n. d.]. Voice assistant application for avoiding sedentarism in            scenarios?
+    elderly people based on iot technologies, Electron. 10 (8)(2021).
+     [66] Emily Schryer and Michael Ross. 2013. The use and benefits of external memory     •  What data do you wish you had to make an accurate assess-
+    aids in older and younger adults.        Applied Cognitive Psychology 27, 5 (2013),        ment of the patient’s memory?
+    663–671.                                                                                •                    What type of form factor is the best for constant monitoring?
+    [67] Valentin Schwind and Niels Henze. 2020. Anticipated User Stereotypes Systemat-
+    ically Affect the Social Acceptability of Mobile Devices. In Proceedings of the 11th          For older adults:
+    Nordic Conference on Human-Computer Interaction: Shaping Experiences, Shaping
+    Society. 1–12.                                                                          •  What objects are frequently lost?
+           [68] Hyunggoog Seo, Jaedong Kim, Kwanggyoon Seo, Bumki Kim, and Junyong Noh.     •                         Describe some scenarios that caused frustration when you
+    2021. Overthere: A simple and intuitive object registration method for an absolute
+    mid-air pointing interface. Proceedings of the ACM on Interactive, Mobile, Wearable        did not remember something.
+    and Ubiquitous Technologies 5, 3 (2021), 1–24.                                                               Insights are coded and thematically analyzed in the following
+    [69] Candace L Sidner, Timothy Bickmore, Bahador Nooraie, Charles Rich, Lazlo Ring,
+    Mahni Shayganfar, and Laura Vardoulakis. 2018. Creating new technologies for          categories:
+
+
+
+
+    1008
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+•  Issue 1: Object-finding                                                                 – OC3: “I found it necessary to remove things, place things
+   Description: Finding lost objects is frustrating and time con-                                out of reach, and supervise with cameras and movement
+         suming Examples: Scenarios of losing purse in home, con-   alarms to keep my person safe and healthy.”
+         cerns about not recognizing own possessions, examples of                              – OC4: “The medication was also a problem for my person
+   frequently lost objects Quotes:                                                          who forgets what was taken or not even with a labeled pill
+         – OC8: "My MIL was always missing her purse and was sure                          dispenser. For safety I choose to dispense all medications”
+            someone had stolen it. She would ransack her room all                             – OC5: “Too many signs or signs up too long become white
+     night long. It would be in the closet. This happened often."                             noise. Be selective. She still needs some verbal prompts
+       – OC9: “Hearing aids and purse. Sometimes hearing aids are                            though. You can certainly try your post to note reminders
+    in the purse. Drives my poor dad nuts.”                                                  about safety, but I’d expect limited returns and possible
+         – OC10: “The phone chargers! Always misplaces her iPhone   irritation.”
+        cord, looks for another one, takes someone else’s type C,                             – OC6: “We have notes everywhere, but he doesn’t pay at-
+           then replaces that with some random micro USB or what-                                tention to any of them. Whenever he is performing any
+      ever... ugh... The issue here is that she doesn’t know what                              action, I just watch over him and make sure he has what
+        is hers and what isn’t, and ends up taking and keeping or                         he needs. It can be exhausting. If he’s going to the shower,
+    throwing away other people’s belongings.”                                               I ask, "Do you have your towel, clothes, deodorant?" He’ll
+   – OC11: “Glasses and dentures”                                                                answer yes every time, then go back and forth getting
+•  Issue 2: Safety reminders                                        what he forgot”
+         2A: Anecdotal Scenarios Description: Anecdotal scenarios                        – OC7: “had a whiteboard directly in front of the chair where
+     of daily tasks that would be often forgotten and could cause                        my mom slept. It listed the basic facts of her life (her name
+         safety concerns Examples: scenarios of short term memory                            and location included) and what was about to happen next.
+    loss like forgetting to take important items when leaving the                             If someone came over, I put the name and schedule on the
+       home, quotes from speech pathologists or doctors referenc-                            board. After a while, that board was a lifeline; she knew
+       ing certain scenarios where safety reminders would be most   to look at it when she was confused.”
+   useful Quotes:                                                                            – OC8: "Some other things might be to lock the door, make
+        – D1: “You have the most leverage when developing systems                              sure faucets are turned off, charge your phone (if cell
+    to ensure safety, especially during activities like cooking.”                             phone), don’t eat expired food in fridge, never give out
+      – E6: “Didn’t have a wallet or purse when I left the house”                                 information to anyone over phone / email (however to
+       – E7: “I forgot to put milk back in the fridge and my wife   convey she should avoid scammers)."
+    got mad”        •                                                                     Issue 3: Confabulation of past events Description: inability
+          – E8: “I have issues with short term memory- when going                              to remember longer sequences of actions or tasks in the
+        to the doctor if you’re asked what did you do today being                          past and approaches to currently solve Examples: physicians
+       like I have no idea, it’s hard to remember the day to day”                        providing suggestions that passive remote tracking is useful,
+         2B: Current safety monitoring and reminders Description:                            caregivers and speech pathologists providing anecdotes of
+        Current methods of how caregivers give reminders to older  ways to combat this Quotes:
+          adults including verbal or written reminders, how older                          – D1: “remote patient monitoring is very helpful and track-
+          adults would respond to the current system and problems                           ing is helpful since we use a lot of cognitive assessment.
+      associated Examples: type of reminder provided and reaction                           Patients thinks they’re fine but their spouse comes in and
+     to that reminder from older adults, opinions from caregivers   you can’t target anyone in denial”
+       about how current systems lead to caregiver burden Quotes:                       – D2: “Passive sensors are better since caregivers are usually
+          – SP1: “Speech pathologists use sequence boards to help                         filling out subjective questionnaires of activities of daily
+       with safety trained tasks so a log of safety related tasks   living form and functional assessment”
+    can reduce our burden as well as caregiver burden”                                    – E6: My biggest issue with his memory is that he’ll tell us
+        – C10: “extra burden of decision making is being deferred   he has something when he doesn’t. He lies daily.
+    to caregivers”                                                                     – E7: While it is technically lying, the term is confabulation.
+    – C12: “use scraps of paper to write a schedule, then I got a                             He likely doesn’t remember if he grabbed an item or fin-
+       portable whiteboard and big letters that I print out first                        ished a task or if he’s done the ask repeatedly, his days are
+    thing in the morning”                                                                   mixed up and he thinks he did it. Confabulation is used to
+       – OC1: “I put up ’reminders’ for my husband suffering from                             fill in a memory the person doesn’t have or a blank in a
+    dementia and they didn’t do a damn bit of good”                                            series of memories. It’s very frustrating. My mom deals
+        – OC2: “My written reminders got ignored as their reality                            with the same thing. Not as intensely but it’s especially
+          says it’s not needed. My verbal reminders often are met                              evident when having conversations about certain things.
+       with combative passive aggressive responses as their real-                        – E8: When I left for short trips, I would give her a printed
+       ity says it’s not needed. The reality is the reminders are                             page of instructions: where I was, how to ring the alarm
+    needed for them to function properly."                                                      button, when I would call, what she should do. Review-
+                                                                                                ing the whiteboard with her became part of our morning
+                                                                                              routine. Her daily schedule at that point was reduced to
+
+
+
+
+    1009
+
+IUI ’25, March 24–27, 2025, Cagliari, Italy                                                                                     Maniar, et al.
+
+                TV and aides coming into the house. I would write the                  threshold (T) = 0.22 (which means less confident), then
+                aide’s name, the hours, where I was, and when I would            the previous location is set 𝐿(𝑖 − 1).
+            be back. TV, especially sports, became a highlight of the               – Step 3: If the confidence threshold of the top k=1 image
+               day at the scheduled time. When she moved to a nursing                is within an appropriate level, the unique locations from
+              home at the end, I got a second white board and propped            the top k=11 location candidates are determined.
+            both up on the desk, because her questions had doubled. I                 If the unique locations within the set of top candidates
+            also laminated a copy of the information for the aides to            is equal to 1, this signifies high detection confidence which
+         read to her at night.                                                      means that the query location seems to be within a cluster
+         – SP1: A memory book is a diary of daily activities that can            of location points for that area.
+                help patients remember events. The memory book can be                 If the unique locations within the set of top candidates
+         used as a therapy tool and a functional guide.                               is greater than 1, this signifies lower confidence which
+                                                                                       means that potentially the image is in the boundary be-
+B    System Implementation                                                         tween two clusters of images or location clusters are over-
+B.1     Vision System                                                                  lapping which often happens if rooms within a household
+                                                                                       have very similar visual resemblance. The most frequent
+B.1.1   Camera Pre-processing. To minimize noise and reduce un-                      element in the list of location choices is then returned,
+    necessary computation, frames with low sharpness (Laplacian vari-            weighted by confidence level.
+      ance < 25) and adjacent frames with high similarity (structural                  Environment features are encoded through the history of
+similarity index score (SSIM) <0.95) are discarded [57]. A 235◦ fish-                   previously detected locations. To reduce the embedding
+     eye lens is used to increase FOV and standard camera calibration                   process time, we decided to use the compressed history
+was applied to correct distortions from the lens [60].                                   of locations rather than concatenated embeddings like
+                                                                                      EgoEnv [56]. If the resulting new location determined is
+B.1.2        Indoor Location Tracking. MemPal uses the monocular ego-                  not adjacent to the previous location, then the current
+       centric camera to perform embedding based real-time indoor lo-             location detected is set to the previous confident location.
+     cation tracking without requiring other sensors like GPS, unlike            – Step 4: The mode among the list of tiled locations (len<=9)
+         high compute algorithms like SLAM [72]. Embeddings capture a            detected within each frame is then set as the final location.
+    semantic representation within the context of the user’s home al-
+  lowing for a more personalized search. A calibration video is first
+    processed into (1) an embedding map and (2) a room adjacency list     B.1.3      Hand Detection. A deep neural network trained on the Ego-
+    to represent an initial spatial map of the user’s home. This home         Hands Dataset [73] is implemented in Tensorflow 2.0 which tracks
+  representation is used as context for real time localization within     the presence and relative location of both hands in the video frame.
+the map. The algorithm is described in Figure 14.                           Once 1 or 2 hands are detected within an image frame, then a tiled
+     •       Calibration Setup: The calibration video frames are uni-      image is created for object and activity detection described in the
+             formly sampled and embedded using a pretrained CLIP-ViT-     next section. A tiled image compresses a batch of 9 sequential pro-
+               B-32 transformer model. These embeddings are stored in        cessed frames into a 3x3 matrix, arranging them from the top-left
+        vector database named CalibrationDB for fast retrieval along         to the bottom-right, reducing the input size by a factor of 9 for
+        with the voice-labeled room name as metadata for each em-         efficient VLM processing.
+           bedding. The temporal sequence of the room labels are used
+        to generate an adjacency list that maps each room to a set of
+             connected or adjacent rooms, ensuring that new locations     B.1.4    Object and Activity Detection. A vision-language model then
+          detected every second is adjacent to the previous one. With      analyzes the tiled image to determine the (1) hand-held object, (2)
+            additional usage, accumulating data enriches the location       activity, and (3) background scene description including furniture
+            embedding map allowing it to adapt to the home’s configu-       positions and colors in a zero-shot manner. Objects and activities
+        ration environment and improve its robustness.                    do not need to be tagged or trained prior to usage, to ensure gener-
+• Real-time Location Tracking: During localization, a heuristic- alizability and personalization. A textual description of the activity
+         based ensemble approach identifies the correct room the user            is generated by discerning the temporal image sequence in the
+          is in in relation to the calibration map and adjacency room     tiled image along with the background objects in the frame of view.
+        list. Algorithm is illustrated in 14 and listed below.              We use GPT-4 vision to extract this information, due to its better
+        – Step 1: Calculate image similarities: Cosine similarity met-          performance in comparison to other models for egocentric video
+              ric is calculated between the image embedding of 𝐹𝑖 and   understanding [20]. Context about the previous activity and the cur-
+         the calibration map embeddings (range:[0,2] where 0 de-            rent location is provided to improve the accuracy of the detection
+               notes the same image and 2 denotes orthogonal images),    of the current activity. Once the real-time description is generated,
+         to represent the distance between embeddings.                        the textual data is embedded using the all-MiniLM-L6-v2 Sentence
+           – Step 2: When performing similarity search, if the cosine         Transformer model and stored within a 384 dimension dense vector
+              similarity between the current location’s embedding and         space along with metadata including timestamp, location, object,
+           the top k=1 nearest neighbor is higher than the confidence     background description (ActivitiesDB).
+
+
+
+
+         1010
+
+    MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+
+
+        Visual Context
+
+        Preprocessing      Indoor Location Tracking        Process 1
+                                                                       Activity, Scene, Object Recognition (GPT4V)
+                                         Image - Image        Context         Zero Shot Activity Recognition
+   f9                                ( i     )      Mode (F)  Current
+   f     Motion Detection    Similarity Searchf,Ci            Location  Person placed keys down on the countertop
+   1      SSIM(fi, fi+1)  fi
+   f0  Sharpness Threshold                                  Tiled Image    Hand Held
+     Laplacian Variance (fi)  CNN Hand Detection                        Object Detection
+                                                                              Keys
+                                                   Yes
+    F = 9  Unwarp Image        >=1 hand                       Previous
+       AntiWarp( fi,Di,Ki)                          No     Activity (t-1)      Background Scene Description
+        Near stove, countertop etc
+
+
+    Queue: Process 2
+
+    Document Embedder
+
+
+                                       Metadata                                            Activity
+
+                TIMESTAMP LOC          OBJECT     BACKGROUND     Embedding
+
+                12.3 11:59 pm Kitchen  Keys                  Countertop and Stove  [123,448,192, …]
+                12.3 11:58 pm Kitchen  not sure              Countertop and Stove  [338,201,339, …]
+    ActivitiesDB
+
+    Figure 13: Vision system workflow: Every frame in a frame batch of nine is first pre-processed to create a tiled image (Left)
+    before indoor room localization. Then, if the user’s hand(s) is detected in the frame of the wearable camera (Center Bottom),
+    a Vision Language Model (VLM) specifically GPT4-V (Right) that uses the detected location context and previous activity,
+    describes the hand-held object, activity, and background.
+
+
+        Calibration Setup
+
+Timestamp T1 T2 T3 T4 Adjacency [kitchen- [work area, living room]
+Voice Label Kitchen Kitchen Work Area Work Area Graph [work area- [living room, kitchen]
+
+
+Video Frames
+   (5FPS)
+
+    CLIP encoder
+             Embedding
+ Embeddings    Based
+             House Map
+
+
+
+    Realtime Indoor Location Tracking                                                           LOCATION
+                                                                   Len(Set(K)) = 1  Ei           of Fi
+               CLIP                      Si< T       Nearest
+             encoder  Nearest neighbor           neighbors [k=11]        Ei      Adjacency
+                                                                                 i−1               ,Li)
+                     cosine similarity                  Ki                     (LCheck
+    Query Image  Embedding                       {‘kitchen’:0.2,
+    F
+    i                Ei      Si                  ‘kitchen’: 0.14,
+                                                 ‘work area’: 0.12,
+                                                 ‘kitchen’: 0.11,                  Confidence
+                                         Si> T   ……}               Len(Set(K)) > 1  Weighted  Environment
+                                                                                   Frequency    History
+                                                                           11:59 : kitchen
+                                                                   Li−1    11:58 : kitchen
+                                                                           11:57 : kitchen
+
+
+
+
+    Figure 14: Details of the indoor location tracking algorithm including calibration phase and localization.
+
+
+
+
+
+
+
+
+                                         1011
+
+IUI ’25, March 24–27, 2025, Cagliari, Italy                                                                                   Maniar, et al.
+
+B.2     Language System                                                      (8)  Reliance on Camera Feed vs Background Descriptions:
+To respond to explicit user queries about objects or past events                  “How much did you rely on the camera feed vs the back-
+or implicit queries during safety task monitoring, a question and                 ground descriptions from MemPal to find the object?”
+answer system is created which includes query categorization and             We also included open-ended questions to gather additional
+feature-specific response formation utilizing the text-based Activi-        insights.
+tiesDB.                                                                      (1) “What do you think about this object retrieval feature?”
+                                                                             (2) “How do you think it could be improved or what could be
+                                                                                  added?”
+B.2.1   Query Processing. First, the user query is transcribed through
+Deepgram’s streaming speech-to-text API [27]. Then after the wake-          C.2   Open-Ended Interview
+word: “Pal” is detected, queries are categorized into one of the fol-       We included open-ended questions to gather additional insights
+lowing categories using an LLM model (OpenAI GPT-3.5-turbo): (i)            from Interview.
+objects, (ii) past, (iii) future, (iv) followup, or (v) none. If the query   (1)  Overall Thoughts: “What are your overall thoughts on the
+is categorized as “objects,” the object in question is extracted within           system?”
+the sentence. Query categorization allows users to converse with             (2) Troubleshooting: “Did you have any trouble using the
+MemPal in a naturalistic way while ensuring to respond to only                    system? If so, what kind of trouble did you have?”
+memory-based relevant questions.                                             (3)  Comfort in Sharing Data: “How comfortable are you with
+B.2.2      Safety Tasks. Proactive: Text-based safety reminders that              having data about safety reminders and summary of activi-
+are inputted in the app and grouped by location are pushed to                     ties shared with your caregiver, family, or doctor? (Comfort
+the Firebase Database which can be accessed by the API. These                (4)  in sharing data)”
+reminders are formatted in a question form (ex. "Did you remember                 Confusion During Calibration: “For the calibration phase,
+to [safety reminder]") and provided as audio output using OpenAI             (5)  is there any part of the flow where you were confused?”
+Whisper’s text-to-speech model depending on the user’s context.                   Instructions for Calibration: “Do you feel like you have
+A queue of reminders for each location is set and popped upon                     enough instruction on how to perform the calibration, and
+completion of the task.                                                      (6)  if not, what instructions would be most helpful?”
+  Retrospective: If individuals query the MemPal system about                     System Changes: “What would you change in the system?
+the completion of these safety tasks or any past action, the query is        (7) What do you want the system to do and not do?”
+first categorized into the "past" category before another RAG chain               Current Memory Aids: “What memory aids do you cur-
+is invoked (similar to Section ??).                                               rently use?”
+  Passive task completion monitoring: A safety checker LLM                  C.3   Post NASA-TLX Questions
+agent using a RAG chain approach similar to Section ?? assesses
+the completion of safety tasks in real-time using the last 2 minutes        We measured two aspects using a 7-point Likert scale (1=strongly
+of activity data from ActivitiesDB. A question in the form of “Did          disagree, 7=strongly agree).
+the person complete the safety task: [reminder]?” is set as the query        (1) ”I was confident about finding the objects with [condition].”
+for the agent. The output is a binary ’y’ or ’n’ response, transmitted       (2) ”I found it difficult to recall where the objects were with
+to the Firebase app, which updates both the safety task status and                [condition]”
+completion time.
+
+C     Questionnaires
+C.1        Post Object Retrieval Task Questionnaire
+  We measured eight aspects using a 7-point Likert scale (1=strongly
+disagree, 7=strongly agree).
+
+  (1)   Helpfulness of Object Retrieval Feature: “How helpful
+        was this object retrieval feature?”
+  (2)   Likelihood of Future Use: “How likely are you to use
+        MemPal for finding objects in the future?”
+  (3)   Satisfaction with Responses: “How satisfied were you
+        with the responses from MemPal?”
+  (4)   Ease of Use: “How easy was the device to use?”
+  (5) Appropriateness of Answer Length: “I felt that the length
+        of the answers was appropriate.”
+  (6) Trust in System’s Responses: “How much do you trust
+        the systems’ responses?”
+  (7)   Usefulness of Camera Feed: “Was the camera feed useful?”
+
+
+
+
+        1012
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+      Proactive        Firebase Realtime DB
+                                                T4                                                       True
+        Location                                T3                                                      False
+        1 Task1                Turn stove Off   T2                                                      False  5
+          Task2                Wash Hands
+    2 Location detected      3                                                       Proactive Reminder
+            T>=10s  Kitchen    “Did the person do [safety reminder task]”
+        Safety Checker LLM                          Passive Monitoring
+        Visual Context         Query
+    4 Activity Detected
+                                LLM                                                                     Binary
+       ActivitiesDB                                                                                    Response
+    N = tnow − tnow−20                              [Y,N]
+
+
+                            Retrospective
+                                                                              Response System
+                                                                LLM Categorization
+               Initial Query                            {Category: “Past”, Object: “None”}          ActivitiesDB
+               “Did I turn the stove off”                                     Query Embedding       Nearest neighbor cosine
+                                                                                                    similarity
+                                                                              [123,448,192, …]
+
+                    Response                                                       LLM                 Relevant Activity
+                                                                                                    Logs (N=11)
+               “Yes you did at 12:30 today”
+
+    Figure 15: Safety Reminders Implementation demonstrating proactive reminders, retrospective task remembering, and passive
+    monitoring of these safety reminders. This workflow first demonstrates how (1) reminders that are inputted within the MemPal
+    app are stored (2) If location is detected (3) a context-based proactive reminder is triggered and (4) status of the reminder
+    updated on the app upon activity is completed (logged in ActivitiesDB) and (5) how the system uses a similar query response
+    backend as object retrieval to answer user questions about tasks.
+
+     ID    Misplace ob-  Leave               Forget     Forget er-   Forget    Forget     to   buy  Objects frequently misplaced
+           jects         behind              intended   rands        medica-   something
+                         objects             actions                 tion
+     P1    2             1                   2          1            1         1                    Reading glasses, keys (house or car)
+     P2    2             2                   2          2            1         3                    cooking objects, desks
+     P3    3             3                   3          3            1         2                    Glasses
+     P4    1             2                   2          2            1         2                    glasses, keys
+     P5    2             2                   2          2            2         2                    -
+     P6    3             3                   3          1            1         1                    Nothing
+     P7    2             3                   3          2            2         2                    Phone
+     P8    3             3                   1          1            1         1                    -
+     P9    2             2                   2          1            1         1                    phone, tea cup, glasses, headband
+     P10   2             2                   2          1            1         2                    reading glasses, cell phone
+     P11   4             2                   4          2            2         2                    shoes/slippers, ipad, phone, calen-
+                                                                                                    dar, coffee mug, tools
+     P12   2             2                   2          2            1         2                    -
+     P13   2             2                   3          2            1         2                    phone
+     P14   2             1                   1          2            1         2                    Reading glasses, phone, keys, docu-
+                                                                                                    ments, cash
+     P15   -             -                   -          -            -         -                    papers, post-up notes, glasses
+         Table 5: Frequency of forgetting events: 1: Never, 2: Few times a month, 3: 2-6 times a week, 4: Multiple Times a day
+
+
+
+
+
+
+
+                                                        1013
+
+  IUI ’25, March 24–27, 2025, Cagliari, Italy    Maniar, et al.
+
+
+
+
+
+  Saw
+
+
+  Nf    pal
+
+      ©
+
+
+oh
+i  5
+Cia  workarea  1
+hg  =  Kitchen  =  bedroom
+feel
+=  = parior  kichen
+
+of  BR  “Ny
+oH  GE  a
+
+WE  SER
+Np  ep
+=  doe  “i  &  |  5  ue  Ni, i)  wg  ie
+entrance  ¢  Ny  2  =  rk  ih   3  i!
+
+livingroom  *
+®  bathroom  RR Yd  ® kitchen  ora]  DR  RT
+bedroom  3
+4
+kitchen  . ;  Ed  work area  pd  ee  sat
+bathroom  Hy=  i
+
+3  3
+
+aE
+
+CAR  ay  Tad  A  i
+ad
+ded
+
+re  si?
+® bathroom  Kitchen  a
+living area  lvingarea  ..  A  bv
+®®  bedroom  = hallway  sare
+kitchen  bathroom  Ea
+
+ip  PIE
+Sl
+4  Naot  i
+
+4A  WE
+aN SE  sed  JR  ©  a
+
+BIN  Rong J  YR
+deena  mee  EA
+= ding area  a  living  3
+kitchenit  area  Hood
+closet  =  bathroom  5
+=  bathroom  =  bedroom  ==  ding ale
+
+Figure 16: The participant house embedding maps (computed by Fig. 14) show home variability with no clear clusters, indicating
+that standard clustering or CNN room detection models are unsuitable. The map displays 2D image embeddings, color-coded
+by room after dimensionality reduction.
+
+
+
+
+
+
+
+
+
+
+                                                                                                1014
+
+MemPal: Leveraging Multimodal AI and LLMs for Voice-Activated Object Retrieval in Homes of Older Adults    IUI ’25, March 24–27, 2025, Cagliari, Italy
+
+
+Frequency of Room Names Across Participants
+
+
+
+
+
+  »
+3
+i.
+H 6
+
+
+. Ea& &    &FF    &
+
+
+Figure 17: This shows the frequency distribution of different rooms across the various participant homes to illustrate high
+variation among names and the need for personal room labeling.
+
+
+
+
+
+
+
+
+
+
+1015
+

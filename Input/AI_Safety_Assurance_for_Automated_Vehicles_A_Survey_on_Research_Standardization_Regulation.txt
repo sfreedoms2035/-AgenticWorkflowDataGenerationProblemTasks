@@ -1,0 +1,1459 @@
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+IEEE TRANSACTIONS ON INTELLIGENT VEHICLES 1
+
+       AI Safety Assurance for Automated Vehicles:
+ A Survey on Research, Standardization, Regulation
+
+        Lars Ullrich †, Michael Buchholz ‡, Klaus Dietmayer ‡, Senior Member, IEEE,
+        and Knut Graichen †, Senior Member, IEEE
+
+
+
+           Abstract— Assuring safety of artificial intelligence (AI) applied          With regard to AI safety, a far-reaching description of
+to safety-critical systems is of paramount importance. Especially prevailing challenges was presented back in 2016 [7]. Even
+since research in the field of automated driving shows that AI though the technology of AI has developed considerably since
+is able to outperform classical approaches, to handle higher
+complexities, and to reach new levels of autonomy. At the same then, the challenges of AI safety addressed back then are
+time, the safety assurance required for the use of AI in such predominantly still present. At the same time, the rapid further
+safety-critical systems is still not in place. Due to the dynamic development raises the question of what is defined as AI in this
+and far-reaching nature of the technology, research on safe- paper. In this respect, we adhere to the Organisation for Eco-
+guarding AI is being conducted in parallel to AI standardization nomic Co-operation and Development’s (OECD) definition,
+and regulation. The parallel progress necessitates simultaneous
+consideration in order to carry out targeted research and which is quite far-reaching but also widely accepted. In short,
+development of AI systems in the context of automated driving. AI is a machine-based system that influences the environment
+Therefore, in contrast to existing surveys that focus primarily on to achieve specific objectives by perceiving it based on input
+research aspects, this paper considers research, standardization data, abstracting these perceptions into models and generating
+and regulation in a concise way. Accordingly, the survey takes outputs. Thereby, AI systems operate with varying degrees of
+into account the interdependencies arising from the triplet of
+research, standardization and regulation in a forward-looking autonomy [8].
+    perspective and anticipates and discusses open questions and                   In general, the provability of AI safety is referred to as
+    possible future directions. In this way, the survey ultimately                AI safety assurance. In this paper, we understand AI safety
+    serves to provide researchers and safety experts with a compact,          assurance according to the definition of [9], which refers to a
+    holistic perspective that discusses the current status, emerging
+    trends, and possible future developments.                                   process throughout the AI lifecycle to ensure that AI outputs
+  Index Terms—Artificial Intelligence, Automated Driving, are valid, verified, data-driven, trustworthy, and explainable,
+Safety Assurance, Research, Standardization, Regulation, Survey but also ethical, unbiased, and fair. In this context, reference
+        should also be made to a comprehensive systematic literature
+        review on AI safety assurance [10]. At the same time, the
+    I. INTRODUCTION                                                             question of the novelty of this survey arises. In fact, there
+                     Autonomous vehicles are well-known safety-critical sys-        is a large number of AI surveys [11], [12], but with very
+    tems that are expected to have a significant impact on a                   different objectives. Although there is a series of AI safety-
+    wide range of societal and economic domains [1], [2]. In this             related surveys conducted within the field of automated driving
+    context, the transformation towards autonomous mobility is                      (AD) [13]–[15], these mostly go less into the depth of AI
+    based on technological progress [3]. In particular, technolog-              safety assurance, while at the same time focusing on specific
+    ical advancements in artificial intelligence (AI) are promising              perspectives and therefore allow only limited conclusions to
+    towards achieving higher levels of autonomy [4]. Thereby,                       be drawn about AI safety assurance methodology in general
+    the characteristic of the black-box nature offers, e.g., the              and for the future.
+    merit of mapping the system and behavior without extracting                Thus, a key objective is to facilitate further considerations,
+    and modeling the explicit relationships, but instead emulating                such as in [16], since technology is developing rapidly and
+    the input/output behavior based on data. However, this also                  standards and regulations are evolving in parallel. However,
+    implies that the behavior is no longer clearly evident and the                  while [16] addresses the trustworthiness of AI in general
+    existing analytical methods for so-called white-box models,                       and other publications such as [17] and [18] explore AI
+    especially for safety and reliability argumentation, cannot be             governance and regulation, a further consideration tailored to
+    applied directly [5], [6].                                                the application of automated driving is missing, but is crucial
+                                                                                 as automated driving is a high-risk system with far-reaching
+      *This research is accomplished within the project ”AUTOtech.agil” (FKZ  implications and pre-existing application-specific constraints.
+    01IS22088Y, FKZ 01IS22088W). We acknowledge the financial support for      The main contribution of this paper is the joint consideration
+    the project by the Federal Ministry of Education and Research of Germany
+    (BMBF).                                                                     of the application of automated driving and the technology of
+    Corresponding author:†    lars.ullrich@fau.de                            AI with a focus on safety assurance along the triad of research,
+   Chair of Automatic Control, Friedrich-Alexander-Universit¨at standardization and regulation. Thereby, the application of
+Erlangen-N¨urnberg (FAU), Cauerstraße 7, 91058 Erlangen, Germany
+    {lars.ullrich,‡          knut.graichen}@fau.de                           automated driving refers to the automated vehicle itself and its
+   Institute of Measurement, Control and Microtechnology, Ulm University, functionalities, not to the extended vehicle or the entire intelli-
+Albert-Einstein-Allee 41, 89081 Ulm, Germany {michael.buchholz, gent transportation system. In this way, the survey enables the
+klaus.dietmayer}@uni-ulm.de
+  Manuscript received July 31, 2024; revised October 03, 2024, October 29, consideration of interdependencies of multiple factors within
+    2024, November 04, 2024; accepted November 10, 2024.                        a delimited, specific application area, which is important to
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                                2
+
+    achieve a forward-looking perspective with an appropriate                 the lifecycle considerations, and iii) the necessary agnosticism
+    depth. Our study thus provides various stakeholders, from                 to accommodate future innovations. But it also calls for open
+    functional researchers and developers to safety experts and               innovation and close collaboration on open standards and
+    regulators, with a holistic view and enables the recognition              regulations that serve as non-legally binding guidelines that
+    of possible developments. In short, the key findings of the               encourage new pathways and ensure continuous improvement.
+    survey suggest that a shift towards data-based safety assurance                  New Insights: The shift towards data-driven AI safety as-
+    is necessary to address the characteristics of AI systems and             surance corresponds to the underlying change from mathe-
+    the resulting challenges.                                                 matically explicit systems to data-based implicit systems, and
+                   For the selection of references throughout the paper, we   thus represents the corresponding natural counterpart evolution
+    relied on extensive experience with safety-critical automo-               to system design in the area of system analysis and safety
+    tive systems, complemented by a targeted review of relevant               assurance.
+    standards, laws and scientific literature. We used recognized             Knowledge Synthesis:          The current state of AI safety as-
+    publication databases and applied expert knowledge to identify            surance in research, standardization, and regulation addresses
+    the most relevant references to ensure broad coverage of the              essential core features, but is subject to general limitations.
+    field. Moreover, the reference choice is briefly described along          In this context, this survey facilitates the understanding of
+    the survey.                                                               different perspectives and developments and their interdepen-
+             The paper is structured as follows: to present the survey at a   dencies. It shows that the transition to data-based AI safety
+    glance, the key findings, characteristics, limitations, contribu-         assurance over the entire lifecycle with an appropriate level
+    tions, etc. are laid out in Section II. Thereafter, the current state     of abstraction is promising in many respects, but that the
+    of the art and the future prospects of AI safety research are             possible solution is also accompanied by open questions that
+    outlined in Section III. The AI safety related standardization            a systematic transformation of existing methods can address.
+    along the application of autonomous driving is presented in
+    Section IV. The AI regulatory landscape, with a particular                    III. AI SAFETY RESEARCH
+    focus on the EU, the USA, and China as well as other selected                 This section deals with the current status of AI systems and
+    countries, is examined in Section V. Finally, open questions              corresponding safety research. Furthermore, future perspec-
+    and potential solutions are addressed in Section VI, while                tives in this area are outlined. Finally, the section concludes
+    Section VII provides summary and conclusion on research,                  with a discussion.
+    standardization, and regulation.
+        II. SURVEY AT A GLANCE                                                A. Current State of AI Systems & Safety Research
+                                                                                       In recent years, AI safety research has become increas-
+                In this section, the most essential elements and aspects of   ingly important. Nevertheless, there is a large number of
+    the survey are briefly presented before the paper goes into               open research questions [7], some of which are fundamental,
+    detail.                                                                   while at the same time promising new AI methods are being
+                      Key Findings: Recent surveys show a growing awareness   introduced. A wide-ranging examination of current state of the
+    and demand for AI safety assurance from various perspectives,             art AI safety assurance, including open research questions,
+    from research over standardization up to regulation. At the               is presented in [10]. It appears that current safety research
+    same time, all affected areas are facing significant challenges           primarily covers simple AI systems.
+    and have a number of unanswered questions.                                            In comparison, modern AI systems are mostly based on
+  Core Features: The three core features of AI safety as- complex architectures. For example, in the area of trajec-
+surance across different perspectives are, i) the increasing tory prediction of other road users, different combinations
+awareness of data dependency, ii) the recognition of the of common model architectures, such as convolutional neural
+need for lifecycle considerations, and iii) the need for safety networks (CNN), recurrent neural networks (RNN), Trans-
+abstraction, e.g., through functional safety or Safety of the formers, and recently even Large Language Models (LLM),
+    Intended Functionality (SOTIF).                                           are considered [19]–[22]. The choice of overall architecture
+  General Limitations: Despite increasing AI safety assurance depends on the data to be processed and the design decisions.
+efforts, the methods currently in use are unable to address One approach, for instance, is to use several pre-trained
+the challenges inherent in AI systems. Furthermore, AI safety general-purpose models, also known as backbones, which are
+standardization in the automotive sector is lagging behind gen- then tailored to the respective task through application-specific
+eral AI standardization in terms of data dependency awareness training. For example, CNN backbone models [23], [24] could
+and lifecycle consideration, while general AI standardization be used to process image data such as maps from a bird’s
+is also still underway. In addition, AI regulations around eye view, while RNN and transformer backbones [25], [26]
+the globe pose additional hurdles for products intended for could be used to process temporal data such as the histories of
+    different markets, as they are very heterogeneous.                        road users as part of trajectory prediction. Besides individual
+                    Main Contributions: This study contributes by examining   submodules for the respective data processing steps, another
+    the three pillars of research, standardization, and regulation            approach for predicting trajectories is to use a comprehensive
+    of AI safety assurance for automated vehicles, identifying                advanced model for the task as a whole. For example, the
+    interdependencies and highlighting the need for approaches to             exploration of targeted transformers [21] or LLMs [22]. Fur-
+    safety assurance in terms of methods, standards and regulation.           thermore, this consideration can also be applied to the entire
+    In particular, the need for a data-driven AI safety assurance             automated driving stack, ultimately leading to an End-to-End
+    approach that takes into account i) the inherent challenges, ii)          architecture [27], [28]. Regardless of the granularity of the
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+                                    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                             3
+
+    AI (sub)systems used, the overall complexity is increasing. At        mal statements about interrelationships and influencing factors
+    the same time, new promising methodological approaches are            represent an appropriate goal.
+    being explored [29], thus the overall complexity is likely to
+    increase further in the future. In the realm of such complex          B. Prospects on AI Systems & Safety Research
+    systems, formal proofs of AI safety cannot be expected at this
+    stage. Specifically, as the behavior of AI systems also depends             In general, assurance is based on defining requirements and
+    on data, as a large number of researchers have already noted          assumptions and verifying the system’s correct functionality
+    [30]–[32]. For instance, data used at development time affects        at each point in time given these assumptions [30], [45]–[47].
+    the weights during training. And data at runtime influences           However, AI systems handle complex tasks using data-based
+    the system behavior. To give an example, the behavior of the          and implicit methods to emulate desired system behaviors.
+    long short-term memory cells of recurrent networks [33] or            As a result, system assumptions are embedded in both the
+    the multi-head self-attention of transformers [34] depend on          architecture and the training data, while assumptions about
+    operational data.                                                     the admissible application domain are reflected in the test
+On the one hand, this data dependency further complicates the data. To properly verify these assumptions, a data-driven
+safety guarantee process [10]. On the other hand, a bottom- approach is essential, as recognized by [13], [48]. The shift
+up safety assurance approach, where individual backbone from analytically explicit assumptions to data-driven implicit
+models are pre-validated and then fine-tuned for a specific ones requires an equivalent shift in verification and validation
+task, proves to be impractical and insufficient. This is because methods toward data-centric assurance approaches. In sum-
+fine-tuning modifies the weights of the model and thus re- mary, we refer to the associated approach to safety assurance,
+specifies the system behavior, rendering all preliminary proofs which builds on implicit assumptions embedded within data
+or validations obsolete [7], [35], [36]. As a result, new proofs and the data-based verification and validation of assumptions
+are required to ensure the safety of the finalized AI unit, taking through to data-based system analysis, as data-driven AI safety
+into account both task-specific development and operational assurance. Although this is a comparatively broad formulation,
+data [10]. This is exemplified in the analysis process for traffic the specification and refinement of this definition will remain
+sign detection and recognition systems using neural networks a subject of future research.
+    [37], [38]. Consequently, it can be concluded that regardless                 The data-based assurance approach outlined here aligns to
+    of the chosen safety approach, a data-based or data-dependent         some extent with current practices, though it is not always
+    safety assurance approach is mandatory.                               explicitly communicated. Research has already demonstrated
+              A formal safety assurance approach that accounts for data   that, for certain architectures and use cases, operational data
+    dependency might be theoretically possible. However, given            can differ significantly from development data [49]. To verify
+    that AI systems are designed to map highly complex, non-              the underlying assumptions, methods like out-of-distribution
+    trivial relationships, the notion of a general, formal, closed-       (OoD) detection have been developed [50], [51]. For instance,
+    form solution appears contradictory. Both the definition and          during deployment, OoD detection identifies deviations be-
+    feasibility of achieving such a goal are open to question,            tween operational and training data distributions. In other
+    despite its desirability.                                             words, the implicit assumptions embedded in the training data,
+                   This becomes clear when examining the challenges for   when compared to the operational data, can be continuously
+    AI safety that arise from the change in data characteristics          monitored. Such assumption-checking mechanisms enable the
+    between training and operation [39]. While initial research           implementation of safeguarding measures [52], [53].
+    has been conducted in this area, e.g., on the safety assurance                    However, there are use cases where changes in assump-
+    implications of input data [30]–[32], it remains unclear how          tions, such as shifts in data distribution, are inherent. To
+    factors such as data biases, dataset shifts, concept shifts, out-     address these cases and maintain correct functionality, various
+    of-domain data or data quality will specifically impact safety.       methods have been developed, including zero-shot [40], [54],
+    The effects of redundant training data, such as correlated data       one-shot [41], [55], few-shot [42], [56], and meta-learning
+    or redundant AI models, e.g., ensembles, on safety have also          techniques [43], [44], [57]. It seems that in performance-
+    not yet been clarified [10].                                          oriented development, data-driven approaches have already
+        gained unconscious traction. Adopting similar methods for
+  While in this context, it is desirable to elaborate formal validation appears to be a purposeful step. However, these
+correlations for AI safety assurance, data-driven performance approaches must evolve into a systematic, process-oriented
+evaluation highlights the factors that require investigation methodology worth of verification and validation.
+    today. This is because performance degradation and feature            At first glance, the shift    to     data-based     assurance may
+implications are observed during evaluations. Rather than appear disruptive and radical. However, a closer examination
+focusing on formal correlations, current procedures emphasize reveals that both safety assurance and performance-oriented
+the development of new requirements and methods to address development tackle similar challenges and address comparable
+emerging issues. This performance-oriented AI development open questions. For instance, [10] highlights the investigation
+follows a cycle of exploration, observation, and mitigation, and of redundant data and structures as a key safety assurance
+serves as a key stimulus for ongoing research. Consequently, research question. In fact, several models in trajectory pre-
+data-driven evaluation and observation provide insights and diction [20], [21] extract redundant latent data from various
+enable conclusions about reliability, robustness, and resilience sources and use different models to validate and fuse this in-
+of AI systems and drive emerging methods such as [40]–[44] formation, often through attention mechanisms. Although this
+that address existing performance limitations. Accordingly, it approach within trajectory prediction is mainly performance-
+must be questioned to what extent the intended decidedly for- driven, it inherently uncovers assurance requirements. Addi-
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                        4
+
+    tionally, functional safety standards like [46], [47] already          methodologies. As a result, proposed paradigm shift towards
+    blend performance-oriented aspects with safety considerations,      data-driven safety assurance enables a long-term, transferable
+    demonstrating that this transition is more gradual and inte-           and practical approach to AI safety assurance. Furthermore,
+    grated than it might initially appear.                                 this independence from AI architectures and methods is also
+  The data-driven repetitive process of exploration, obser- leveraged in the latest AI Safety Integrity Level (AI-SIL)
+vation, and mitigation provides a way to validate implicit approach [67]. However, data-driven safety assurance places
+assumptions in the architecture, training, and test data. If greater emphasis on the methodology rather than AI-SIL
+observations confirm the assumptions, no changes are needed. classification. Nevertheless, the joint development of these ap-
+If not, mitigation is required. This can be done by either proaches represents a promising direction for future research.
+    narrowing the scope to ensure the assumptions hold or adjust-             Moreover, while we agree with [68] in their analysis, we
+ing the methodology so that new assumptions are met. The propose a different solution. Specifically, we challenge the
+choice depends on the application, but continuous monitoring notion that narrow AI is the only viable solution, given
+is advisable in safety-critical systems to detect and respond to recent technological advancements. General AI, in our view,
+invalid assumptions that could lead to unpredictable behavior. holds potential for handling corner cases more effectively at
+  While this data-driven approach cannot be directly applied higher levels of autonomy. Furthermore, end-to-end learning,
+in safety-critical systems in the real-world, it can be addressed particularly modular end-to-end learning, has demonstrated
+through simulation-based development and subsequent trans- the potential for enhanced performance [27], [69]–[71], which
+fer, e.g. through transfer learning [58]. For instance, training directly contributes to improving safety.
+    and evaluation can initially be performed in simulation, which        We also share the recognition of the need for robustness and
+    enables more efficient data generation and reuse [59], [60].          resilience in AI systems [68]. However, we find the proposed
+    In particular, the ability to generate hazardous scenario data      solution of adaptive online learning critical, particularly in
+    safely and efficiently by means of simulations is a significant          terms of safety and fairness. Taking automated driving as
+    advantage and offers the possibility of improving methodolog-             an example, safety would depend on the individual use of
+    ical robustness [61]–[63] without real-world dangers. In this          the vehicle. However, the behavior of an autonomous vehicle
+    context, the concept of imaginative intelligence discussed in          should be consistent across the entire fleet. Moreover, the
+    [64] represents a promising research direction. Nevertheless,         real world is mutable, meaning that system requirements will
+    it is clear that the use of simulators and the associated gap        change over time.
+    between simulation and reality entails a certain risk [65]. In           To address this, data must be collected continuously, and
+particular, it is essential to ensure that no inaccuracies are in- system admissibility regularly checked and renewed. This
+troduced that could undermine credibility and trustworthiness process, however, is resource-intensive, requiring significant
+[10]. In this context, especially the imaginative intelligence computational and memory capacities. Therefore, we advocate
+exhibits open questions and dangers besides the possibilities for regular offline learning and updates, similar to periodic
+[64]. As a result of existing drawbacks, a gradual transition reviews of vehicle systems, like Germany’s periodic technical
+back to the real world is required from a safety assurance inspection [72]. While this provides an outlook specific to
+perspective, in which iterative improvements are made to both automated driving, the principle can be applied to other
+the simulation and the system in order to minimize the gap domains requiring ongoing assurance of AI systems.
+    and thus the risk.                                                     Finally, it should be noted that technology agnosticism can
+             Therefore, the transition to real systems is indispensable  offer a great advantage on the long run. The use of graphical
+    for validating assumptions and reaching maturity. This mirrors        processing units for AI systems [73], [74] has significantly
+    findings in developmental psychology, which emphasize that                  changed the development and methodology of AI. In this
+    experimentation is key to learning and development [66]. Real-        context, the relevance of a hardware agnostic functional and
+    world validation is necessary for system approval and ongoing         data-oriented methodology that could be quickly transferable
+    improvements. Accordingly, data-based verification in real           becomes evident.
+    applications is necessary to achieve approval and continuous
+    improvement. However, this does not mean that systems are
+    used in the real world without existing validation or approval.
+    Rather, this corresponds to the approach that is already being       IV. AI SAFETY STANDARDIZATION
+    used in practice in the field of autonomous driving. Namely,
+    building on simulation-based validation in the real world to              The safety standardization for methods and techniques is
+    collect data and the gradual transfer of more responsibility         usually based on the corresponding safety research as well as
+    and scope for action under the supervision of trained staff, like    on existing and known safety approaches that are transferred.
+    Waymo Limited Liability Company (LCC) or Cruise LCC are                  However, as already mentioned, there is a large number of
+    doing already today.                                                   open research questions in the field of AI safety research.
+                                                                           In addition, the previous analysis shows the need for data-
+    C. Discussion                                                        based or data-driven assurance regardless of the methodology.
+        However, data-driven assurance is still relatively uncommon
+  A key advantage of moving to data-driven safety assurance in safety standardization. Nevertheless, the significant im-
+is the architecture- and technology-independent nature of the provement in the performance of AI methods is urging the
+methodology. This approach allows for the rapid safeguarding parallel development of standards that ultimately govern their
+of various complex and novel systems, without requiring application. The following provides an overview of current and
+safety practitioners to delve into the AI architectures and developing standards related to AI and autonomous driving.
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                          5
+
+    A. AI Safety Standardization from a Methodological Point of     artificial intelligence in the automotive sector, just as in general
+    View                                                                 standardization, is increasingly considered [82], [125].
+          In the last years, a number of standards have been published       Another central aspect of standardization in the automotive
+    in the field of information technology and artificial intelli-       sector addresses scenario-based testing and evaluation, as seen
+    gence. Table I provides an overview and selection of relevant               in Table II. Beyond that, big data and AI [126] are also
+    standards for AI safety assurance and related topics. These               covered by recently published standards and standards that
+    encompass a wide array of themes including safety, security,         are currently under development.
+    trust, ethics, & societal concerns, as well as robustness, data,        In addition to the previously mentioned safety and scenario-
+    software, and AI lifecycle & process management. This com-                based testing, the operational design domain (ODD) plays a
+    prehensive coverage indicates that standardization in the realm         crucial role in general testing within the automotive sector
+    of general AI safety assurance and related topics is already           [127]. Furthermore, for automated driving systems, a recently
+    taking a holistic approach.                                              published standard on the evaluation of autonomous products
+       As it turns out, safety in relation to AI is addressed in [75],  is essential for ensuring advanced systems safety and effective-
+    with a particular focus on functional safety, which provides         ness [128]. Another closely related topic is security, as secu-
+    agnosticism about methodologies and hardware setups. While              rity, which is concerned with the protection of systems from
+    such a safety approach is also discussed in previous Section II,       malicious attacks, is an important prerequisite for achieving
+    the corresponding analysis of AI safety research goes further       system safety. For instance, a security threat represents a risk
+    and demands the linkage or centering of functional safety in         that could lead a system to potentially unsafe behavior, if not
+    relation to data.                                                   mitigated. This illustrates that safety and security are closely
+              At the same time, it becomes apparent that the relevance     intertwined, which is in relation to AI systems also outlined
+    of data and the consideration of lifecycles within information          in [10]. Moreover, while [129] provides a general discussion
+    technology and AI standardization is recognized and taken into        on the relationship between AI and security, the cybersecurity
+    account. This can be seen both in the recently published stan-             of connected automated vehicles is particularly examined,
+    dards and in the standards still under development presented in         e.g., within publications such as [130], [131]. Furthermore,
+    Table I. This demonstrates that a functional and data-oriented           some articles specifically examine the relationship between
+    methodology seems to be the logical next step from both AI                safety and security in automated driving [132], as well as
+    safety assurance research and standardization.                           the analysis of adversarial attacks on AI and corresponding
+         Moreover, in addition to the standardization of AI safety as-   detection systems to mitigate these threats [133].
+    surance in general form, application-oriented standardizations                Overall, in the context of AI-based systems in the au-
+    are emerging in parallel. In particular, safety-critical cyber-         tomotive sector, security primarily focuses on cybersecurity
+    physical systems are dealing with the topic. Two well-known             throughout the development lifecycle, including design, ver-
+    representatives are the aerospace and the automotive sector. In        ification, validation [134] and general engineering practices
+    line with the underlying focus of this paper, the automotive              [135], [136]. As AI systems are exposed to the environment
+    sector is examined in more detail subsequently.                         and process all inputs, safety and security are more closely
+                                                                            linked in the respective AI context. This suggests that data
+                                                                         will also become more important in terms of security.
+    B. AI Safety Standardization from an Automotive Perspective                Beyond that, the software plays a substantial role within
+  In the automotive sector, there is a large number of stan- the automotive sector. Thereby, the updatability of software
+dards. Given the focus on automated vehicles, the following [137], [138] and the software lifecycle [102] in general are
+overview of AI safety standardization is specifically tailored to of particular relevant. Moreover, over-the-air updates [139]
+address safety-critical driving functions, as well as assistance and service-oriented diagnostics [140] should be mentioned
+and automation systems related to the vehicle itself. By in this regard, which reflect the general development towards
+contrast, the extended vehicle, e.g., intelligent transportation software-defined vehicles and service-oriented architectures.
+systems, and communication technologies such as Vehicle-to- An overview of the software related standards is provided in
+Everything (V2X) or Internet of Vehicles (IoV) are outside the respective group within Table II.
+    the scope of this analysis. Readers interested in these areas        Alongside the more general standards, there     is     also   a
+are referred to following the publications [107]–[114] and the number of specific standards in the automotive sector. These
+standards [115]–[121]. Nevertheless, the following analysis encompass, for e.g, specific driver assistance systems such as
+remains centered on the vehicle itself and its automation highway chauffeur [141], [142] or automated valet parking
+systems. In accordance a selection of related standards for systems [143], [144]. Moreover, there are also standards
+safety in automated and AI-based intelligent vehicle systems covering function-specifics such as minimum risk maneuvers
+    is represented in Table II.                                          [145]. A selection of standards is presented under the advanced
+        As indicated by Table II, functional safety occupies a special   driver-assistance systems (ADAS) group in Table II.
+    position in the automotive sector. In particular, ISO 26262                  Compared to general AI safety standardization, far less
+    [46], which evolved from IEC 61508 [122], represents its               explicit importance is attached to the subject of data. While
+    backbone. Building on this, there is a number of standards          data is implicitly involved, especially in test scenarios, it is
+    that deal with safety, from Functional Safety (FuSa) [46],            not generally accounted for in the safety assurance within the
+    [122], [123] to SOTIF [47]. Morover, standards that address          automotive sector. As noted by [146], neither functional safety
+    the safety of automated driving systems [124] and artificial             nor SOTIF sufficiently address the unique safety challenges
+    intelligence [125] are particularly relevant. As it can be seen,         posed by AI-based systems in automotive applications. While
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        6
+
+
+                                                                       TABLE I
+                         GENERAL OVERVIEW OF STANDARDS FOR AI SAFETY ASSURANCE AND RELATED TOPICS.
+
+    Group                Standard                 Category1            Short Title                                                    Status2  Source
+    Safety, Security,    ISO/IEC TR 5469:2024       IT, AI             Functional safety and AI systems                                  PS     [75]
+    Trust, Ethics, &     ISO/TR 22100-5:2021          SM               Relationship with ISO 12100, Part 5: Implications of artifi-      PS     [76]
+    Societal Concern                                                   cial intelligence machine learning
+                         ISO 13849-2:2012             SM               Safety-related parts of control systems, Part 2: Validation       PS     [77]
+                         ISO/IEC TR 24028:2020      IT, AI             Overview of trustworthiness in artificial intelligence            PS     [78]
+                         ISO/IEC TS 8200:2024       IT, AI             Controllability of automated artificial intelligence systems      PS     [79]
+                         ISO/IEC 23894:2023         IT, AI             Guidance on risk management                                       PS     [80]
+                         ISO/IEC TR 24027:2021      IT, AI             Bias in AI systems and AI aided decision making                   PS     [81]
+                         ISO/IEC CD 27090           IT, SP             Guidance for addressing security threats and failures in          UD     [82]
+                                                                       artificial intelligence systems
+                         ISO/IEC TR 27563:2023      IT, SP             Security and privacy in artificial intelligence use cases —       PS     [83]
+                                                                       Best practices
+                         ISO/IEC TR 24368:2022      IT, AI             Overview of ethical and societal concerns                         PS     [84]
+    Robustness           ISO/IEC TR 24029-1:2021    IT, AI             Assessment of the robustness of neural networks, Part 1:          PS     [85]
+                                                                       Overview
+                         ISO/IEC 24029-2:2023       IT, AI             Assessment of the robustness of neural networks, Part 2:          PS     [86]
+                                                                       Methodology for the use of formal methods
+                         DIN SPEC 92001-2:2020-12  (IT, AI)            K¨unstliche    Intelligenz  -  Life  Cycle   Prozesse       und   PS     [87]
+                                                                       Qualit¨atsanforderungen - Teil 2: Robustheit
+    Data                 ISO/IEC 5259-1:2024        IT, AI             Data    quality    for  analytics  and    machine     learning,   PS     [88]
+                                                                       Part 1: Overview, terminology, and examples
+                         ISO/IEC FDIS 5259-2        IT, AI             Part 2: Data quality measures                                     UD     [89]
+                         ISO/IEC 5259-3:2024        IT, AI             Part 3: Data quality management requirements and guide-           PS     [90]
+                                                                       lines
+                         ISO/IEC 5259-4             IT, AI             Part 4: Data quality process framework                            UP     [91]
+                         ISO/IEC DIS 5259-5         IT, AI             Part 5: Data quality governance                                   UD     [92]
+                         ISO/IEC CD TR 5259-6       IT, AI             Part 6: Visualization framework for data quality                  UD     [93]
+                         ISO/IEC AWI TR 42103       IT, AI             Overview of synthetic data in the context of AI systems           UD     [94]
+    Software             ISO/IEC/IEEE 12207:2017    IT, SS             Software life cycle processes                                     PS     [95]
+                         ISO/IEC/IEEE 15026-2:2022  IT, SS             Systems and software assurance, Part 2: Assurance case            PS     [96]
+                         ISO/IEC/IEEE 15026-4:2021  IT, SS             Systems and software assurance, Part 4: Assurance in the          PS     [97]
+                                                                       life cycle
+                         ISO/IEC TS 25058:2024      IT, AI             Systems and software Quality Requirements and Evaluation,         PS     [98]
+                                                                       Guidance    for  quality evaluation of  artificial intelligence
+                                                                       systems
+                         ISO/IEC 25059:2023         IT, AI             Software engineering — Systems and software Quality Re-           PS     [99]
+                                                                       quirements and Evaluation — Quality model for AI systems
+    AI Lifecycle &       ISO/IEC 5338:2023          IT, AI             AI system life cycle processes                                    PS    [100]
+    Process Management   ISO/IEC 8183:2023          IT, AI             Data life cycle framework                                         PS    [101]
+                         ISO/IEC TS 33061:2021      IT, SS             Process assessment model for software life cycle processes        PS    [102]
+                         ISO/IEC 24668:2022         IT, AI             Process management framework for big data analytics               PS    [103]
+                         ISO/IEC AWI TS 17847       IT, AI             Verification and validation analysis of AI systems                UD    [104]
+                         ISO/IEC DIS 42006          IT, AI             Requirements for bodies providing audit and certification of      UD    [105]
+                                                                       artificial intelligence management systems
+                         ISO/IEC AWI TR 42106                          Overview of differentiated benchmarking of AI system qual-        UD    [106]
+                                                                       ity characteristics
+     1   IT (Information Technology), AI (Artificial Intelligence), SM (Safety & Machinery), SP (Security & Privacy Protection), SS (Software & Systems Engineering), ES (Electrical,
+     2   Electronic & General System), RV (Road Vehicles), VS (Vehicle Systems), RTS (Road Traffic Safety Systems), ITS (Intelligent Transport Systems), ST (Safety & Testing)
+         PS (Published), UP (Under Publication), UD (Under Development)
+
+
+
+we agree with the analysis and the view that goal-based they have not yet been adopted in the automotive sector.
+safety cases, like those outlined in ANSI/UL 4600 [128],
+are beneficial, we also share the insight from [67] that a C. Emerging AI Safety Standardization: Collaborative Efforts
+fundamental change is necessary, including the need for a
+new SIL definition, such as AI-SIL [67]. While the shift While the previous subsections have mainly referred to
+in SIL definition is still at the conceptual stage, a broader current and recently published standards and to a limited extent
+methodological shift is demanded. Specifically, as suggested to standards under development, this subsection is mainly
+by the AI safety research analysis, a shift towards a data-driven dedicated to standards that are work in progress. An overview
+assurance process. of technical committees, subcommittees, working groups, and
+        standard committees in the intersection ofAI safety assurance
+  Additionally, as [146] also highlights, updating overall pro- and autonomous driving is presented in Table III.
+cesses towards iterative methods is essential to achieve the Overall, as it can be seen from Table III, a large number
+necessary flexibility for AI systems. While these data-driven, of standards are under development. In more detail, Table III
+iterative processes and adapted safety methodologies are be- provides an overview about 102 standards that are work in
+coming more prominent in AI standardization efforts, e.g., progress within the field of AI safety assurance for automated
+Table I, subsection ”AI Lifecycle & Process Management”, driving. Thereby, the largest portion, around 25% emerge from
+
+
+         This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        7
+
+
+                                                                                                                          TABLE II
+                                                                               AUTOMATED VEHICLES CENTERED OVERVIEW OF STANDARDS FOR AI SAFETY ASSURANCE AND RELATED TOPICS.
+
+    Group        Standard          Category1   Short Title                                                                             Status2  Source
+    Safety,      IEC 61508            (ES)     Functional              safety  of electrical/electronic/programmable electronic safety-   PS    [122]
+    Security,                                  related systems
+    &
+    & Ethics     ISO 26262:2018      RV, ES    Functional safety                                                                          PS     [46]
+                 ISO 21448:2022                Safety of the intended functionality                                                       PS     [47]
+                 ISO/TR 9968:2023    RV, ES    Functional              safety  — Application to generic rechargeable     energy storage   PS    [147]
+                                               systems for new energy vehicle
+                 ISO/TR 9839:2023    RV, ES    Application of predictive maintenance to hardware with ISO 26262-5                         PS    [148]
+                 PAS 1881:2020        (RV)     Assuring safety for autonomous vehicle trials and testing – Specification                  PS    [149]
+                 ISO/TR 4804:2020      RV      Safety and cybersecurity for automated driving systems — Design, verification              PS    [134]
+                                               and validation
+                 SAE J3061         (IT / RV)   Cybersecurity Guidebook for Cyber-Physical Vehicle Systems                                 PS    [136]
+                 ISO/SAE 21434:2021  RV, ES    Cybersecurity engineering                                                                  PS    [135]
+                 ISO/PAS 8926:2024   RV, ES    Functional safety — Use of pre-existing software architectural elements                    PS    [123]
+                 ISO/CD TS 5083      RV, ES    Safety for automated driving systems — Design, verification and validation                 UD    [124]
+                 SAE J3206:2021     (RV, ES)   Taxonomy and Definition of Safety Principles for Automated Driving System                  PS    [150]
+                 ISO/DPAS 8800       RV, ES    Safety and artificial intelligence                                                         UD    [125]
+                 ISO 39003:2023       RTS      Guidance on ethical considerations relating to safety for autonomous vehicles              PS    [151]
+    Testing &    ISO 34501:2022      RV, VS    Test scenarios for automated driving systems — Vocabulary                                  PS    [152]
+    Evaluation   ISO 34502:2022      RV, VS    Test scenarios          for     automated  driving systems — Scenario based       safety   PS    [153]
+                                               evaluation framework
+                 ISO 34503:2023      RV, VS    Test scenarios for automated driving systems — Specification for operational               PS    [154]
+                                               design domain
+                 ISO 34504:2024      RV, VS    Test scenarios for automated driving systems — Scenario categorization                     PS    [155]
+                 ISO/DIS 34505       RV, VS    Test scenarios for automated driving systems — Scenario evaluation and test                UD    [156]
+                                               case generation
+                 ISO/TS 22133:2023   RV, VS    Test object monitoring and control for active safety and automated/autonomous              PS    [157]
+                                               vehicle testing — Functional requirements, specifications and communication
+                                               protocol
+                 ANSI/UL 4600         (RV)     Standard for Evaluation of Autonomous Products                                             PS    [128]
+                 ISO/CD TR 12786      ITS      Big data and artificial intelligence supporting intelligent transport systems -            UD    [126]
+                                               Use cases
+                 ISO/AWI TR 17720     ITS      Operational Design Domain Boundary and Attribute Awareness for an Auto-                    UD    [127]
+                                               mated Driving System
+    Data         ISO/TR 21718:2019    ITS      Spatio-temporal data dictionary for cooperative ITS and automated driving                  PS    [158]
+                                               systems 2.0
+                 ISO 20524-2:2020     ITS      Geographic Data Files, Part 2: Map data used in automated driving systems,                 PS    [159]
+                                               Cooperative ITS, and multi-modal transport
+                 ISO/TS 22726:2023    ITS      Dynamic data and map database specification for connected and automated                    PS    [160]
+                                               driving system applications
+    Software     ISO 24089:2023      RV, ES    Software update engineering                                                                PS    [137]
+                 ISO/AWI PAS 25090   RV, ES    Software Update engineering - vehicle configuration information                            UD    [138]
+                 ISO/AWI TR 24935    RV, ES    Software Update over the air using mobile cellular network                                 UD    [139]
+                 ISO/AWI 17978         RV      Service-oriented vehicle diagnostics                                                       UD    [140]
+    ADAS         ISO 21717:2018       ITS      Partially Automated In-Lane Driving Systems — Performance requirements                     PS    [161]
+                                               and test procedures
+                 ISO/TS 23792-1:2023  ITS      Motorway chauffeur systems, Part 1: Framework and general requirements                     PS    [141]
+                 ISO/CD 23792-2       ITS      Motorway chauffeur systems, Part 2: Requirements and test procedures for                   UD    [142]
+                                               discretionary lane change
+                 ISO/AWI 19484        ITS      Highly Automated Motorway Chauffeur Systems                                                UD    [162]
+                 ISO 23374-1:2023     ITS      Automated valet parking systems, Part 1: System framework, requirements for                PS    [143]
+                                               automated driving and for communications interface
+                 ISO/TS 23374-2:2023  ITS      Automated valet parking systems, Part 2: Security integration for type 3 AVP               PS    [144]
+                 ISO/TR 5255-2:2023   ITS      Low-speed automated driving system service, Part 2: Gap analysis                           PS    [163]
+                 ISO 20900:2023       ITS      Partially-automated parking systems — Performance requirements and test                    PS    [164]
+                                               procedures
+                 ISO 23375:2023       ITS      Collision evasive lateral manoeuvre systems — Requirements and test proce-                 PS    [165]
+                                               dures
+                 ISO 23793-1          ITS      Minimal risk manoeuvre for automated driving, Part 1: Framework, straight-                 UP    [145]
+                                               stop and in-lane stop
+     1   IT (Information Technology), AI (Artificial Intelligence), SM (Safety & Machinery), SP (Security & Privacy Protection), SS (Software & Systems Engineering), ES (Electrical,
+     2   Electronic & General System), RV (Road Vehicles), VS (Vehicle Systems), RTS (Road Traffic Safety Systems), ITS (Intelligent Transport Systems), ST (Safety & Testing)
+         PS (Published), UP (Under Publication), UD (Under Development)
+
+
+
+the Joint Technical Committee (JTC) 1, Subcommittee (SC) III highlights 102 ongoing standards in the field of AI safety
+42, artificial intelligence and around 17 % from the Technical assurance for automated driving. The largest share, approxi-
+Committee (TC) 204, intelligent transportation systems. mately 25%, originates from the Joint Technical Committee
+        (JTC) 1, Subcommittee (SC) 42 on artificial intelligence,
+  Overall, as shown in Table III, a significant number of around 17% from the Technical Committee (TC) 204 on
+standards are currently under development. Specifically, Table
+
+
+                 This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+IEEE TRANSACTIONS ON INTELLIGENT VEHICLES 8
+
+intelligent transportation systems, and about 10% from the automotive sector. The standards must therefore be aligned
+JTC 1, SC 7 on software and systems engineering. In general, and harmonized. Application-specific standards are therefore
+within the automotive sector, a number of standards are still desirable and beneficial as they will enable more efficient
+focusing on individual ADAS functionalities, with increasing development and approval in the long term.
+automation and expansion of the ODD. At the same time, Overall, the trend towards functional safety, which rep-
+however, standards are also being developed that deal with resents an opportunity to address heterogeneous, complex,
+end-to-end AI concepts. Moreover, it is apparent that most and emergent systems due to the agnostic nature, is becom-
+standards under development within the field of AI address ing apparent. However, the systematic fusion of data-based
+safety, robustness, data, and the lifecycle taking on a central processes with functional safety is not yet part of current
+role. standardization. Neither in the field of AI nor in the automotive
+  Furthermore, reviewing the working groups and related sector. Accordingly, this results in a general open research
+publications is useful for anticipating the content of future question with regard to AI safety assurance processes and
+standards. Therefore, in the intersection of AI safety assurance associated standardization.
+and autonomous driving, reference is made at this point to
+[45], [68], [166]. These publications specifically address the V. AI SAFETY REGULATION
+complexity of the system and the resulting challenges, namely
+uncertainties, insufficiencies, and gaps. As technologies come into use and unfold their effect on
+  Beyond the technical uncertainties and performance insuf- individuals and/or society, the need for legal consideration
+ficiencies that are prevalent in application-oriented research, arises. Since AI is undoubtedly a powerful technology that is
+uncertainties in specification and assurance are addressed. currently being used and will continue to be used even much
+These are usually neglected in function-oriented research, more intensively in various areas and forms in the future, a
+but have a decisive impact on the overall safety. For this legal consideration is appropriate. In recent years, the legal
+reason, all contributors should be aware of these sources of treatment of AI has been addressed at various scales and
+uncertainty. The publications also recommend handling by stages. However, a global approach does not exist. Signifi-
+means of functional safety based on ISO 21448 [47], namely cant differences in approaches and perspectives exist among
+SOTIF. In this context, [45] addresses reasoning about input key economic and technological regions, therefore a global
+data and assigns greater importance to data for the first time. approach is not expected shortly. Furthermore, in line with the
+  Moreover, a detailed analysis of the standards that are purpose of this survey, the regulation of automated driving is
+currently work in progress would also be desirable. Due to the also covered. The brief overview of current regulations and
+fact that the standards are not publicly available in this state efforts focuses on a selection of important AI and automated
+and are only available for internet use, a more detailed analysis driving developing regions and relevant markets, as technology
+of them is not possible at the present time and therefore has a push and hand markets a pull effect. Accordingly, the
+recourse to related publications is most expedient. However, focus was placed on the EU, the US, and China.
+in general, it can be seen from the titles and efforts, that in the
+area of AI safety research, the importance of data continues A. European Union (EU)
+to have a stronger weighting and in the area of automotive
+standards is only considered more pointedly, in accordance The EU is pursuing the path of a central law for artificial
+with the title, twice. intelligence, the EU AI Act (AIA). In April 2021, the Eu-
+        ropean Commission presented an initial proposal for an AI
+D. Discussion liability directive, an AIA, and an Annex to the AIA in the
+        form of a harmonized legal framework [167]. The Commission
+  In general, this section served to provide a bundled presenta- advocates a technology-neutral definition of AI systems and
+tion of the overall activities within the area of standardization. a risk-based approach to requirements and obligations. More
+It can be noted that data is increasingly being taken into specifically, it distinguishes between unacceptable, high, low,
+account, particularly in the case of AI standardization, while and minimal risk. On this basis, the proposal includes prohibi-
+in the case of autonomous driving, the focus is mainly on tions for unacceptable risk, strict requirements and obligations
+specific scenario data. for high risk, and relatively lenient transparency obligations for
+  Regarding the automotive sector, there is still a lack of low and minimal risk. The annex to the AIA states that safety-
+specific standardization with a stronger focus on data and the critical AI applications in the real world, such as autonomous
+lifecycle of AI systems. Therefore, engineers in the automotive driving, should be assigned to the high-risk category.
+sector should consider appropriate AI standards along the In December 2022, the European Council adopted a com-
+available standards in their domain. However, in the long mon position of the EU member states, proposing amendments
+term, application-specific standards that consider data and the to the Commission’s proposal [168]. For example, the Council
+AI lifecycle could be expected, also in line with emerging is in favor of a more restrictive definition of AI systems,
+standards. While application-specific standards sometimes do an exclusion of AI systems for military or national security
+not add value, they do in the context of AI safety and the purposes, and the extension of the ban on social scoring
+application of automated driving. Especially since not every systems by private individuals.
+AI is used in a cyber-physical, safety-critical system that In June 2023, the EU Parliament voted on its position [169].
+is introduced on a large scale. In addition, there is a large The most important adjustments include several key changes.
+number of existing standards, e.g. in the area of hardware This includes the definition of AI systems, specifically the
+and electronics, which must also be taken into account in the use of the definition provided by the OECD. Furthermore,
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        9
+
+
+                                                            TABLE III
+              OVERVIEW OF WORK IN PROGRESS STANDARDS FOR AI SAFETY ASSURANCE AND AUTOMATED VEHICLES.
+
+Org.      Division1        Category2   Short Title                                       Work in Progress
+ISO       TC 22                RV      Road vehicles
+          TC 22/SC 32        RV, ES    Electrical  and    electronic  components   and   ISO/CD TS 5083, ISO/SAE CD PAS 8475,
+          TC 22/SC 32/WG 8   RV, ES    general system aspects                            ISO/SAE AWI TR 8477, ISO/DPAS 8800, ISO
+          TC 22/SC 32/WG 11  RV, ES    Functional safety                                 24089:2023/Amd 1, ISO/AWI TR 24935, ISO/AWI
+          TC 22/SC 32/WG 12  RV, ES    Cybersecurity                                     PAS 25090
+                                       Software update
+          TC 22/SC 32/WG 13  RV, ES    Safety for driving automation systems
+          TC 22/SC 32/WG 14  RV, ES    Safety and Artificial Intelligence
+          TC 22/SC 33        RV, VS    Vehicle dynamics, chassis components and          ISO/CD 3888-2, ISO/AWI 11010-2, ISO/AWI PAS
+          TC 22/SC 33/WG 3   RV, VS    driving automation systems testing                11585-2, ISO/WD TS 19206-9, ISO/AWI 22133,
+          TC 22/SC 33/WG 9   RV, VS    Driver assistance and active safety functions     ISO/AWI 25135, ISO/AWI PAS 25321, ISO/DIS
+          TC 22/SC 33/WG 11  RV, VS    Test scenarios of automated driving systems       34505
+                                       Simulation
+          TC 22/SC 33/WG 16  RV, VS    Active Safety test equipment
+          TC 22/SC 36        RV, ST    Safety and impact testing                         ISO/AWI TS 23520, ISO/DTS 21934-2, ISO/DTR
+          TC 22/SC 36/WG 4   RV, ST    Virtual testing                                   12353-4, ISO/CD TS 4654
+          TC 22/SC 36/WG 7   RV, ST    Traffic accident analysis methodology
+          TC 199               SM      Safety of machinery                               ISO/CD 13849-2, ISO/AWI TR 13849-3
+          TC 199/WG 8          SM      Safe Control Systems
+          TC 204              ITS      Intelligent transport systems                     ISO/CD 12768-1, ISO/AWI 12768-2, ISO/CD TR
+          TC 204/WG 14        ITS      Vehicle/roadway      warning  and control  sys-   12786, ISO/AWI 15622, ISO/AWI 17387, ISO/AWI
+          TC 204/WG 20        ITS      tems                                              TR 17720, ISO/DIS 18750, ISO/AWI 19237,
+                                       Big Data and Artificial Intelligence support-     ISO/AWI 19484, ISO/AWI 21717, ISO/AWI TS
+                                       ing ITS                                           22726-1, ISO/DTS 22726-2, ISO/AWI 23375,
+                                                                                         ISO/AWI 23792-1, ISO/CD 23792-2, ISO 23793-1,
+                                                                                         ISO/CD TR 24856
+          TC 241              RTS      Road traffic safety management systems            ISO/WD 39004
+          TC 241/WG 6         RTS      Guidance on ethical considerations relating to
+                                       autonomous vehicles
+ISO/IEC   JTC 1                IT      Information technology
+          JTC 1/SC 7         IT, SS    Software and systems engineering                  ISO/IEC CD 9837-1, ISO/IEC/IEEE DIS 15026-1,
+          JTC 1/SC 7/AHG 9   IT, SS    AI-based software development                     ISO/IEC AWI TS 22864, ISO/IEC/IEEE CD
+          JTC 1/SC 7/WG 7    IT, SS    Life cycle management                             23612, ISO/IEC/IEEE CD 24748-4.2, ISO/IEC
+          JTC 1/SC 7/WG 10   IT, SS    Process assessment                                PRF 25040, ISO/IEC/IEEE CD 25070,
+          JTC 1/SC 7/WG 26   IT, SS    Software testing                                  ISO/IEC/IEEE FDIS 29119-5, ISO/IEC CD TR
+          JTC 1/SC 7/WG 30   IT, SS    Systems resilience                                29119-8.2, ISO/IEC AWI TS 33062
+          JTC 1/SC 42/JWG 2  IT, SS    Testing of AI-based systems
+          JTC 1/SC 27        IT, SP    Information security, cybersecurity and pri-      ISO/IEC CD 5181, ISO/IEC AWI TS 5689,
+          JTC 1/SC 27/AG 2   IT, SP    vacy protection                                   ISO/IEC DIS 15408-2, ISO/IEC DIS 15408-3,
+          JTC 1/SC 27/AHG 3  IT, SP    Trustworthiness                                   ISO/IEC AWI 27045, ISO/IEC CD 27090, ISO/IEC
+          JTC 1/SC 27/JWG 6  IT, SP    Security and privacy in AI and Big Data           WD 27091.2
+                                       Cybersecurity     requirements and   evaluation
+                                       activities for connected vehicle devices
+          JTC 1/SC 27/WG 1   IT, SP    Information security management systems
+          JTC 1/SC 27/WG 3   IT, SP    Security evaluation, testing and specification
+          JTC 1/SC 42/JWG 2  IT, AI    Testing of AI-based systems                       ISO/IEC AWI 4213, ISO/IEC FDIS 5259-2,
+          JTC 1/SC 42/JWG 4  IT, AI    Functional safety and AI systems                  ISO/IEC 5259-4, ISO/IEC DIS 5259-5, ISO/IEC
+          JTC 1/SC 42/WG 1   IT, AI    Foundational standards                            CD TR 5259-6, ISO/IEC CD TS 6254, ISO/IEC
+          JTC 1/SC 42/WG 2   IT, AI    Data                                              DTS 12791.2, ISO/IEC DIS 12792, ISO/IEC AWI
+          JTC 1/SC 42/WG 3   IT, AI    Trustworthiness                                   TS 17847, ISO/IEC AWI TS 22440-1, ISO/IEC
+          JTC 1/SC 42/WG 4   IT, AI    Use cases and applications                        AWI TS 22440-2, ISO/IEC AWI TS 22440-3,
+          JTC 1/SC 42/WG 5   IT, AI    Computational       approaches and     computa-   ISO/IEC AWI TS 22443, ISO/IEC 22989:2022/AWI
+                                       tional characteristics of AI systems              Amd 1, ISO/IEC 23053:2022/AWI Amd 1,
+                                                                                         ISO/IEC AWI 24029-3, ISO/IEC AWI 25059,
+                                                                                         ISO/IEC AWI TS 29119-11, ISO/IEC DIS 42005,
+                                                                                         ISO/IEC DIS 42006, ISO/IEC AWI 42102,
+                                                                                         ISO/IEC AWI TR 42103, ISO/IEC AWI 42105,
+                                                                                         ISO/IEC AWI TR 42106, ISO/IEC AWI TR 42109
+IEEE      FSSC                (ES)     Functional Safety Standards Committee             P2851.1
+          C/S2ESC           (IT, SS)   Software & Systems Engineering Standards          P1228
+                                       Committee
+          VTS/AVSC          (RV, VS)   Vehicular Technology Society - Automated          P2846a, P2979, P3116, P3321
+                                       Vehicles Standards Committee
+          ITSS/SC            (ITS)     Intelligent Transportation     Systems  Society   P3412, P3344
+                                       Standards Commitee
+          C/AISC            (IT, AI)   Artificial Intelligence Standards Committee       P2863, P3123, P3127, P3157, P3142, P3187,
+                                                                                         P3193, P3198, P3342, P3395, P3423, P3426, P3378
+12   TC (Technical Committee), JTC (Joint Technical Committee), SC (Subcommittee), WG (Working Group), JWG (Joint Working Group), AG (Advisory Group)
+     IT (Information Technology), AI (Artificial Intelligence), SM (Safety & Machinery), SP (Security & Privacy Protection), SS (Software & Systems Engineering), ES (Electrical,
+     Electronic & General System), RV (Road Vehicles), VS (Vehicle Systems), RTS (Road Traffic Safety Systems), ITS (Intelligent Transport Systems), ST (Safety & Testing)
+
+
+
+          This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                        10
+
+    biometric identification systems are entirely prohibited, in-                                                TABLE IV
+    cluding the previous exception for terrorist attacks. Addi-                         GENERAL STRUCTURE OVERVIEW OF THE EUROPEAN COMMISSION’S AI
+    tionally, generative AI is explicitly considered, along with                                       LEGISLATIVE PROPOSAL [170].
+    specific requirements. Most importantly in this survey, the            Chapter 1    General provisions                       (Art. 1-4)
+    classification criteria for high-risk systems are tightened, and       Chapter 2    Prohibited AI practices                  (Art. 5)
+    the competencies of national      authorities are     strengthened.    Chapter 3    High-risk AI systems                     (Art. 6-49)
+    Beyond that, another crucial adjustment is the promotion of            Chapter 4    Transparency obligations for providers   (Art. 50)
+    research and development of free and open-source AI through            Chapter 5    and deployers of certain AI systems
+                                                                                        General-purpose AI models                (Art. 51-56)
+    wide-ranging exemptions from compliance with AI law. The               Chapter 6    Measures in support of innovation        (Art. 57-63)
+    most important adjustments include the use of the OECD                 Chapter 7    Governance                               (Art. 64-70)
+    definition for AI systems, the entire prohibition of biometric         Chapter 8    EU database for high-risk AI systems     (Art. 71)
+                                                                           Chapter 9    Post-market   monitoring,  information   (Art. 72-94)
+    identification systems and thus also of the previous execution                      sharing and market surveillance
+    cases such as terrorist attacks, the explicit consideration of         Chapter 10   Codes of conduct and guidelines          (Art.95-96)
+    generative AI including specific requirements, the tighten-            Chapter 11   Delegation of power and committee pro-   (Art. 97-98)
+                                                                                        cedure
+    ing of the classification criterion for high-risk systems, the         Chapter 12   Penalties                                (Art. 99-101)
+    strengthening of the competences of national authorities, and          Chapter 13   Final provisions                         (Art. 102-113)
+    the promotion of research and development of free and open-            Annexes      Technical specs. and add. requirements   (Annex I-IX)
+    source AI through wide-ranging exemptions from compliance
+    with AI law.                                                          systems for automated driving throughout the development
+               In December 2023, the Council and the Parliament reached   process but also related to standardization. Without going into
+    a provisional political agreement on the legal text of the EU’s       detail, the considerable granularity and wide-ranging treatment
+    AIA. Numerous proposed amendments were taken into ac-                 of relevant aspects of governance, design, development, test-
+    count besides the revision and clarification of existing aspects      ing, verification, validation, traceability, certification, deploy-
+    and the incorporation of new aspects. Among other things,             ment, auditing, post-market surveillance, market surveillance,
+    the agreement covers the OECD definition, the restriction of          conformity, documentation, and much more generate a myriad
+    the use of remote biometric identification systems by law             of requirements and obligations.
+    enforcement authorities, the revision of the governance system,                      In addition to the EU AIA, the Commission has launched
+the refinement of obligations for high-risk AI systems, the an AI innovation package to support start-ups and SMEs in
+explicit addressing of general-purpose AI systems, and the developing trustworthy AI that respects EU values and rules
+expansion of regulatory sandboxes as measures to promote [171]. To this end, a Large AI Grand Challenge was launched,
+innovation within start-ups or small and medium-sized enter- offering financial support and access to supercomputers. It
+prises (SMEs). To promote innovation and preserve scientific was also decided to set up an AI Office within the European
+freedom, research and development activities have also been Commission. In addition, an amendment to the European High
+excluded from the scope of the regulation. In addition, systems Performance Computing Joint Undertaking Regulation [172]
+for military, defense, or national security purposes are also was adopted to add a new pillar on the establishment of AI fac-
+excluded from the scope. With regard to high-risk systems, tories. Furthermore, the Commission will financially support
+the clarification of obligations, in particular the mandatory generative AI through Horizon Europe and the Digital Europe
+impact assessment with regard to fundamental rights, should program and thus expects to attract a total investment of
+be mentioned. Finally, the draft of the EU AIA, whose around e4 billion by 2027. [171]. Beyond that, initiatives such
+structure overview is provided in Table IV, was adopted by as GenAI4EU or consortiums such as Alliance for Language
+the parliamentary committees on March 13, 2024. While the Technologies [173] and CitiVERSE [174] have recently been
+ban on AI systems with an unacceptable risk will come into initiated.
+force after six months, the code of conduct will apply after
+nine months and AI systems for general purposes will be B. United States (US)
+    regulated after 12 months, the majority of the legislation incl.                    In the US, there is no federal legislation governing AI
+    Annex III will come into force after 24 months and the and            applications. However, in October 2022, the White House
+    the final part, e.g. obligations for high-risk AI systems under       Office of Science and Technology Policy (OSTP) published
+    Annex II (Article 85), after 36 months. Note that annexes are         the ”Blueprint for an AI Bill of Rights” [175]. This is a guide
+    supplements that are an integral part of the Act, as they contain     for development, deployment, and use of AI collaboratively
+    essential technical details and information that are difficult to     worked out by OSTP, academia, human rights, groups, general
+    consider in the main body.                                            public, and large companies (Amazon, Anthropic, Google,
+                   As shown in Table IV, the EU AIA covers a wide range   Inflection, Meta, Microsoft, and OpenAI). The core of the
+    of topics. Given that the focus of this survey is on AI and           guideline addresses the following five topics: safe and effective
+    automated driving, which is classified as high-risk AI accord-        systems; algorithmic discrimination protections; data privacy;
+    ing to the EU AIA, Chapters 3 and 8 are particularly relevant.        notice and explanation; human alternatives, consideration, and
+    However, Chapter 9 is also significant in relation to system          fallback. The guide itself is not legally binding. Furthermore,
+    operation. A more detailed overview of the relevant articles is       there is a handbook, from principles to practice, which, in
+    provided in Table V. The selection of these articles is based         combination with the guide, should serve the industry as well
+    on a careful, experience-based assessment considering which           as lawmakers at all levels of government who are considering
+    aspects are most relevant in the development of AI-based              AI regulation.
+
+
+        This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        11
+
+
+                                         TABLE V                                                          TABLE VI
+                  SELECTION OF ARTICLES OF THE EUROPEAN COMMISSION’S AI                                              OVERVIEW OF LEGAL DEVELOPMENTS IN FLORIDA.
+     LEGISLATIVE PROPOSAL [170] THAT MOST LIKELY IMPACT AI-BASED
+                          SYSTEMS RELATED TO AUTOMATED DRIVING.                      Year   Bill      Short Description                     Source
+                              Chapter III                                            2012   HB 1207   required for testing purposes a human       [184]
+                          High-risk AI systems                                                        operator in the driver’s seat with a valid
+                                                                                                      driver’s license to immediately take over
+     Section 2    Requirements for high-risk AI systems                                               active control of the vehicle when neces-
+     Article 8    Compliance with the requirements                                                    sary.
+     Article 9    Risk management system                                             2016   HB 7027   extended operation on public roads and      [185]
+     Article 10   Data and data governance                                                            reaffirmed  the requirement for   a valid
+     Article 14   Human oversight                                                                     driver’s license but eliminated the require-
+     Section 3    Obligations     of providers and  deployers of high-risk AI                         ment of physical presence in the vehicle
+                  systems and other parties                                          2019   HB 311    of the operator.
+     Article 16   Obligations of providers of high-risk AI systems                                    removed    the requirement  for   a valid   [186]
+     Article 17   Quality management system                                                           driver’s license for operating fully au-
+     Article 18   Documentation keeping (new)                                                         tonomous vehicles, as the vehicle is con-
+     Article 23   Obligations of importers                                                            sidered the operator.
+     Article 24   Obligations of distributors
+     Article 25   Responsibilities along the AI value chain
+     Article 26   Obligations of deployers of high-risk AI systems                  not as urgent.
+     Section 5    Standards, conformity assessment, certificates, registration           In parallel, in single states and cities, governments are pur-
+     Article 43   Conformity assessment
+     Article 44   Certificates                                                      suing individual regulations. For example, New York City local
+     Article 47   EU declaration of conformity                                      law 144 [180] requires rules such as a bias audit for the use of
+                              Chapter VIII                                          AI in the hiring process. Colorado local law SB21-196 [181]
+                  EU database for high risk AI systems                              prohibits unfair insurance through AI and California local law
+     Article 71   EU database for high-risk AI systems listed in Annex III          AB 331 [182] requires consequence assessments of AI based
+                               Chapter IX                                           decision tools. Beyond that, an inventory of all AI systems
+     Post-market monitoring, information sharing and market surveillance            require laws currently being drafted in various states like Ver-
+     Section 1    Post-market monitoring                                            mont, Texas, and Washington. In particular, it should be noted
+     Article 72   Post-market monitoring by providers and post-market mon-          that a large number of laws are currently being processed.
+                  itoring plan for high-risk AI systems                             The following states should be emphasized in this context:
+     Section 2    Sharing of information on serious incidents                       California, Illinois, Massachusetts, New Jersey, New York, and
+     Article 73   Reporting of serious incidents                                    Texas. While the aforementioned states predominantly have
+     Section 3    Enforcement                                                       laws in process akin pending, Texas differs in that two laws
+     Article 76   Supervision of testing in real world conditions by market         are enacted and six are failed-adjourned. Furthermore, several
+                  surveillance authorities                                          bills have also failed in Maryland, Missouri, and New Mexico.
+        This illustrates that currently there is a considerable amount of
+        movement in this area of legislation and parliamentarians have
+  In January 2023, the National Institute of Standards and not yet found a clear path towards the legislative regulation
+Technology (NIST) published the AI Risk Management of AI at the state level. A detailed overview of artificial
+Framework [176]. This non-binding framework ”...is intended intelligence legislation in 2023 at the state level is provided
+to be voluntary, rights-preserving, non-sector-specific, and by the National Conference of State Legislatures [183].
+    use-case     independent,     and to     provide    organizations of      all                In the area of autonomous driving, there are also only
+sizes, in all sectors, and across society with the flexibility a few guidelines at the federal level. Most of these are
+to implement the framework’s approaches.” [176] The first provided by the National Highway and Transportation Safety
+part of the framework describes risk and trustworthiness in Administration (NHTSA). Thus, the regulation of autonomous
+the context of AI in more detail. The second part addresses driving, likewise, mainly takes place at state level and provides
+four key functions for mitigating AI-related risks and creating different sets of regulations. While a large number of states
+trustworthy AI systems. This includes establishing governance currently have no regulation (Alaska, Arizona, Delaware,
+structures and policies (govern), mapping the risks associated Hawaii, Idaho, Maryland, Massachusetts, Missouri, Montana,
+with AI systems, including identifying and assessing potential New Jersey, New Mexico, Ohio, Rhode Island, Wyoming),
+risks (map), measuring and assessing the risks associated with other states are making efforts to regulate and are even enact-
+AI systems (measure) and managing the risks associated with ing regulations that weaken or expand previous regulations.
+    AI systems (manage).                                                            An example in this context is Florida, where the legislative
+                      Although no dedicated AI legislation is currently addressed   development over time with regard to the driver and operator
+                at the federal level, related issues are touched upon by existing   requirements is outlined in Table VI. The table highlights in
+               laws. For instance, issues related to bias and unfair treatment in   particular the requirements for presence in the vehicle and
+                   AI are in many cases covered by existing laws, e.g., under the   the need for a driver’s license. Similar developments can be
+                    Civil Rights Acts of 1964 [177], the Equal Credit Opportunity   observed across other states as well. A selection of bills is
+                      Act (ECOA) [178], or the Fair Housing Act (FHA) [179], even   provided in Table VII with respect to operator requirements,
+                   though these laws do not specifically relate to AI technology.   driver’s license, liability, and specialties. Beyond the table, it
+                          This shows that common AI issues are often regulated in   can be generally summarized that the increasing development
+                      general terms, which is why a law for unbiased AI, e.g., is   of autonomous driving is accompanied by a more precise
+
+
+                  This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        ‘This article has been accepted for publication in IEEE Transactions on Inteligent Vehicles. This is the author's version which has not been fully edited and
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+IEEE TRANSACTIONS ON INTELLIGENT VEHICLES 12
+
+
+                                                                                  TABLE VII
+                                                            OVERVIEW OF THE LEGAL SITUATION IN A SET OF US STATES.
+
+    State            Bill             Operator              License              Liability      Specialty                                    Source
+    Alabama          SB 47 (2019)     remote                required             US$2,000,000   focus on teleoperation systems               [187]
+    California       AB 669 (2017)    tester                required             n/a            focus on testing of vehicle platooning       [188]
+    California       AB 87 (2018)     law enforcement       not required         n/a            focus on removing a vehicle to direct traf-  [189]
+                                                                                                fic or enforce parking laws and regulations
+    Connecticut      SB 260 (2017)    in driver’s seat      required             US$5,000,000   focus on     pilot program   for the testing [190]
+                                                                                                purposes
+    Connecticut      SB 924 (2019)    physically inside     required             US$5,000,000   Amends Connecticut SB 260                    [191]
+    Florida          HB 1207 (2012)   in driver’s seat      required             US$5,000,000   focus on testing purposes                    [184]
+    Florida          HB 7027 (2016)   not required inside   required             US$5,000,000   focus on expanding scope and reducing        [185]
+                                                                                                requirements
+    Florida          HB 311 (2019)    not required          not required         US$1,000,000   focus on fully autonomous vehicle            [186]
+    Georgia          SB 219 (2017)    not required          not required         required       general focus                                [192]
+    Iowa             SF 302 (2019)    not required          required             required       general focus                                [193]
+    Louisiana        HB 455 (2019)    remote                required             US$2,000,000   considers remote and teleoperation           [194]
+    Minnesota        HB 6 (2019)      in driver’s seat      required             required       focus on platooning, requirements hold for   [195]
+                                                                                                each vehicle in the platoon
+    Nebraska         LB 989 (2018)    not required          depends              required       general focus                                [196]
+    Nevada           AB 511 (2011)    n/a                   endorsement          required       general focus                                [197]
+    Nevada           AB 69 (2017)     not required          not required         US$5,000,000   general focus                                [198]
+    New Hampshire    SB 216 (2019)    not required          required for tests   US$5,000,000   with a focus on testing                      [199]
+    North Carolina   HB 469 (2017)    n/a                   not required         required       focus on fully autonomous vehicle            [200]
+    North Dakota     HB 1418 (2019)   not required          not required         n/a            general focus
+    Texas            SB 2205 (2017)   not required          not required         required       general focus                                [201]
+
+
+    definition of terms, requirements, and conditions troughout the
+    legislation. Therefore, it is conceivable that the legal situation
+    responds specifically to the different degrees of technological                                    \(
+    maturity. The consequence is a far-reaching regulation of
+    diverse aspects based on granular criteria and conditions.                                      5
+                 Another key aspect that can be observed throughout the
+    legislation is the specific consideration of testing. This is
+    particularly relevant for development and is often subject to
+    specific requirements. Without going into any detail, a rough                                      I ers 0
+    insight is provided in the following due to its relevance for                                      Ha
+research and development. For instance, New York requires
+state police oversight and reporting for testings and estab-
+lishes requirements for demonstrations and operations [202].
+Apart from New York, Vermont’s legislation also creates a
+solid basis for the careful approval of test vehicles [203]. Fig. 1. Visualization of the legal regulation of artificial intelligence and
+For example, it defines a comprehensive list of criteria and
+requirements. Beyond that, local authorities, e.g. the transport autonomous driving in the United States as of 23/04/2024, inspired by [211].
+authority, are given the right to adopt and introduce new
+rules. Furthermore, Colorado and Iowa also have more specific 2017, the ”Next Generation Artificial Intelligence Develop-
+conditions and requirements [193], [204], [205]. In addition to ment Plan” was issued by the State Council [213]. The plan
+those mentioned previous, California should be emphasiszed in focuses on promoting AI development, but also includes a
+this context, as its legislation on testing and operation [206]– timeline for developing AI governance regulations by 2030.
+[209] is far-reaching and has constantly evolved over time Along, China has set a goal of generating US$154 billion in
+due to the local presence of the tech industry. In addition to annual revenue by 2023 and becoming the global AI leader
+all these primarily important regulations, bills have also been by 2030 in AI industry.
+    passed that go beyond this, such as the taxation of autonomous                  In June 2019, the ”Governance Principles for New Gen-
+    vehicles [210].                                                       eration AI: Develop Responsible Artificial Intelligence” was
+             It can therefore be concluded that a bottom-up approach is   published by the National New Generation AI Governance
+    being pursued in the US in the regulation of both artificial          Expert Committee, which considers eight principles (harmony,
+    intelligence and autonomous driving. An overview of the               friendliness, fairness, inclusiveness, respect for privacy, se-
+    current legal situation, the enacted legislation, is summarized       curity and controllability, shared responsibility, open collab-
+    in Figure 1.                                                          oration, and agile governance) for AI governance [214]. In
+                                                                          December 2020, recommendation algorithms were specifically
+    C. China                                                              addressed in the Party document ”Outline for Establishing a
+                                                                          Rule-of-Law-Based Society (2020-2025)” [215] with regards
+                 In China, the ”Action Outline for Promoting the Devel-   to social and legal concerns.
+    opment of Big Data” was published in 2015 [212]. In July                    In September 2021, the ”Guiding Opinions on Strengthening
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                      13
+
+    Overall Governance of Internet Information Service Algo-               Shenzhen is also pushing ahead with regulation in the area
+rithms” [216] and ”Ethical Norms for New Generation AI” of autonomous driving [225]. In large parts of the city, licensed
+[217] were published by the Cyberspace Administration of vehicles are allowed to drive without a driver in the driver’s
+China (CAC) and the National New Generation AI Governance seat, in case a supervisor is in the vehicle. It is also worth
+Expert Committee, respectively. The former was co-signed by noting that a framework for liability [226] in driving-related
+many bodies and provides general guidelines for the regulation accidents has been introduced in this context.
+of online algorithms through 2024, while the latter provides
+comprehensive guidance on ethical norms that should be D. Further Selected National Aspirations
+considered in AI governance.
+           In December 2021, the first binding regulation on algorithms  In addition to the key regions of the EU, US and China, this
+    was published by the CAC and others under the title ”Provi-        section also briefly introduces Canada, Japan and Switzerland.
+    sions on the Management of Algorithmic Recommendations in             Canada places a stronger emphasis on data in its regulatory
+    Internet Information Services” [218]. The regulation centrally       framework, Japan prioritizes societal impact and Switzerland
+    addresses cybersecurity concerns and regulates algorithms for      advocates for further research. All of these countries provide
+    online distribution of content and news. In March 2022, the       valuable insights and impulses that are worth to be considered.
+    Regulation ”Opinions on Strengthening the Ethical Gover-             In 2017, Canada launched     a  nationwide     AI  strategy,
+    nance of Science and Technology” was published by the CPC           the ”Pan-Canadian Artificial Intelligence Strategy”, which is
+    Central Committee, State Council [219]. It aims to deploy          aimed at commercialization, standardization, research, and the
+    ethics and governance in research and development. AI is one        fostering of talents [227]. Moreover, the Canadian Parliament
+    of three key aspects within. In November 2022, ”Provisions          tabled a draft Artificial Intelligence and Data Act (AIDA) in
+    on the Administration of Deep Synthesis Internet Information         June 2022 that emphasizes a risk-based approach [228]. While
+    Services” was published by the CAA among others [220]. This        the EU includes bans in case of unacceptable risks, this draft
+    regulation focuses on AI applications for text, audio, and video      does not consider bans. However, in high-risk applications,
+    generation, and specifically prohibits ”fake news”.                     a mitigation plan is required to reduce risk and increase
+  In April 2023, CAC responded to the development of transparency.
+    Generative AI, such as ChatGPT, by publishing a first draft          Japan’s ”AI Strategy 2022” is closely linked to the ”Society
+of ”Measures for the Management of Generative Artificial 5.0” project [229]. In addition, the ”Social Principles of
+Intelligence Services” [221]. This regulation covers similar Human-Human-Centric AI” [230] presented by the Integrated
+areas as the deep synthesis regulation, but the emphasis Innovation Strategy Promotion Council deal, on the one hand,
+on data, especially training data, is considerably stronger. with key social principles that should be taken into account in
+Moreover, providers of such systems are required to ensure the context of AI. On the other hand, the publication contains
+    that the content generated is true and accurate.                         guidelines for AI development. In July 2021, ”Governance
+              At the city level, the ”Shanghai Regulations on Promoting    Guidelines for Implementation of AI Principles” [231] were
+    the Development of the AI Industry” took effect in October              also published to support developers and refer to various
+    2022 [222]. The focus here is on increasing the accumula-          national and international guidelines. However, all these pub-
+    tion of AI industry by specifically promoting innovation and         lications are not legally binding regulatory laws.
+    achieving breakthroughs. Dedicated management combined               In      Switzerland, a position paper of the Digital Society
+with ”sandbox” oversight is intended to create the necessary Initiative on a legal framework for artificial intelligence was
+space for research, development and testing of AI systems. published in November 2021 [232]. The need for regulation is
+Regulation in Shanghai even goes so far as to tolerate minor acknowledged; passive adoption of the EU regulation should
+rule violations. This is in recognition of the fact that AI not take place, instead Switzerland should develop its own
+research involves a number of unanswered questions and sci- regulations and standards. The position paper particularly
+entific exploration of frontiers and discovery of breakthroughs emphasizes that regulation must fulfill two objectives. On the
+should not be hindered by regulations. At the same time, one hand, sufficient freedom should be left for the development
+the regulation requires the Shanghai municipality to establish and use of AI. On the other hand, the use of AI must not
+an AI ethics expert committee to set principles and ethical disadvantage anyone and/or society or undermine principles
+    standards.                                                          of the rule of law. The position paper also argues less for a
+              In addition, the Shenzhen regulation ”Regulations for the   general AI law and more for the adaptation of existing laws
+    Promotion of the Artificial Intelligence Industry in Shenzhen    and the development of sector-specific standards. In addition, a
+    Special Economic Zone” came into effect in November 2022        solid scientific basis should be created by intensifying relevant
+    [223]. In particular, this regulation aims to promote, enable,      research. An interdisciplinary expert commission shall be set
+    and encourage local industry to take the lead in AI research.        up to develop standards and regulations.
+    The regulation also provides guidelines for data sharing be-
+    tween organizations and companies. Notably, the regulation           E. Discussion
+    provides for resident AI systems that are deemed low-risk to be         This overview of the current regulation of AI systems and
+    more easily tested and trialed. In this context, Shenzhen is also       the focus on autonomous vehicles demonstrates that a need
+    establishing an AI ethics council to develop safety standards         for regulation of AI systems is recognized. Furthermore, it
+    and investigate the technology impact. To achieve the goal of       illustrates that a variety of different regulation approaches
+    a pivotal AI leadership, Shenzhen invests over US$108 billion      coexist. In particular, the regulation approaches vary between
+    from 2021 to 2025 [224].                                               strict regulation with high safety requirements, which may
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+        content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES                                                                                            14
+
+    limit the use of the technology, and lax regulation aimed at            or SOTIF safety assurance. However, on closer examination,
+    exploring the technology at the frontier in order to achieve            it remains valid to raise the question of how a data-based
+    technological leadership.                                               analysis of AI systems can be conducted so that reliable
+                 Due to the rapid development of AI, the recurring break-   statements about safety can be made. In the field of systems
+    throughs and the multitude of unanswered questions, regu-               theory, however, no general breakthrough in this direction
+    lation tends to fall short. Uncertainty about the impact of             is yet apparent. It should also be noted that AI systems
+    regulation on research and development and the market in                can be very heterogeneous, ranging from machine learning
+    general often leads to legally non-binding guidelines. This is          to deep learning, reinforcement learning, and generative AI
+    permissible as key aspects of fundamental rights are enshrined          systems. Furthermore, there are many other distinguishing
+    in the respective national legislation, which counteracts the           criteria. Accordingly, the open research questions and possible
+    misuse of AI technologies to a certain extent.                          solutions appear to be very wide-ranging when going deeper.
+            Within regulation, the central importance of data is increas-   Thus, it opens up a broad spectrum of interesting possible
+    ingly being taken into account and specifically addressed. For          future research opportunities.
+    instance, several countries introduced regulations for gener-               In addition to the in-depth research questions and possible
+    ative AI models based on training data to improve trans-                research directions mentioned so far, the general safety assur-
+    parency. Also noteworthy is the significant consideration of            ance process is also a key challenge. Due to rapidly changing
+    data throughout the entire AI life cycle in the EU AIA. Overall,        environments, it may be necessary to regularly update and
+    this demonstrates the enhanced awareness of the importance              release AI systems. Accordingly, on a more abstract level, an
+    of data for AI legislation. In the field of autonomous driving,         iterative, data-based development and verification and valida-
+    there is an increasing awareness of the need to test and                tion process generally seems to be a possible solution.
+    evaluate systems on real roads under real conditions, even if
+    full validation is not yet possible. However, it is also apparent
+    that there are very different approaches to the testing, approval       VII. SUMMARY & CONCLUSION
+    and use of robotaxis, for example. In general, the legal and
+    regulatory landscape is complicated and changing due to the                      There are still many unanswered questions in the field
+    rapid development of technology. Note that this overview of             of AI assurance research. Clearly, the increasingly complex
+    legislation is based on an analysis up to 23/04/2024.                   architectures and emerging approaches and methods present
+  In our assessment, it is particularly important that the particular challenges. Notably, the immediate dependence of
+concrete definition of risks will be addressed more specifically systems on data as well as the implicit nature of repre-
+in the course of regulation in the future. From a techni- senting non-trivial relationships highlight the need for new
+cal perspective, it is obvious with systems as complex and approaches–with data being pivotal. The extension of familiar
+emergent as autonomous driving that zero percent risk is not assurance methods, such as functional assurance to data-based
+feasible. Some residual risk will always remain. Especially functional assurance, as well as the transition from rule-based
+the definition of a socially acceptable risk is indispensable to data-based assurance are necessary in our perspective. The
+on the long run. Particularly in the case of autonomous importance of assurance agnosticism towards hardware and
+driving, the close connection between acceptable risk and new methods and approaches is well known in AI research and
+ethical concerns becomes apparent. While technology research autonomous driving research and related standardization. Both
+can identify functional possibilities and technical limits, reg- standardization and regulation address the distinct relevance of
+ulation is needed to define acceptable risk levels, beyond a taking a holistic view across the entire lifecycle. While data
+mortality rate. We believe it is appropriate to involve society also holds a special role here, it has not yet been placed at the
+in this process in order to communicate the persistence of a center of lifecycle assurance. Therefore, future work should fo-
+residual risk and to gain societal acceptance in the process of cus on data-driven functional safety and repetitive exploration,
+    definition.                                                             observation and mitigation throughout the lifecycle.
+                                                                                    From a holistic perspective, we argue for stronger net-
+    VI. OPEN QUESTIONS & POTENTIAL SOLUTIONS                                working of research, standardization, and regulation as well
+                                                                            as for more flexibility in standardization and regulation in
+                 Having explored the research, standardization, and regu-   order to keep pace with the rapid development in order to
+    lation of AI safety assurance for automated vehicles in the             not fall too far behind. However, to avoid too strong impact
+    previous sections, this section aims to present the key open            and indirect control of indispensable research and develop-
+    questions for future research and potential solutions to provide        ment, we consider open innovation and closely collaboration-
+    a forward-looking perspective on the field.                             driven open standards and regulations that are not legally
+       Overall, it is clear that a shift in the field of safety assurance   binding to be useful. The non-legally binding way can thus
+    is likely to be as disruptive as the technology of AI itself to         serve as a guideline, which does not have to be followed
+    adequately address the challenges. In particular, a shift from          compulsorily. This openness allows and encourages new ways
+    the mathematically explicit to the data-based implicit seems            to be considered and, if successful, to be introduced in turn,
+    to be unfolding. While this seems reasonable and practicable            thereby ensuring continuous improvement. This would allow
+    at first glance, it raises numerous research questions. How-            good ideas and approaches to be processed across national
+    ever, the transition from classic SIL/ASIL to AI-SIL is a               borders, legal systems, and governmental systems, which could
+    first positive example of a transformation towards the future           have a long-term impact on local, national, and international
+    approaches. Likewise, it is conceivable that functional safety          legislation. Thus, AI safety assurance empowers using AI for
+    and SOTIF could be transformed into a data-based functional             the benefit of humanity and to prevent harm.
+
+
+    This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        15
+
+
+          REFERENCES                                                               [25]  Y. Wang, H. Wu, J. Zhang           et al., “PredRNN: A Recurrent Neural
+                                                                                         Network for Spatiotemporal Predictive Learning,” IEEE Trans. Pattern
+ [1]  T. J. Crayton and B. M. Meier, “Autonomous vehicles: Developing                    Anal. Mach. Intell., vol. 45, no. 2, pp. 2208–2225, 2022.
+      a public health research agenda to frame the future of transportation        [26]  W. Wang, E. Xie, X. Li           et al., “Pyramid Vision Transformer: A
+      policy,”         Journal of Transport & Health (JTH), vol. 6, pp. 245–252,         Versatile Backbone for Dense Prediction Without Convolutions,” in
+      2017.                                                                              Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV), 2021, pp. 568–578.
+ [2]  W. D. Montgomery, R. Mudge, E. L. Groshen               et al., “America’s   [27]  L. Chen, P. Wu, K. Chitta et al., “End-to-end Autonomous Driving:
+      Workforce and the Self-Driving Future: Realizing Productivity Gains                Challenges and Frontiers,”     IEEE Trans. Pattern Anal. Mach. Intell.,
+      and Spurring Economic Growth,” Securing America’s Future Energy,                   2024.
+      Washington, DC, USA, Tech. Rep., 2018.                                       [28]  Y. Cui, S. Huang, J. Zhong         et al., “DriveLLM: Charting the Path
+ [3]  L. Chen, Y. Li, C. Huang et al., “Milestones in Autonomous Driving                 Toward Full Autonomous Driving With Large Language Models,” IEEE
+      and Intelligent Vehicles—Part I: Control, Computing System Design,                 Trans. Intell. Veh., 2023.
+      Communication, HD Map, Testing, and Human Behaviors,”                 IEEE   [29]  M. Assran, Q. Duval, I. Misra et al., “Self-Supervised Learning From
+      Trans. Syst. Man Cybern.: Syst., vol. 53, no. 9, pp. 5831–5847, 2023.              Images With a Joint-Embedding Predictive Architecture,” in        Proc.
+ [4]  S. Grigorescu, B. Trasnea, T. Cocias et al., “A survey of deep learning            IEEE/CVF Comput. Soc. Conf. Comput. Vis. Pattern Recognit. (CVPR),
+      techniques for autonomous driving,” J. Field Robot., vol. 37, no. 3, pp.           2023, pp. 15 619–15 629.
+      362–386, 2020.                                                               [30]  S. Burton, I. Kurzidem, A. Schwaiger et al., “Safety Assurance of
+ [5]  F. Flammini, S. Marrone, R. Nardone et al., “Safety integrity through              Machine Learning for Chassis Control Functions,” in Proc. 40th Int.
+      self-adaptation for multi-sensor event detection: Methodology and case-            Conf. on Computer Safety, Reliability, and Security (SAFECOMP).
+      study,” Future Gener. Comput. Syst., vol. 112, pp. 965–981, 2020.                  Springer, 2021, pp. 149–162.
+ [6]  C. Lazarus, J. G. Lopez, and M. J. Kochenderfer, “Runtime Safety             [31]  L. Gauerhof, R. Hawkins, C. Picardi     et al., “Assuring the Safety of
+      Assurance Using Reinforcement Learning,” in Proc. AIAA/IEEE 39th                   Machine Learning for Pedestrian Detection at Crossings,” in Proc. 39th
+      Digit. Avion. Syst. Conf. (DASC), 2020, pp. 1–9.                                   Int. Conf. on Computer Safety, Reliability, and Security (SAFECOMP).
+ [7]  D. Amodei, C. Olah, J. Steinhardt         et al., “Concrete Problems in AI         Springer, 2020, pp. 197–212.
+      Safety,” 2016. [Online]. Available: https://arxiv.org/abs/1606.06565         [32]  R. Salay and K. Czarnecki, “Improving ML Safety with Partial Speci-
+ [8]  OECD, “Scoping the OECD AI principles,”                OECDpublishing, no.         fications,” in Proc. 38th Int. Conf. on Computer Safety, Reliability, and
+      291, 2019. [Online]. Available: https://www.oecd-ilibrary.org/content/             Security (SAFECOMP).     Springer, 2019, pp. 288–300.
+      paper/d62f618a-en                                                            [33]  S. Hochreiter and J. Schmidhuber, “Long Short-Term Memory,” Neural
+ [9]  F. A. Batarseh, L. Freeman, and C.-H. Huang, “A survey on artificial               Comput., vol. 9, no. 8, pp. 1735–1780, 1997.
+      intelligence assurance,” J. Big Data, vol. 8, no. 60, pp. 1–30, 2021.        [34]  A. Vaswani, N. Shazeer, N. Parmar et al., “Attention is All you Need,”
+[10]  A. V. S. Neto, J. B. Camargo, J. R. Almeida et al., “Safety Assurance of           in Proc. 30th Int. Conf. Neural Inf. Process. Syst. (NeurIPS), 2017.
+      Artificial Intelligence-Based Systems: A Systematic Literature Review        [35]  X. Chen, S. Wang, B. Fu et al., “Catastrophic Forgetting Meets Neg-
+      on the State of the Art and Guidelines for Future Work,” IEEE Access,              ative Transfer: Batch Spectral Shrinkage for Safe Transfer Learning,”
+      vol. 10, pp. 130 733–130 770, 2022.                                                in Proc. 32rd Int. Conf. Neural Inf. Process. Syst. (NeurIPS), 2019.
+[11]  I. Habli, T. Lawton, and Z. Porter, “Artificial intelligence in health       [36]  X. Qi, Y. Zeng, T. Xie et al., “Fine-tuning Aligned Language Models
+      care: accountability and safety,”      Bull. World Health Organ., vol. 98,         Compromises Safety, Even When Users Do Not Intend To!” in Proc.
+      no. 4, pp. 251–256, 2020.                                                          IEEE Int. Conf. Robot. Autom. (ICRA), 2024, pp. 1–56.
+[12]  A. Kuznietsov, B. Gyevnar, C. Wang et al., “Explainable AI for Safe          [37]  Z. Chaghazardi, S. Fallah, and A. Tamaddoni-Nezhad, “Explainable
+      and Trustworthy Autonomous Driving: A Systematic Review,” 2024.                    and Trustworthy Traffic Sign Detection for Safe Autonomous Driv-
+      [Online]. Available: https://arxiv.org/abs/2402.10086                              ing: An Inductive Logic     Programming   Approach,”  arXiv    preprint
+[13]  J. Perez-Cerrolaza, J. Abella, M. Borg    et al., “Artificial Intelligence         arXiv:2309.03215, 2023.
+      for Safety-Critical Systems in Industrial and Transportation Domains:        [38]  C. Berghoff, B. Biggio, E. Brummel        et al., “Towards Auditable AI
+      A Survey,” ACM Computing Surveys, vol. 56, no. 7, pp. 1–40, 2024.                  Systems,” Whitepaper. Bonn Berlin: Bundesamt f¨ur Sicherheit in der
+[14]  M. W¨aschle, F. Thaler, A. Berres        et al., “A review on AI Safety in         Informationstechnik, Fraunhofer-Institut f¨ur Nachrichtentechnik und
+      highly automated driving,” Frontiers in Artificial Intelligence, vol. 5,           Verband der T ¨UV eV, 2021.
+      p. 952773, 2022.                                                             [39]  K. Zhou, Z. Liu, Y. Qiao et al., “Domain Generalization: A Survey,”
+[15]  A. M. Nascimento, L. F. Vismari, C. B. S. T. Molina et al., “A Sys-                IEEE Trans. Pattern Anal. Mach. Intell., 2022.
+      tematic Literature Review About the Impact of Artificial Intelligence        [40]  B. Romera-Paredes and P. Torr, “An embarrassingly simple approach
+      on Autonomous Vehicle Safety,”            IEEE Transactions on Intelligent         to zero-shot learning,” in Proc. 32nd Int. Conf. Mach. Learn. (ICML).
+      Transportation Systems, vol. 21, no. 12, pp. 4928–4946, 2019.                      PMLR, 2015, pp. 2152–2161.
+[16]  N. D´ıaz-Rodr´ıguez, J. Del Ser, M. Coeckelbergh et al., “Connecting the     [41]  O. Vinyals, C. Blundell, T. Lillicrap  et al., “Matching Networks for
+      dots in trustworthy Artificial Intelligence: From AI principles, ethics,           One Shot Learning,” in Proc. 29th Int. Conf. Neural Inf. Process. Syst.
+      and key requirements to responsible AI systems and regulation,” Inf.               (NeurIPS), 2016.
+      Fusion, vol. 99, pp. 1–24, 2023, Art. no. 101896.                            [42]  Y. Wang, Q. Yao, J. T. Kwok            et al., “Generalizing from a Few
+[17]  A. Dafoe, “AI Governance: A Research Agenda,” Governance of AI                     Examples: A Survey on Few-shot Learning,”            ACM Comput. Surv.,
+      Program, Future of Humanity Inst., Univ. Oxford, Oxford, U.K., vol.                vol. 53, no. 3, pp. 1–34, 2020.
+      1442, pp. 1–54, 2018, Art. no. 1443.                                         [43]  S. Hochreiter, A. S. Younger, and P. R. Conwell, “Learning to Learn
+[18]  M. Anderljung, J. Barnhart, A. Korinek et al., “Frontier AI Regulation:            Using Gradient Descent,” in     Proc. 11st Int. Conf. Art. Neural Netw.
+      Managing Emerging Risks to Public Safety,” 2023. [Online]. Available:              (ICANN).    Springer, 2001, pp. 87–94.
+      https://arxiv.org/abs/2307.03718                                             [44]  J.  Vanschoren,   “Meta-learning,” in  Automated Machine      Learning:
+[19]  J. Gu, C. Sun, and H. Zhao, “DenseTNT: End-to-End Trajectory                       Methods, Systems, Challenges.  Springer, 2019, pp. 35–61.
+      Prediction From Dense Goal Sets ,” in           Proc. of the IEEE/CVF Int.   [45]  S. Burton and B. Herd, “Addressing uncertainty in the safety assurance
+      Conf. Comput. Vis. Computer Vision, 2021, pp. 15 303–15 312.                       of machine-learning,” Front. Comput. Sci., vol. 5, pp. 1–17, 2023, Art.
+[20]  B. Varadarajan, A. Hefny, A. Srivastava et al., “MultiPath++: Efficient            no. 1132580.
+      Information Fusion and Trajectory Aggregation for Behavior Predic-           [46]  Road Vehicles — Functional Safety, Std. ISO 26 262:2018, 2018.
+      tion,” in Proc. IEEE Int. Conf. Robot. Autom. (ICRA), 2022, pp. 7814–        [47]  Road   Vehicles   — Safety  of the Intended Functionality,  Std.    ISO
+      7821.                                                                              21 448:2022, 2022.
+[21]  S. Shi, L. Jiang, D. Dai           et al., “Motion Transformer with Global   [48]  M. Rabe, S. Milz, and P. Mader, “Development Methodologies for
+      Intention Localization and Local Movement Refinement,” in Proc. 36th               Safety Critical   Machine Learning    Applications in    the Automotive
+      Int. Conf. Neural Inf. Process. Syst. (NeurIPS), 2022, pp. 6531–6543.              Domain: A Survey,” in Proc. IEEE/CVF Comput. Soc. Conf. Comput.
+[22]  Z. Lan, L. Liu, B. Fan            et al., “Traj-LLM: A New Exploration for         Vis. Pattern Recognit. (CVPR), 2021, pp. 129–141.
+      Empowering Trajectory Prediction With Pre-Trained Large Language             [49]  K. Stacke, G. Eilertsen, J. Unger et al., “Measuring Domain Shift for
+      Models,” IEEE Trans. Intell. Veh., 2024.                                           Deep Learning in Histopathology,” IEEE J. Biomed. Health Inform.,
+[23]  Y. Liu, Y. Wang,     S. Wang et al.,    “CBNet:     A Novel Composite              vol. 25, no. 2, pp. 325–336, 2020.
+      Backbone Network Architecture for Object Detection,” in Proc. AAAI           [50]  W. Liu, X. Wang, J. Owens et al., “Energy-based Out-of-distribution
+      Conf. Artif. Intell., vol. 34, no. 07, 2020, pp. 11 653–11 660.                    Detection,”  in   Proc. 33th   Int. Conf. Neural Inf. Process.    Syst.
+[24]  C.-Y. Wang, H.-Y.    M. Liao,  Y.-H.    Wu et al.,   “CSPNet:        A New         (NeurIPS), 2020, pp. 21 464–21 475.
+      Backbone that can Enhance Learning Capability of CNN,” in            Proc.   [51]  J. Ren, P. J. Liu, E. Fertig     et al., “Likelihood Ratios for Out-of-
+      IEEE/CVF Comput. Soc. Conf. Comput. Vis. Pattern Recognit. Work-                   Distribution Detection,” in Proc. 32nd Int. Conf. Neural Inf. Process.
+      shops (CVPRW), 2020, pp. 1571–1580.                                                Syst. (NeurIPS), 2019.
+
+
+      This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        16
+
+
+    [52]  S. Shafaei, S. Kugele, M. H. Osman et al., “Uncertainty in Machine            [77]  Safety of Machinery — Safety-related Parts of Control Systems, Part
+          Learning: A Safety Perspective on Autonomous Driving,” in Proc. 37th                2: Validation, Std. ISO 13 849-2:2012, 2012.
+          Int. Conf. on Computer Safety, Reliability, and Security (SAFECOMP).          [78]  Information Technology — Artificial Intelligence — Overview of Trust-
+          Springer, 2018, pp. 458–464.                                                        worthiness in Artificial Intelligence, Std. ISO/IEC TR 24 028:2020,
+    [53]  S. Wilson, T. Fischer, F. Dayoub            et al., “SAFE: Sensitivity-Aware        2020.
+          Features for Out-of-Distribution Object Detection,” in Proc. IEEE/CVF         [79]  Information Technology — Artificial Intelligence — Controllability of
+          Int. Conf. Comput. Vis. (ICCV), 2023, pp. 23 565–23 576.                            Automated Artificial Intelligence Systems, Std. ISO/IEC TS 8200:2024,
+    [54]  W. Wang, V. W. Zheng, H. Yu et al., “A Survey of Zero-Shot Learning:                2024.
+          Settings, Methods, and Applications,” ACM Trans. Intell. Syst. Technol.,      [80]  Information Technology — Artificial Intelligence — Guidance on Risk
+    [55]  vol. 10, no. 2, pp. 1–37, 2019, Art. no. 13.                                        Management, Std. ISO/IEC 23 894:2023, 2023.
+          L. Fei-Fei, R. Fergus, and P. Perona, “One-shot learning of object            [81]  Information Technology — Artificial Intelligence (AI) — Bias in AI
+          categories,”        IEEE Trans. Pattern Anal. Mach. Intell., vol. 28, no. 4,        Systems and AI Aided Decision Making, Std. ISO/IEC TR 24 027:2021,
+    [56]  pp. 594–611, 2006.                                                                  2021.
+          S. Kadam and V. Vaidya, “Review and Analysis of Zero, One and Few             [82]  Cybersecurity — Artificial Intelligence — Guidance for Addressing
+          Shot Learning Approaches,” in Proc. 18th Int. Conf. Intell. Syst. Design            Security Threats and Failures in Artificial Intelligence Systems, Std.
+    [57]  Appl. (ISDA).       Springer, 2018, pp. 100–112.                                    ISO/IEC CD 27 090, (Under Development).
+          C. Finn, P. Abbeel, and S. Levine, “Model-Agnostic Meta-Learning              [83]  Security and Privacy in Artificial Intelligence Use Cases — Best
+          for Fast Adaptation of Deep Networks,” in Proc. 34th Int. Conf. Mach.               Practices, Std. ISO/IEC TR 27 563:2023, 2023.
+    [58]  Learn. (ICML).       PMLR, 2017, pp. 1126–1135.                               [84]  Information Technology — Artificial Intelligence — Overview of Ethical
+          S. J. Pan and Q. Yang, “A Survey on Transfer Learning,” IEEE Trans.                 and Societal Concerns, Std. ISO/IEC TR 24 368:2022, 2022.
+    [59]  Knowl. Data Eng., vol. 22, no. 10, pp. 1345–1359, 2009.                       [85]  Artificial Intelligence (AI) — Assessment of the Robustness of Neural
+          E. Yurtsever, J. Lambert, A. Carballo et al., “A Survey of Autonomous               Networks, Part 1: Overview, Std. ISO/IEC TR 24 029-1:2021, 2021.
+          Driving: Common Practices and Emerging Technologies,”               IEEE Ac-  [86]  Artificial Intelligence (AI) — Assessment of the Robustness of Neural
+    [60]  cess, vol. 8, pp. 58 443–58 469, 2020.                                              Networks, Part 2: Methodology for the use of Formal Methods, Std.
+          S. Sankaranarayanan, Y. Balaji, A. Jain et al., “Learning From Syn-                 ISO/IEC 24 029-2:2023, 2023.
+          thetic Data: Addressing Domain Shift for Semantic Segmentation,” in           [87]  K¨unstliche   Intelligenz  -        Life   Cycle Prozesse          und
+          Proc. IEEE/CVF Comput. Soc. Conf. Comput. Vis. Pattern Recognit.                    Qualit¨atsanforderungen - Teil 2: Robustheit  , Std. DIN          SPEC
+    [61]  (CVPR), 2018, pp. 3752–3761.                                                        92 001-2:2020-12, 2020.
+          W. Ding, B. Chen, M. Xu et al., “Learning to Collide: An Adaptive             [88]  Artificial Intelligence — Data Quality for Analytics and Machine
+          Safety-Critical Scenarios Generating Method,” in Proc. IEEE/RSJ Int.                Learning (ML), Part 1: Overview, Terminology, and Examples, Std.
+    [62]  Conf. Intell. Robots Syst. (IROS), 2020, pp. 2243–2250.                             ISO/IEC 5259-1:2024, 2024.
+          J. Wang, A. Pun, J. Tu et al., “AdvSim: Generating Safety-Critical            [89]  Artificial Intelligence — Data Quality for Analytics and Machine
+          Scenarios for Self-Driving Vehicles,” in Proc. IEEE/CVF Comput. Soc.                Learning (ML), Part 2: Data Quality Measures, Std. ISO/IEC FDIS
+          Conf. Comput. Vis. Pattern Recognit. (CVPR), 2021, pp. 9909–9918.
+    [63]  W. Ding, C. Xu, M. Arief et al., “A Survey on Safety-Critical Driving               5259-2, (Under Development).
+          Scenario Generation—A Methodological Perspective,”               IEEE Trans.  [90]  Artificial Intelligence — Data Quality for Analytics and Machine
+          Intell. Transp. Syst., vol. 24, no. 7, pp. 6971–6988, 2023.                         Learning (ML), Part 3: Data Quality Management Requirements and
+    [64]  F.-Y. Wang, Q. Miao, L. Li et al., “When Does Sora Show: The Begin-                 Guidelines, Std. ISO/IEC 5259-3:2024, 2024.
+          ning of TAO to Imaginative Intelligence and Scenarios Engineering,”           [91]  Artificial Intelligence — Data Quality for Analytics and Machine
+          IEEE/CAA J. Autom. Sin., vol. 11, no. 4, pp. 809–815, 2024.                         Learning (ML), Part 4: Data Quality Process Framework, Std. ISO/IEC
+    [65]  J. B¨argman, M. Sv¨ard, S. Lundell et al., “Methodological challenges               5259-4, (Under Publication).
+          of scenario generation validation: A rear-end crash-causation model for       [92]  Artificial Intelligence — Data Quality for Analytics and Machine
+          virtual safety assessment,” Transp. Res. F: Traffic Psychol. Behav., vol.           Learning (ML), Part 5: Data Quality Governance Framework, Std.
+          104, pp. 374–410, 2024.                                                             ISO/IEC DIS 5259-5, (Under Development).
+    [66]  A. Gopnik, C. Glymour, D. M. Sobel               et al., “A Theory of Causal  [93]  Artificial Intelligence — Data Quality for Analytics and Machine
+          Learning in Children: Causal Maps and Bayes Nets.” Psychol. Rev.,                   Learning (ML), Part 6: Visualization Framework for Data Quality, Std.
+          vol. 111, no. 1, pp. 3–32, 2004.                                                    ISO/IEC CD TR 5259-6, (Under Development).
+    [67]  S.     Diemert,  L.  Millet, J.   Groves et al.,    “Safety Integrity Levels  [94]  Information Technology — Artificial Intelligence — Overview of Syn-
+          for Artificial Intelligence,” in  International Conference on Computer              thetic Data in the Context of AI Systems, Std. ISO/IEC AWI TR 42 103,
+          Safety, Reliability, and Security.     Springer, 2023, pp. 397–409.                 (Under Development).
+    [68]  S.     Burton  and   J. A.   McDermid,   “Closing   the  gaps: Complexity     [95]  Systems and Software Engineering — Software Life Cycle Processes,
+          and uncertainty in the safety assurance and regulation of automated                 Std. ISO/IEC/IEEE 12 207:2017, 2017.
+          driving,” 2023. [Online]. Available: https://publica-rest.fraunhofer.de/      [96]  Systems and Software Engineering — Systems and Software Assurance,
+          server/api/core/bitstreams/c0198205-8061-4fcf-bfa3-02e37bc2780c/co                  Part 2: Assurance Case, Std. ISO/IEC/IEEE 15 026-2:2022, 2022.
+          ntent                                                                         [97]  Systems and Software Engineering — Systems and Software Assurance,
+    [69]  S. Levine, C. Finn, T. Darrell et al., “End-to-End Training of Deep                 Part 4: Assurance in the Life Cycle, Std. ISO/IEC/IEEE 15 026-4:2021,
+          Visuomotor Policies,” J. Mach. Learn. Res., vol. 17, no. 1, pp. 1334–               2021.
+          1373, 2016.                                                                   [98]  Systems and Software Engineering — Systems and Software Quality
+    [70]  B. Eysenbach, A. Khazatsky, S. Levine et al., “Mismatched No More:                  Requirements  and   Evaluation (SQuaRE) — Guidance   for       Quality
+          Joint Model-Policy Optimization for Model-Based RL,” in Proc. 35th                  Evaluation of Artificial Intelligence (AI) Systems, Std. ISO/IEC TS
+          Int. Conf. Neural Inf. Process. Syst. (NeurIPS), 2022, pp. 23 230–                  25 058:2024, 2024.
+          23 243.                                                                       [99]  Software Engineering — Systems and Software Quality Requirements
+    [71]  E.     Leong,  “Bridging    the   Gap  Between      Modular and   End-to-end        and Evaluation (SQuaRE) — Quality Model for AI Systems, Std.
+          Autonomous Driving Systems,” University of California, Berkeley,                    ISO/IEC 25 059:2023, 2023.
+     Tech. Rep., 2022, Art. no. UCB/EECS-2022-79. [Online]. Available: [100] Information Technology — Artificial Intelligence — AI System Life
+          https://www2.eecs.berkeley.edu/Pubs/TechRpts/2022/EECS-2022-79.                     Cycle Processes, Std. ISO/IEC 5338:2023, 2023.
+          pdf                                                                          [101]  Information Technology — Artificial Intelligence — Data Life Cycle
+    [72]  T ¨UV    S ¨UD.  (2024) Hauptuntersuchung.     [Online]. Available:   https:        Framework, Std. ISO/IEC 8183:2023, 2023.
+     //www.tuvsud.com/de-de/branchen/mobilitaet-und-automotive/hauptu [102] Information Technology — Process Assessment — Process Assess-
+          ntersuchung                                                                         ment Model for Software Life Cycle Processes, Std. ISO/IEC TS
+    [73]  D. C. Cires¸an, U. Meier, L. M. Gambardella et al., “Deep, Big, Simple              33 061:2021, 2021.
+     Neural Nets for Handwritten Digit Recognition,” Neural Comput., [103] Information Technology — Artificial Intelligence — Process Manage-
+          vol. 22, no. 12, pp. 3207–3220, 2010.                                               ment Framework for Big Data Analytics, Std. ISO/IEC 24 668:2022,
+    [74]  J. Schmidhuber, “Deep learning in neural networks: An overview,”                    2022.
+          Neural Netw., vol. 61, pp. 85–117, 2015.                                     [104]  Information Technology — Artificial Intelligence — Verification and
+    [75]  Artificial    Intelligence  — Functional   Safety   and  AI Systems,  Std.          Validation Analysis of AI Systems, Std. ISO/IEC AWI TS 17 847,
+          ISO/IEC TR 5469:2024, 2024.                                                         (Under Development).
+[76] Safety of Machinery — Relationship with ISO 12100, Part 5: Implica- [105] Information Technology — Artificial Intelligence — Requirements for
+          tions of Artificial Intelligence Machine Learning, Std. ISO/TR 22 100-              Bodies Providing  Audit    and Certification of Artificial Intelligence
+          5:2021, 2021.                                                                       Management Systems, Std. ISO/IEC DIS 42 006, (Under Development).
+
+
+                           This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        17
+
+
+[106] Information Technology — Artificial Intelligence — Overview of Dif- [135] Road Vehicles — Cybersecurity Engineering, Std. ISO/SAE
+           ferentiated Benchmarking of AI System Quality Characteristics, Std.               21 434:2021, 2021.
+           ISO/IEC AWI TR 42 106, (Under Development).                                [136]  Cybersecurity Guidebook for Cyber-Physical Vehicle Systems, Std.
+    [107]  Z. MacHardy, A. Khan, K. Obana et al., “V2X Access Technologies:                  SAE J3061, 2016.
+      Regulation, Research, and Remaining Challenges,” IEEE Commun. [137] Road Vehicles — Software Update Engineering, Std. ISO 24 089:2023,
+           Surv. Tutor., vol. 20, no. 3, pp. 1858–1877, 2018.                                2023.
+[108] L. Zhao, X. Li, B. Gu et al., “Vehicular Communications: Standard- [138] Road Vehicles — Software Update Engineering - Vehicle Configuration
+           ization and Open Issues,” IEEE Commun. Stand. Mag., vol. 2, no. 4,                Information, Std. ISO/AWI PAS 25 090, (Under Development).
+           pp. 74–80, 2018.                                                           [139]  Road Vehicles — Software Update over the Air using Mobile Cellular
+    [109]  T. Limbasiya and D. Das, “IoVCom: Reliable Comprehensive Com-                     Network, Std. ISO/AWI TR 24 935, (Under Development).
+      munication System for Internet of Vehicles,” IEEE Trans. Dependable [140] Road Vehicles — Service-oriented Vehicle Diagnostics (SOVD), Std.
+           Secure Comput., vol. 18, no. 6, pp. 2752–2766, 2019.                              ISO/AWI 17 978, (Under Development).
+[110] J. Contreras-Castillo, S. Zeadally, and J. A. Guerrero-Iba˜nez, “Internet [141] Intelligent Transport Systems — Motorway Chauffeur Systems (MCS),
+           of Vehicles: Architecture, Protocols,    and Security,”   IEEE   Internet         Part 1: Framework and General Requirements, Std. ISO/TS 23 792-
+           Things J., vol. 5, no. 5, pp. 3701–3709, 2017.                                    1:2023, 2023.
+[111] H. Taslimasa, S. Dadkhah, E. C. P. Neto et al., “Security issues [142] Intelligent Transport Systems — Motorway Chauffeur Systems (MCS),
+           in Internet of Vehicles (IoV): A comprehensive survey,”       Internet of         Part 2: Requirements and Test Procedures for Discretionary Lane
+           Things, vol. 22, p. 100809, 2023.                                                 Change, Std. ISO/CD 23 792-2, (Under Development).
+[112] M. Buchholz, J. M¨uller, M. Herrmann et al., “Handling Occlusions [143] Intelligent Transport Systems — Automated Valet Parking Systems
+           in Automated Driving Using a Multiaccess Edge Computing Server-                   (AVPS), Part 1: System Framework,     Requirements for       Automated
+           Based Environment Model From Infrastructure Sensors,” IEEE Intell.                Driving and for Communications Interface, Std. ISO 23 374-1:2023,
+           Transp. Syst. Mag., vol. 14, no. 3, pp. 106–120, 2021.                            2023.
+[113] C. R. Storck and F. Duarte-Figueiredo, “A Survey of 5G Technology [144] Intelligent Transport Systems — Automated Valet Sarking Systems
+           Evolution, Standards, and Infrastructure Associated With Vehicle-to-              (AVPS), Part 2: Security Integration for Type 3 AVP, Std. ISO/TS
+           Everything Communications by Internet of Vehicles,”          IEEE Access,         23 374-2:2023, 2023.
+           vol. 8, pp. 117 593–117 614, 2020.                                         [145]  Intelligent Transport Systems — Minimal Risk Manoeuvre (MRM) for
+    [114]  S. Zeadally, M. A. Javed, and E. B. Hamida, “Vehicular Communica-                 Automated Driving, Part 1: Framework, Straight-stop and In-lane Stop,
+           tions for ITS: Standardization and Challenges,” IEEE Commun. Stand.               Std. ISO 23 793-1, (Under Publication).
+           Mag., vol. 4, no. 1, pp. 11–17, 2020.                                      [146]  P. Koopman, U. Ferrell, F. Fratrik et al., “A Safety Standard Approach
+    [115]  Road Vehicles — Extended vehicle (ExVe) methodology, Std. ISO                     for Fully Autonomous Vehicles,” in Proc. 38th Int. Conf. on Computer
+           20 077:2017, 2017.                                                                Safety, Reliability, and Security (SAFECOMP).      Springer, 2019, pp.
+    [116]  Intelligent transport systems — Reference model architecture(s) for the           326–332.
+           ITS sector, Std. ISO 14 813-1:2024, 2024.                                  [147]  Road  Vehicles — Functional    Safety  — Application   to      Generic
+    [117]  Intelligent transport systems — Station and communication architec-               Rechargeable Energy Storage Systems for New Energy Vehicle, Std.
+           ture, Std. ISO 21 217:2020, 2020.                                                 ISO/TR 9968:2023, 2023.
+[118] Intelligent Transport Systems (ITS); Communications Architecture, Std. [148] Road Vehicles — Application of Predictive Maintenance to Hardware
+           ETSI EN 302 665 V1.1.1, 2010.                                                     with ISO 26262-5, Std. ISO/TR 9839:2023, 2023.
+[119] Intelligent Transport Systems (ITS); Vehicular Communications; Basic [149] Assuring the Safety of Automated Vehicle Trials and Testing – Specifi-
+           Set of Applications; Part 2: Specification of Cooperative Awareness               cation, Std. BSI PAS 1881:2020, 2020.
+           Basic Service, Std. ETSI EN 302 637-2 V1.3.1, 2014.                        [150]  Taxonomy and Definition of Safety Principles for Automated Driving
+    [120]  Intelligent Transport Systems (ITS); LTE-V2X Access layer specifica-              System (ADS), Std. SAE J3206:2021, 2021.
+      tion for Intelligent Transport Systems operating in the 5 GHz frequency [151] Road Traffic Safety (RTS) — Guidance on Ethical Considerations
+           band, Std. ETSI EN 303 613 V1.1.1, 2020.                                          Relating to Safety for Autonomous Vehicles, Std. ISO 39 003:2023,
+    [121]  Intelligent Transport Systems (ITS); Profile for LTE-V2X Direct Com-              2023.
+           munication, Std. ETSI TS 103 723 V1.2.1, 2020.                             [152]  Road Vehicles — Test Scenarios for Automated Driving Systems —
+    [122]  Functional Safety of Electrical/Electronic/Programmable Electronic                Vocabulary, Std. ISO 34 501:2022, 2022.
+           Safety-related Systems, Std. IEC 61 508, 2010.                             [153]  Road Vehicles — Test Scenarios for Automated Driving Systems —
+    [123]  Road Vehicles — Functional Safety — Use of Pre-existing Software                  Scenario Based Safety Evaluation Framework, Std. ISO 34 502:2022,
+           Architectural Elements, Std. ISO/PAS 8926:2024, 2024.                      [154]  2022.
+    [124]  Road Vehicles — Safety for Automated Driving Systems — Design, Ver-               Road Vehicles — Test Scenarios for Automated Driving Systems —
+           ification and Validation, Std. ISO/CD TS 5083, (Under Development).               Specification for Operational Design Domain, Std. ISO 34 503:2023,
+    [125]  Road Vehicles — Safety and Artificial Intelligence, Std. ISO/DPAS          [155]  2023.
+           8800, (Under Development).                                                        Road Vehicles — Test Scenarios for Automated Driving Systems —
+[126] Intelligent Transport Systems — Big Data and Artificial Intelligence [156] Scenario Categorization, Std. ISO 34 504:2024, 2024.
+           Supporting Intelligent Transport Systems — Use Cases, Std. ISO/CD                 Road Vehicles — Test Scenarios for Automated Driving Systems —
+           TR 12 786, (Under Development).                                                   Scenario Evaluation and Test Case Generation, Std. ISO/DIS 34 505,
+[127] Intelligent Transport Systems — Operational Design Domain Bound- [157] (Under Development).
+           ary and Attribute Awareness for an Automated Driving System, Std.                 Road  Vehicles — Test  Object  Monitoring and Control  for      Active
+           ISO/AWI TR 17 720, (Under Development).                                           Safety and Automated/Autonomous Vehicle Testing — Functional Re-
+    [128]  Standard for Evaluation of Autonomous Products, Std. ANSI/UL 4600,                quirements, Specifications and Communication Protocol, Std. ISO/TS
+           2020.                                                                      [158]  22 133:2023, 2023.
+    [129]  E. Bertino, M. Kantarcioglu, C. G. Akcora et al., “AI for Security and            Intelligent Transport Systems — Spatio-temporal Data Dictionary for
+           Security for AI,” in Proc. 11th ACM Conf. on Data and Application                 Cooperative ITS and Automated Driving Systems 2.0, Std. ISO/TR
+           Security and Privacy (CODASPY), 2021, pp. 333–334.                         [159]  21 718:2019, 2019.
+    [130]  J. Han, Z. Ju, X. Chen        et al., “Secure Operations of Connected and         Intelligent Transport Systems  — Geographic    Data  Files       (GDF)
+           Autonomous Vehicles,” IEEE Trans. Intell. Veh., pp. 4484–4497, 2023.              GDF5.1, Part 2: Map Data used in Automated Driving Systems,
+    [131]  R. Guo, M. Vallati, Y. Wang et al., “Sustainability Opportunities and             Cooperative ITS, and Multi-Modal Transport, Std. ISO 20 524-2:2020,
+           Ethical Challenges of AI-Enabled Connected Autonomous Vehicles             [160]  2020.
+           Routing in Urban Areas,” IEEE Trans. Intell. Veh., pp. 55–58, 2023.               Intelligent Transport Systems — Dynamic Data and Map Database
+                                                                                             Specification for Connected and Automated Driving System Applica-
+    [132]  R. G. Dutta, F. Yu, T. Zhang et al., “Security for Safety: A Path                 tions, Part 1: Architecture and Logical Data Model for Harmonization
+           Toward Building Trusted Autonomous Vehicles,” in            IEEE/ACM Int.         of Static Map Data, Std. ISO 22 726:2023, 2023.
+           Conf. Comput.-Aided Des. (ICCAD), 2018, pp. 1–6.                           [161]  Intelligent Transport Systems — Partially Automated In-Lane Driving
+    [133]  K. Z. Teng, T. Limbasiya, F. Turrin et al., “PAID: Perturbed Image                Systems (PADS) — Performance Requirements and Test Procedures,
+           Attacks Analysis and Intrusion Detection Mechanism for Autonomous                 Std. ISO 21 717:2018, 2018.
+      Driving Systems,” in Proc. 9th ACM Cyber-Physical System Security [162] Intelligent Transport Systems — Highly Automated Motorway Chauf-
+           Workshop (CPSS), 2023, pp. 3–13.                                                  feur Systems (HMCS), Std. ISO/AWI 19 484, (Under Development).
+[134] Road Vehicles — Safety and Cybersecurity for Automated Driving Sys- [163] Intelligent Transport Systems — Low-Speed Automated Driving System
+           tems — Design, Verification and Validation, Std. ISO/TR 4804:2020,                (LSADS) Service, Part 2: Gap Analysis, Std. ISO/TR 5255-2:2023,
+           2020.                                                                             2023.
+
+
+           This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        18
+
+
+[164] Intelligent Transport Systems — Partially-Automated Parking Systems [182] California State Assembly. (2024, February) Assembly Bill 331.
+           (PAPS) — Performance Requirements and Test Procedures, Std. ISO                     [Online]. Available: https://leginfo.legislature.ca.gov/faces/billTextCli
+           20 900:2023, 2023.                                                                  ent.xhtml?bill id=202320240AB331
+[165] Intelligent Transport Systems — Collision Evasive Lateral Manoeuvre [183] National Conference of State Legislatures. (2023) Artificial Intelligence
+           Systems  (CELM) —       Requirements    and  Test    Procedures, Std.   ISO         2023  Legislation. Updated January   12, 2024.    [Online].      Available:
+           23 375:2023, 2023.                                                                  https://www.ncsl.org/technology-and-communication/artificial-intelli
+    [166]  S. Burton, I. Habli, T. Lawton et al., “Mind the gaps: Assuring the                 gence-2023-legislation
+      safety of autonomous systems from an engineering, ethical, and legal [184] Florida State Legislature. (2019, May) House Bill 1207. [Online].
+           perspective,” Artif. Intell., vol. 279, pp. 1–16, 2020, Art. no. 103201.            Available: https://www.flsenate.gov/Session/Bill/2019/1207
+[167] European Commission, “Proposal for a Regulation of the European [185] ——. (2016, July) House Bill 7027. [Online]. Available: https:
+           Parliament  and     of  the  Council  Laying Down    Harmonised       Rules         //www.flsenate.gov/Session/Bill/2016/7027/Category
+      on Artificial Intelligence (Artificial Intelligence Act) and Amending [186] ——. (2019, July) House Bill 311. [Online]. Available: https:
+           Certain  Union    Legislative  Acts,”  COM(2021)     206  final,  Brussels,         //www.flsenate.gov/Session/Bill/2019/00311
+      April 21 2021, Art. no. EUR-Lex - 52021PC0206 - EN . [Online]. [187] Alabama State Legislature. (2019, May) Senate Bill 47. [Online].
+           Available: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=celex                Available: https://alison.legislature.state.al.us/files/pdf/SearchableInstr
+           %3A52021PC0206                                                                      uments/2019RS/PrintFiles/SB47-Enr.pdf
+[168] European Council. (2022) Artificial Intelligence Act: Council calls [188] California State Assembly. (2017, October) Assembly Bill 669.
+           for promoting safe AI that respects fundamental rights. Council of                  [Online]. Available: https://leginfo.legislature.ca.gov/faces/billTextCli
+           the EU Press release 6 December 2022 10:20. [Online]. Available:                    ent.xhtml?bill id=201720180AB669
+      https://www.consilium.europa.eu/en/press/press-releases/2022/12/06/a [189] ——. (2018, September) Assembly Bill 87. [Online]. Available:
+           rtificial-intelligence-act-council-calls-for-promoting-safe-ai-that-res             https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill id=20
+           pects-fundamental-rights/                                                           1720180AB87
+[169] European Parliament, “Artificial Intelligence Act. Amendments [190] Connecticut General Assembly. (2017, June) Senate Bill 260. [Online].
+           adopted  by the     European    Parliament  on 14    June   2023 on     the         Available: https://www.cga.ct.gov/asp/cgabillstatus/cgabillstatus.asp?s
+           proposal for a regulation of the European Parliament and of the                     elBillType=Bill&bill num=SB00260&which year=2017
+      Council on laying down harmonised rules on artificial intelligence [191] ——. (2019, July) Senate Bill 924. [Online]. Available: https:
+           (Artificial Intelligence Act) and amending certain Union legislative                //www.cga.ct.gov/asp/cgabillstatus/cgabillstatus.asp?selBillType=Bill&
+           acts (COM(2021)0206 – C9-0146/2021 – 2021/0106(COD)),” 2023,                        bill num=SB00924&which year=2019
+      Art. no. EUR-Lex - P9 TA(2023)0236 - EN. [Online]. Available: https: [192] Georgia General Assembly. (2017, May) Senate Bill 219. [Online].
+           //www.europarl.europa.eu/doceo/document/TA-9-2023-0236 EN.pdf                       Available: https://www.legis.ga.gov/legislation/50834
+[170] ——, “Corrigendum to the position of the European Parliament [193] Iowa General Assembly. (2019, May) Senate File 302. [Online].
+           adopted at first reading on 13 March 2024 with a view to the adoption               Available: https://www.legis.iowa.gov/legislation/BillBook?ga=88&ba
+           of Regulation (EU) 2024/... of the European Parliament and of the                   =SF302
+      Council laying down harmonised rules on artificial intelligence and [194] Louisiana State Legislature. (2019, June) House Bill 455. [Online].
+           amending Regulations (EC) No 300/2008, (EU) No 167/2013, (EU)                       Available: https://www.legis.la.gov/legis/BillInfo.aspx?s=19rs&b=HB
+           No 168/2013, (EU) 2018/858, (EU) 2018/1139 and (EU) 2019/2144                       455&sbi=y
+      and Directives 2014/90/EU, (EU) 2016/797 and (EU) 2020/1828 [195] Minnesota Legislature. (2019, May) House Bill 6. [Online]. Available:
+           (Artificial Intelligence Act) P9 TA(2024)0138”,” (COM(2021)0206 –                   https://www.revisor.mn.gov/laws/2019/1/Session+Law/Chapter/3/
+      C9-0146/2021 – 2021/0106(COD)), Brussels, April 19 2024. [Online]. [196] Nebraska Legislature. (2018, April) Legislature Bill 989. [Online].
+           Available: https://www.europarl.europa.eu/doceo/document/TA-9-202                   Available: https://nebraskalegislature.gov/bills/view bill.php?Docume
+    [171]  4-0138-FNL-COR01 EN.pdf                                                             ntID=34326
+      European Commission. (2024) Commission launches AI innovation [197] Nevada State Legislature. (2011, June) Assembly Bill 511. [Online].
+           package  to     support Artificial    Intelligence startups and       SMEs.         Available: https://www.leg.state.nv.us/76th2011/Reports/history.cfm?I
+           Commission, EU Press release 24 January 2024. [Online]. Available:                  D=1011
+    [172]  https://ec.europa.eu/commission/presscorner/detail/en/ip 24 383              [198]  ——.    (2011,  February)   Assembly  Bill 69.     [Online].      Available:
+           Council of the European Union, “Council Regulation (EU) 2021/1173                   https://www.leg.state.nv.us/76th2011/Reports/history.cfm?ID=130
+      on establishing the European High Performance Computing Joint Un- [199] New Hampshire General Court. (2019, August) Senate Bill 216.
+           dertaking and repealing Regulation (EU) 2018/1488,” Official Journal                [Online]. Available: https://legiscan.com/NH/text/SB216/2019
+[173] of the European Union, 2021, Regulation - 2021/1173 - EN - EUR-Lex. [200] North Carolina General Assembly. (2017, July) House Bill 469.
+           European Commission, “Commission Implementing Decision (EU)                         [Online]. Available: https://legiscan.com/NH/text/SB216/2019
+      2024/458 on setting up the European Digital Infrastructure Con- [201] Texas State Legislature. (2017, June) Senate Bill 2205. [Online].
+           sortium for the Alliance for Language Technologies (ALT-EDIC),”                     Available: https://www.legis.state.tx.us/BillLookup/History.aspx?LegS
+           Official Journal of the European Union, 2024, Implementing decision                 ess=85R&Bill=SB2205
+    [174]  - 2024/458 - EN - EUR-Lex.                                                   [202]  New York State Assembly. (2018, April) Assembly Bill 9508. [Online].
+           ——, “Commission Implementing Decision (EU) 2024/459 on setting                      Available: https://assembly.state.ny.us/leg/?default fld=&leg video=&
+           up the European Digital Infrastructure Consortium for Networked                     bn=A09508&term=2017&Text=Y
+      Local Digital Twins towards the CitiVERSE (LDT CitiVERSE EDIC),” [203] Vermont General Assembly. (2018, June) Senate Bill 149. [Online].
+           Official Journal of the European Union, 2024, Implementing decision                 Available: https://legiscan.com/VT/text/S0149/id/2041546
+      - 2024/459 - EN - EUR-Lex.
+[175] White House Office of Science and Technology Policy (OSTP), [204] Colorado General Assembly. (2017, June) Senate Bill 17-213.
+           “Blueprint for an AI Bill of Rights: Making Automated Systems                       [Online]. Available: https://leg.colorado.gov/sites/default/files/2017a 2
+           Work for the American People,” October 2022. [Online]. Available:                   13 signed.pdf
+      https://www.whitehouse.gov/wp-content/uploads/2022/10/Blueprint-f [205] ——. (2019, May) Senate Bill 19-239. [Online]. Available: https:
+           or-an-AI-Bill-of-Rights.pdf                                                         //leg.colorado.gov/sites/default/files/2019a 239 signed.pdf
+[176] E. Tabassi, “Artificial Intelligence Risk Management Framework (AI [206] California State Assembly. (2012, September) Senate Bill 1298.
+           RMF 1.0),”           National Institute of Standards and Technology (NIST),         [Online]. Available: http://www.leginfo.ca.gov/cgi-bin/postquery?bill
+           Gaithersburg, MD, 2023, DOI: 10.6028/NIST.AI.100-1.                          [207]  number=sb 1298&sess=1112&house=S
+    [177]  Civil Rights Act of 1964, Pubilc Law 88–352, U.S. Statutes at Large,                ——. (2016, September)              Assembly Bill 1592. [Online]. Available:
+           vol. 78,, pp. 241–268, 1964.                                                        http://www.leginfo.ca.gov/cgi-bin/postquery?bill number=ab 1592&
+[178] Equal Credit Opportunity Act, Public Law 93–495, US Code, Title 15, [208] sess=1516&house=A
+           Chapter 41, Subchapter IV, § 1691 et seq.,, 1974.                                   ——.    (2017,  October)   Assembly   Bill 669.    [Online].      Available:
+    [179]  Fair Housing Act, Public Law 90–284, U.S. Statutes at Large, vol. 82,,              https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill id=20
+           pp. 73–92, 1968.                                                             [209]  1720180AB669
+                                                                                               ——. (2017,     October)   Assembly  Bill 1444.    [Online].      Available:
+    [180]  Automated Employment Decision Tools (AEDT), New York City Local                     https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill id=20
+           Law 144, 2021.                                                                      1720180AB1444
+[181] Colorado General Assembly. (2021, April) Senate Bill 21-196. [210] ——. (2018, September) Assembly Bill 1184. [Online]. Available:
+           [Online]. Available: https://leg.colorado.gov/sites/default/files/2021a 1           https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill id=20
+           96 signed.pdf                                                                       1720180AB1184
+
+
+                       This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+
+    content may change prior to final publication. Citation information: DOI 10.1109/TIV.2024.3496797
+
+    IEEE TRANSACTIONS ON INTELLIGENT VEHICLES        19
+
+
+[211] National Conference of State Legislatures. (2020) Report Autonomous [229] Cabinet Office, Government of Japan. (2022, April 22) AI
+           Vehicles – Self-Driving Vehicles Enacted Legislation. Updated February                              Strategy  2022 (tentative translation). [Online]. Available:     https:
+           18, 2020. [Online]. Available: https://www.ncsl.org/transportation/auto                             //www8.cao.go.jp/cstp/ai/aistratagy2022en.pdf
+           nomous-vehicles#toggleContent-12031                                                           [230]          ——. (2022, November 13) Social Principles of Human-Centric AI.
+    [212]  State Council of the People’s Republic of China. (2015, September)                                   [Online]. Available: https://www8.cao.go.jp/cstp/ai/humancentricai.pdf
+      Notice on Printing and Distributing the Action Plan for Promoting [231] Ministry of Economy, Trade and Industry (METI). (2021, July
+           Big Data Development by the State Council. [Online]. Available:                                     9)            Call for Public Comments on ”AI Governance Guidelines for
+           https://www.gov.cn/zhengce/content/2015-09/05/content 10137.htm                                       Implementation of AI Principles Ver. 1.0” Opens. [Online]. Available:
+    [213]  ——. (2017,          July)    Notice  of       the State    Council  Issuing     the    New          https://www.meti.go.jp/english/press/2021/0709 004.html
+      Generation of Artificial Intelligence Development Plan. [Online]. [232] F. Thouvenin, M. Christen, A. Bernstein et al., “Positionspapier: Ein
+           Available: https://www.gov.cn/zhengce/content/2017-07/20/content 5                                  Rechtsrahmen f¨ur K¨unstliche Intelligenz,” Digital Society Initiative,
+           211996.htm                                                                                          2021.
+    [214]  National    Committee         on    the  Governance         of  the  New        Generation
+           of   Artificial     Intelligence.       (2019,      June)  Developing          Responsible
+           Artificial Intelligence: Release of the New Generation of Artificial                                               Lars Ullrich         received the M.Sc. degree in mecha-
+           Intelligence       Governance         Principles.      [Online].      Available:    https:                               tronics from Friedrich–Alexander–Universita¨at Er-
+           //www.most.gov.cn/kjbgz/201906/t20190617 147107.html                                                                        langen–N¨urnberg, Germany, in 2022, where he is
+    [215]  Central           Committee   of    the  Communist         Party   of     China.    (2020,                               currently pursuing the Ph.D. (Dr.Ing.) degree with
+           December)         The   Central     Committee      of      the  Communist       Party   of                         the Chair of Automatic Control.
+           China    Issues     the   ”Outline       for  the  Implementation           of  the   Rule                                His research interests include probabilistic tra-
+           of   Law    in      Society         (2020-2025)”.      [Online].      Available:    https:                                jectory planning for safe and reliable autonomous
+           //www.gov.cn/zhengce/2020-12/07/content 5567791.htm                                                                        driving in uncertain dynamic environments with a
+    [216]  Cyberspace Administration of China. (2021, September)                            Notice on                              focus on addressing challenges arising from the use
+           Issuing the ”Guiding Opinions on Strengthening the Comprehensive                                                   of AI systems in automated driving.
+           Governance of Internet Information Service Algorithms”. [Online].
+           Available: http://www.cac.gov.cn/2021-09/29/c 1634507915623047.ht
+           m                                                                                                                  Michael    Buchholz          received his Diploma degree
+    [217]  National    Committee         on    the  Governance         of  the  New        Generation                         in Electrical Engineering      and Information     Tech-
+           of   Artificial    Intelligence.    (2021,          September)  Release     of    ”Ethical                                  nology as well as his Ph.D. from the faculty of
+           Guidelines        for   the   New    Generation       of    Artificial      Intelligence”.                                Electrical Engineering and Information Technology
+           [Online]. Available: https://www.most.gov.cn/kjbgz/202109/t20210926                                                     at University of Karlsruhe (TH)/Karlsruhe Institute
+           177063.html                                                                                                                  of Technology, Germany. He is a research group
+    [218]  Cyberspace         Administration        of    China,       Ministry        of    Industry                             leader and lecturer at the Institute of Measurement,
+           and      Information         Technology,        Ministry      of    Public       Security,                               Control, and Microtechnology, Ulm University, Ulm,
+           State    Administration        for   Market          Regulation.   (2021,        December)                               89081, Germany, where he earned his “Habilitation”
+           Regulations        on     the      Management         of         Internet      Information                              (post-doctoral lecturing qualification) for Automa-
+           Service           Algorithm  Recommendations.        [Online].      Available:      https:                             tion Technology in 2022. His research interests com-
+           //www.gov.cn/zhengce/zhengceku/2022-01/04/content 5666429.htm                                   prise connected automated driving, electric mobility, modelling and control
+[219] General Office of the Central Committee of the Communist Party of of mechatronic systems, and system identification.
+      China, General Office of the State Council. (2022, March) Opinions
+           on Strengthening the Governance of Science and Technology Ethics.                                                  Klaus Dietmayer  (Senior Member, IEEE) earned
+           [Online]. Available: https://www.gov.cn/zhengce/2022-03/20/content                                                      his degree in electrical engineering from the Tech-
+    [220]  5680105.htm                                                                                                        nical University of Braunschweig,       Germany and
+           Cyberspace        Administration        of    China,    Ministry    of      Industry   and                                 completed his Ph.D. in 1994 at the University of
+           Information        Technology,       Ministry         of   Public      Security.    (2022,                                  the Armed Forces, Hamburg, Germany. Afterwards,
+           November)          Regulations      on        the    Deep   Synthesis           Management                            he began his industrial career as a research engineer
+           of   Internet      Information       Services.         [Online].      Available:    https:                                  at Philips Semiconductors, Hamburg, progressing
+    [221]  //www.gov.cn/zhengce/zhengceku/2022-12/12/content 5731431.htm                                                               through various roles to become the manager for
+           Cyberspace Administration of China. (2023, April)                         Notice on Public                              sensors and actuators in the automotive electronics
+           Solicitation of Opinions on the ”Management Measures for Generative                                                division.
+           Artificial  Intelligence       Services       (Draft)”.    [Online].  Available:     http:                                  In 2000, Dietmayer was appointed as a Professor
+    [222]  //www.cac.gov.cn/2023-04/11/c 1682854275475410.htm                                              of Measurement and Control at the University of Ulm. He currently serves as
+      Shanghai Municipal People’s Congress Standing Committee. (2022, the Director of the Institute for Measurement, Control, and Microtechnology
+      September 22) Shanghai Municipal Regulation on the Promotion of within the School of Engineering and Computer Science.
+           Artificial Intelligence Industry. [Online]. Available: https://perma.cc/P                           His primary research interests include information fusion, multi-object
+           Q8J-ARCA                                                                                      tracking, environment perception, situation assessment, and behavior planning
+[223] Shenzhen Municipal People’s Congress Standing Committee. (2022, for autonomous driving. The institute operates three automated test vehicles
+      September) Regulation on the Promotion of Artificial Intelligence with special licenses for public road traffic, along with a test intersection
+      Industry in Shenzhen Economic Special Zone. [Online]. Available: equipped with infrastructure sensors for evaluating automated and networked
+      https://law.pkulaw.com/chinalaw/eb370a7e0d9edd5e8ca8bb1a5fa6a5e7 cooperative driving in Ulm.
+      bdfb.html
+    [224]  R. Guo, “China’s Tech Hub Shenzhen to Invest US$108 Billion in                                                     Knut Graichen             (Senior Member, IEEE) received
+           R&D over 5 Years,” South China Morning Post, May 7 2021. [Online].                                                       the Diploma-Ing. degree in engineering cybernetics
+           Available: https://www.scmp.com/news/china/science/article/3132651/                                                     and the Ph.D. (Dr.-Ing.) degree from the University
+           chinas-tech-hub-shenzhen-invest-us108-billion-rd-over-5-years
+    [225]  Shenzhen     Municipal         Government.          (2022,  August)     Regulation      on                              of Stuttgart, Stuttgart, Germany, in 2002 and 2006,
+           Intelligent Connected Vehicles in Shenzhen Special Economic Zone.                                                  respectively.
+           [Online]. Available: http://www.gd.gov.cn/gdywdt/dsdt/content/post 3                                                        In 2007, he was a Post-Doctoral Researcher with
+           986167.html                                                                                                               the Center Automatique et Syst`emes, MINES Paris-
+    [226]  D.   Kirton,      “Shenzhen        accelerates     China’s      driverless  car   dreams,”                                  Tech, France. In 2008, he joined the Automation
+           Reuters, August 2022. [Online]. Available: https://www.reuters.com/                                                       and Control Institute, Vienna University of Tech-
+           technology/shenzhen-accelerates-chinas-driverless-car-dreams-2022-0                                                     nology, Vienna, Austria, as a Senior Researcher. In
+           8-01/                                                                                                                     2010, he became a Professor with the Institute of
+[227] Canadian Institute For Advanced Research (CIFAR). (2017) Pan- Measurement, Control and Microtechnology, Ulm University, Ulm, Germany.
+      Canadian Artificial Intelligence Strategy. [Online]. Available: https: Since 2019, he has been the Head of the Chair of Automatic Control,
+           //cifar.ca/ai/                                                                                   Friedrich–Alexander–Universita¨at Erlangen–N¨urnberg, Germany. His current
+[228] House of Commons of Canada, First Session. (2022, June) Bill C-27, research interests include distributed and learning control and model predic-
+      Consumer Privacy Protection Act, PART 3 Artificial Intelligence and tive control of dynamical systems for automotive, mechatronic, and robotic
+      Data Act. [Online]. Available: https://www.parl.ca/DocumentViewer/e applications.
+           n/44-1/bill/C-27/first-reading                                                                Dr. Graichen is the Editor-in-Chief of Control Engineering Practice.
+
+
+                             This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/
+

@@ -1,0 +1,890 @@
+    Received 11 June 2022, accepted 12 July 2022, date of publication 18 July 2022, date of current version 21 July 2022.
+    Digital Object Identifier 10.1109/ACCESS.2022.3192019
+
+
+
+
+    A Review of End-to-End Autonomous Driving in
+    Urban Environments
+
+    DANIEL COELHO   AND MIGUEL OLIVEIRA
+    Department of Mechanical Engineering, University of Aveiro, 2810-193 Aveiro, Portugal
+    Institute of Electronics and Informatics Engineering of Aveiro, University of Aveiro, 3810-193 Aveiro, Portugal
+    Corresponding author: Daniel Coelho (danielsilveiracoelho@ua.pt)
+    This work was supported by the National Funds through the FCT—Foundation for Science and Technology under Project
+    UIDB/00127/2020.
+
+
+ABSTRACT Autonomous driving in urban environments requires intelligent systems that are able to deal
+with complex and unpredictable scenarios. Traditional modular approaches focus on dividing the driving
+task into standard modules, and then use rule-based methods to connect those different modules. As such,
+these approaches require a significant effort to design architectures that combine all system components,
+and are often prone to error propagation throughout the pipeline. Recently, end-to-end autonomous driving
+systems have formulated the autonomous driving problem as an end-to-end learning process, with the goal
+of developing a policy that transforms sensory data into vehicle control commands. Despite promising
+results, the majority of end-to-end works in autonomous driving focus on simple driving tasks, such as lane-
+following, which do not fully capture the intricacies of driving in urban environments. The main contribution
+of this paper is to provide a detailed comparison between end-to-end autonomous driving systems that tackle
+urban environments. This analysis comprises two stages: a) a description of the main characteristics of
+the successful end-to-end approaches in urban environments; b) a quantitative comparison based on two
+CARLA simulator benchmarks (CoRL2017 and NoCrash). Beyond providing a detailed overview of the
+existent approaches, we conclude this work with the most promising aspects of end-to-end autonomous
+driving approaches suitable for urban environments.
+
+INDEX TERMS Autonomous driving, end-to-end, imitation learning, reinforcement learning, urban envi-
+ronments.
+
+
+I. INTRODUCTION concerns AD in urban environments [15]. Compared with
+In the last decades, the field of autonomous driving (AD) highway driving or lane following, urban environments pose
+has received a massive amount of interest, both in additional obstacles due to the unpredictability and variety of
+academia [1]–[6] and in industry [7]–[10]. The principal fac- agents present in the scene, as well as complex and uncertain
+tor that triggered this interest concerns safety issues [11]. situations, such as pedestrians crossing lanes, traffic-lights,
+National Highway Traffic Safety Administration (NHTSA) intersections, among others. In 2007, during the DARPA
+reported that 94% of accidents are caused by drivers [12]. Urban Challenge [16], several researchers around the world
+Another key factor is related to the traffic flow. Replacing tested their AD systems in a controllable urban environment
+humans by AD systems result in an optimized traffic flow, and only six teams were able to complete the event [17]. The
+offering both financial and environmental benefits [13]. The environment used in DARPA still lacked certain aspects of
+benefits of fully AD appear to be considerable, which is the real word, such as pedestrians and cyclists. Nevertheless,
+why the research on autonomous driving remains an active the fact that six teams were able to complete the event was
+area [14]. One of the most difficult challenges in this field extraordinary, especially at that time. Despite all the impres-
+        sive research in this area, fully AD systems capable of driving
+   The associate editor coordinating the review of this manuscript and in complex and unknown urban environments are still years
+approving it for publication was Binit Lukose . away and the main reason for this is the arduous task of
+
+75296 This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see https://creativecommons.org/licenses/by/4.0/ VOLUME 10, 2022
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+generalization to unpredictable situations in a short period of to the recent developments of Deep Reinforcement Learning
+time [18]. (Deep RL) [31]–[33] by Deep Mind [34], [35], end-to-end
+  AD systems are complex systems that integrate many tech- approaches have begun to show promising results [36], [37].
+nologies, from sensors, processing units, software, among In end-to-end approaches, there are two different learn-
+others. Therefore, AD systems need to deal with a wide ing methodologies: Imitation Learning (IL) and Reinforce-
+range of problems: sensor inaccuracies, hardware reliability, ment Learning (RL). IL aims to learn a policy by observing
+object detection, localization, etc. The conventional approach the actions performed by humans. It is a supervised learn-
+to tackle this diversity of problems consists of dividing the ing approach, in which the model tries to mimic human
+driving task into standard modules such as object detection, behavior [39]. NVIDIA achieved excellent results using
+localization, path planning, etc. and then build rule-based this methodology by training a convolution neural net-
+methods to connect the different modules [19]–[21] (see work (CNN) to predict the steering angle of a vehicle [40].
+Figure 1). This approach is commonly called modular, and One advantage of the IL methodology is that it can use solely
+is widely used in the industry [7]. The interconnectivity Deep Learning (DL) and merely optimize the parameters of
+between different modules in a system is a problem exten- the model to reduce the difference between the model behav-
+sively investigated in the robotics field [22]. For example, ior and human behavior. However, the process of scaling
+this interconnectivity between modules led to the creation of an AD system based on IL is a challenging task due to the
+frameworks, such as Robot Operating System (ROS) [23], impossibility of covering all possible scenarios in the training
+[24]. The modular architecture enables the development of phase [7].
+each module in an independent fashion facilitating the col- RL methodologies aim to learn a policy that maximizes
+laboration between all elements of the engineering team. the cumulative rewards received by an automatic system, as it
+In addition, the development of individual and specific mod- interacts with the environment [41], [42]. One variant of RL is
+ules divides the autonomous driving task into a set of narrow Deep RL, which combines DL with RL [43]. Although there
+problems widely investigated in the literature, as is the case are some technical differences between RL and Deep RL, for
+of localization, computer vision, motion planning, among the purposes of this review, which is to differentiate IL and
+others. Finally, interpretability constitutes one of the great RL, we will use the terms RL and Deep RL interchangeably.
+advantages of these modular approaches: as the entire system In the case of RL, there is no need to collect data from human
+is divided into modules, the source of a malfunction can more driving, because as the agent interacts with the environment,
+easily be tracked to the responsible module. it learns how to behave in order to maximize the reward.
+  The major disadvantage of modular systems is the ardu- As the training of RL models occurs online, it is possible to
+ous task of developing and maintaining the interconnection explore the environment and train simultaneously, which is a
+between all modules in the system. For example, different great advantage compared with the IL models. The downside
+scenarios may require different connections between mod- is that RL is less data-efficient in the training stage [24].
+ules [25], which compromises the modularity paradigm. The Liang et al. combined the advantages of IL and RL by cre-
+modular architecture is also prone to error propagation [26], ating an IL model based on labeled data, and then optimizing
+in which a minor error in one module can produce catas- the policy using an online RL-based policy tuning [44]. One
+trophic results in another, for example, a misclassification crucial element of RL algorithms is the definition of rewards.
+of a traffic-light can influence the decision-making process As the agent tries to maximize the reward, the definition of the
+to generate a path planning that leads to a collision. Addi- reward function directly influences the behavior learned by
+tionally, as the modules are task-specialized, they may fail to the agent. One common example is to reward the movement
+generalize to unusual conditions and unexpected situations. towards the goal [7], [44], or to punish whenever a collision
+  More recently, end-to-end approaches emerged as an alter- occurs [45]. In 2018, Kendall et al. demonstrated the first
+native technique to tackle the AD problem. The end-to-end real-life application of RL in AD, in which they were able
+approach formulates the AD task as an end-to-end learning to train a driving policy capable of learning how to follow a
+process, in which the objective is to learn a policy capable of lane in less than 30 minutes [7].
+transforming sensor data into control commands [14]. In gen- The application of end-to-end methodologies in AD is
+eral, end-to-end architectures are simpler and have fewer relatively recent: the first use case was in 2016 [40].
+components than modular architectures (see Figure 1). Unlike In the three subsequent years, several approaches were pro-
+the modular paradigm, the end-to-end paradigm also captures posed focusing on simplified versions of AD, such as lane
+the human driving essence: a simultaneous perception and following [46]–[51]. As expected, the application of end-to-
+action [27]. The downside of end-to-end systems is the lack end AD in urban environments is even more recent: 65% of
+of interpretability [24]. It is difficult to track down the source the works found on this topic are from 2020 or 2021. As these
+errors or to explain certain decisions taken by the model [25]. works are recent, the majority of reviews of AD do not
+Over the years, the interest in the end-to-end approach for AD include their findings [20], [52], [53]. The only review solely
+was scarce, especially compared with the amount of research focused on end-to-end was proposed by Tampuu et al., where
+done in modular approaches. However, due to the rise of the authors performed a thorough analysis of the different
+Artificial Intelligence [28]–[30] in the past years, and due architectures and training methods of end-to-end approaches
+
+VOLUME 10, 2022 75297
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+         FIGURE 1.  Architecture of: (a) a modular approach [38], and (b) an end-to-end approach. The modular architecture consists of
+         several interconnected modules, whereas in the end-to-end architecture those different modules are replaced by a single,
+         learning-based module.
+
+applied in AD [24]. However, their work was not focused           A. ARCHITECTURES
+especially in urban environments, and therefore, some of the      Due to the complexity of urban environments, it is common
+findings should not be generalized to more complex environ-       the usage of low dimensional intermediate representation of
+ments. This paper presents the first review targeting end-to-     the environment instead of parsing the raw data from the
+end autonomous driving in urban environments, which is            scene. One of the options for this low dimensional interme-
+an emerging topic in the literature. The key contributions of     diate representation is called affordances [57]. Sauer et al.
+this paper are to provide:                                        proposed an AD system based on affordances, especially
+ •  a description of the main differences between the suc-        designed for urban environments [58]. Examples of these
+    cessful end-to-end approaches in urban environments;          affordances include: presence of hazard stop, red traffic-light,
+ •  a quantitative analysis based on two CARLA simulator          speed sign, distance to vehicle, relative angle, and distance
+    benchmarks (CoRL2017 [54] and NoCrash [55]).                  to center line. These affordances are predicted by neural
+ This paper considers only systems trained and tested             networks that receive both RGB images and a navigation
+in the CARLA simulator for two reasons: a) CARLA is               command, e.g., ‘‘go straight’’, ‘‘turn left’’, or ‘‘turn right’’.
+considered the state-of-the-art open-source simulator for         The affordances are then processed by controllers in order to
+self-driving cars [56]; b) to ensure a fair comparison between    produce the control commands. Figure 2 depicts a simplified
+all approaches. In [56], the authors performed an extensive       version of the system proposed by Sauer et al.
+comparative analysis of six simulators based on features like              Mehta et al. also used affordances to aid the AD task [59].
+perception, path planning, 3D virtual environments, traffic-      The affordances allow to infuse human knowledge into the
+scenario, scalability, etc. and concluded that CARLA outper-      system instead of expecting the network to learn all relevant
+forms all other simulators.                                       features for driving from scratch. Unlike Sauer et al., in this
+ The remainder of this document is organized as fol-              case the affordances are learned by the network simultane-
+lows: in Section II, we present a thorough analysis of the        ously with the main task of driving. The authors demonstrated
+most successful end-end AD systems in urban environments;         that the joint learning of the auxiliary tasks and the usage of
+Section III evaluates the detailed approaches based on quan-      the predicted affordances in the final control commands pre-
+titative metrics; Section IV presents the conclusions.            diction increases the performance of learning. Furthermore,
+                                                                  the authors also claim that the usage of affordances signif-
+II. DISCUSSION                                                    icantly increases the level of interpretability of the system,
+In this section, we perform a thorough comparison of several      which is, as explained in Section I, one of the shortcomings
+end-to-end AD approaches in urban environments. This com-         of end-to-end systems.
+parison is based on three main points: architectures, input sen-          Chen et al., in [36], instead of using human defined labels,
+sor modalities, and output modalities. As discussed before,       used an algorithm to provide the true labels. First, a privileged
+the targeted end-to-end AD approaches discussed in this work      agent is trained with access to ground-truth data to imitate an
+are the ones that used CARLA as the environment to train and      expert autopilot. Then, the authors used the trained privileged
+test the models.                                                  agent to train another agent with only visual input. The results
+
+75298                                                                 VOLUME 10, 2022
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+ FIGURE 2. Simplified version of the system proposed by Sauer et al. [58]. The system receives as input RGB images and a navigation command provided
+ by CARLA. The features are then extracted from the images using convolutional layers of a VGG16 neural network. Based on the navigational command
+ received, the features are processed by a different block to produce the affordances. Finally, the predicted affordances are used by a controller to
+ produce the control commands.
+
+showed that the usage of an agent with privileged information                                Chen et al., in [64], proposed a system that encodes RGB
+significantly improves the vision-only driving agent.                                      images and global path trajectories using a CNN [69] and a
+       In [60], Prakash et al. proposed an architecture that com-                             LSTM (Long Short-Term Memory) [70] to extract both spa-
+prises two main blocks: a Multi-Modal Fusion Transformer                                tial and temporal features. Then, the policy network receives
+(TransFuser) and a waypoint prediction network. The Trans-                                    the encoded data and outputs control commands after the
+Fuser receives data from different sensor modalities as input,                            defuzzification procedure. The defuzzification procedure is
+and it produces a compact representation of the environ-                                responsible for transforming the output of the policy network
+ment as output. This process is carried out by using the           into control commands.
+self-attention mechanisms of transformers [61] to incorpo-                                      Chen et al., in [65], proposed the combination of the
+rate the information between the different modalities. The                                      modular framework and the RL framework. As input, the
+compact representation of the environment is then passed into                                 system receives data from two sensors: a RGB camera and
+an encoder neural network to reduce its dimensionality, and                               a LiDAR. During training, a semantic mask is obtained using
+therefore increase computational efficiency. The waypoint                                       some components in the modularized framework, such as
+prediction network receives both the encoded version of the                                 object detection, mapping, and localization, and then the
+environment and the desired trajectory provided by a global                                mask enters the system as labeled data. The policy network
+planner. The network consists of several Gated Recurrent                                          receives RGB images and LiDAR data and produces the
+Units (GRUs) [62], [63], that outputs the predicted trajectory,                                 control commands together with the semantic mask. The
+under the form of waypoints (more details in Section II-C).                                  semantic mask produced by the policy network provides an
+A simplified version of the system proposed by Prakash et al.                              interpretable explanation of how the agent understands the
+is depicted in Figure 3.                                           world that surrounds him.
+         One of the major problems in applying RL in the field of                          The previous approaches based on RL did not have the abil-
+AD consists of the high-dimensional sensor inputs, as is the                           ity to foresee the future, which is a feature that we, humans,
+case of RGB images. For this reason, most of the applications                          have inherited from years of experience [71]. C. Huang et al.,
+of RL in AD have focused on simple driving tasks, such as                               in [72], focuses on building a RL agent capable of predicting
+lane following [7], [26]. However, in the last two years, some                            new observations. The first layer of the system consists of
+methods have been proposed that address this problem [14],                                       a Semantic Encoding Mapping (SEM) [73] that learns a
+[64]–[66]. For example, in [14], Agarwal et al. presented                                semantic representation from raw images. This representation
+a framework that creates a low-dimensional state represen-                                    is then sent to a Deep RL algorithm (Deep Deterministic
+tation that comprises a stack of bird’s eye-view semantic                                     Policy Gradient (DDPG) [74], [75]). The core element of
+segmented images, desired trajectory, kinematics features,                                   this Deep RL is a deductive reasoner that enables policy
+and traffic-light states. Then, the low-dimensional state rep-                                to be learned in a model-based manner. This way, it can
+resentation is conveyed to the RL algorithm (Proximal Policy                                   predict the next state and reward based on the current
+Optimization (PPO) [67], [68]). A simplified version of the                                  state and reward, which produces a more reliable driving
+architecture of the solution is illustrated in Figure 4.           policy.
+
+VOLUME 10, 2022                                                                                                                                 75299
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+FIGURE 3. Simplified version of the system proposed by Prakash et al. [60]. The system receives a RGB image and a LiDAR bird’s eye view image as
+input of the Multi-Modal Fusion Transformer (TransFuser). The fusion process is attained by using several transformer modules to combine the
+intermediate feature maps between both modalities. The output of the TransFuser constitutes a compact representation of the environment that
+comprises the global context of the scene. This compact representation it then conveyed into a encoder neural network to reduce computational
+efforts. The waypoint prediction neural network consists of several GRUs that receive both the output of the encoder neural network (compressed
+feature vector) and the desired trajectory, provided by a global planner, and outputs the future waypoints. The authors reported that vehicle
+measurements are also used in the TransFuser, but for clarity reasons, that information is omitted.
+
+
+  In [44], Liang et al. proposed a system called CIRL (Con- from encoder neural networks [14], [60], [64], [65] or affor-
+trollable Imitative Reinforcement Learning) that aims to com- dances [58], [59], [77], the goal is to produce a low dimen-
+bine the advantages of IL and RL. First a supervised network sional intermediate representation of the environment to
+is pretrained based on human labeled data. Then a Deep RL simplify further processing. In this aspect, we believe that
+model (DDPG) is initialized with the pretrained weights of feature vectors are preferable to affordances. Using feature
+the supervised network. The authors claim that the usage of vectors, the relevant features are learned by the model, whilst
+human driving demonstrations for the initialization of the RL in affordances, the relevant features to be learned are user-
+model can significantly reduce the sample complexity, and defined, which can introduce human bias into the system.
+therefore, saving innumerous hours of exploration with the Furthermore, it is questionable whether an approach based on
+environment. affordances should be considered end-to-end or not, because
+  More recently, some authors have also used the aforemen- it presents the same problems of modular approaches: human
+tioned affordances to tackle the high-dimensional data issue definition of affordances; diverse ways to integrate the affor-
+of RL. Ahmed et al., proposed an end-to-end AD system dances in a learning method; error propagation due to incor-
+comprised of two major components: supervised network rect prediction of the affordances. Regarding the learning of
+and a Deep RL agent (DDPG) [37]. The supervised network the driving policy, there are two distinct approaches: IL and
+encodes RGB images into a set of affordances. Subsequently, RL. Based on the ratio of IL/RL in recent approaches, it is
+the Deep RL transforms the affordances, vehicle measure- inconclusive to assess what is the leading learning method in
+ments and a navigation command into control commands. urban environments. As will be discussed in Section III, both
+A simplified version of the architecture of this solution is approaches achieve satisfactory results and therefore further
+depicted in Figure 5. research is required to investigate which learning method is
+  Toromanoff et al. also used affordances in a RL more suitable for AD in urban environments.
+pipeline [77]. The first component of the system is an encoder
+trained to predict affordances such as distance to centerline B. INPUT SENSOR MODALITIES
+and traffic-lights. Then, the output features of the encoder The majority of end-to-end systems rely only on vision [39],
+are conveyed into the RL, instead of the affordances. The [44], [77], using only one camera to predict the control com-
+authors have named this approach implicit affordances, since mands. However, in urban environments the single modal-
+it uses the information that predicted the affordances and not ity configuration is usually insufficient to produce a robust
+the affordances itself. and reliable AD system [60]. Furthermore, AD in urban
+  There are mainly two differences between the approaches environments requires navigation from one point to another,
+described in the last paragraphs: how to encode the raw and therefore, additional navigation inputs are often manda-
+data from the sensors? and how to learn a driving policy tory. Xiao et al., in [27], performed a comparison between
+based on the encoded data? Whether using feature vectors single and multimodal end-to-end AD systems. They used
+
+75300 VOLUME 10, 2022
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+ FIGURE 4.     Simplified version of the system proposed by Agarwal et al. [14]. The system receives as inputs three bird’s eye view semantic
+ segmented images, vehicle measurements, navigation commands, desired waypoints and traffic-light information. Each input is provided
+ directly by CARLA. The images are processed by an autoencoder (AE) [76] that produces a compressed version of the images (AE Compressed
+ Data). The compressed data is combined with the remaining inputs to form the RL state representation. The RL agent it then responsible to
+ produce the control commands. In addition to the control commands, the system also outputs reconstructed bird’s eye view semantic
+ segmented images through the decode of the compressed data.
+
+RGB images and depth information as the sensor modalities             produce the control commands. On the other hand, in the
+and demonstrated that multimodality is beneficial to end-to-          branched architecture only the image and the measurements
+end systems, outperforming single modality configurations.            are conveyed into the network as inputs. In this case, the
+Regarding the fusion scheme, the authors concluded that the           control module is replaced by a set of branches. The role of
+early fusion, i.e. increasing the number of channels from             the navigation command is to select which branch should be
+three (RGB) to four (RGBD), was the one that achieved the             active, and therefore the navigation command can be seen as
+best results.                                                         a switch. Results demonstrated that the branched architec-
+Regarding the navigation inputs, Codevilla et al.              per-   ture performed significantly better than the command input
+formed a study about the incorporation of navigation com-             approach and other baseline approaches.
+mands into the AD system [39]. Navigation commands are                               Huang et al., in [66], proposed a multimodal system that
+referred to as an indication about the future action taken by the     receives RGB images and depth information as input. This
+agent, such as ‘‘go right’’ or ‘‘turn left on the intersection.’’     information is encoded by a neural network and is processed
+These commands can be generated by high-level route plan-             by a conditional driving policy. The conditional driving pol-
+ners [79], [80] or by humans. Codevilla et al. implemented            icy is a branched fully connected network, and in addition
+two different architectures:           command input (see Figure 6)   to receiving the encoded data, also receives a navigation
+and branched (see Figure 7). In command input, the network            command. The navigation command, as in [39], activates the
+takes the navigation commands as input, together with the             corresponding branch, and each branch is a neural network
+raw images and some vehicle measurements. These three                 that produces the control commands.
+inputs are processed independently, and then the combina-             In [58], Sauer et al.                 also used the concept of special-
+tion of the three results are delivered to a control model to         ized neural networks, but instead of predicting conditional
+
+
+VOLUME 10, 2022                                                       75301
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+    FIGURE 5.   Simplified version of the system proposed by Ahmed et al. [37]. The system receives as input a stack of RGB images, vehicle
+    measurements and navigational commands. Firstly, a residual network (ResNet-50 [78]) is used to extract the features of the images, and then
+    LSTM units are employed to model the dependencies between successive frames. At the end of this processing, the affordances are predicted.
+    The DDPG RL agent receives a vector that comprises the affordances, vehicle measurements and a navigation command, and produces as
+    output the control commands.
+
+control commands, the system predicts conditional affor-            LiDAR is essential [60], [65], [81]. These modalities are often
+dances. Their architecture, Figure 2, receives a navigation         seen as complementary, where the RGB cameras provide
+command that selects a specific neural network to predict           information about the road and visual aspects of the scene,
+the affordances. The authors reported that training specialized     such as traffic-lights, and the LiDAR provides accurate spa-
+neural networks for each navigation command leads to better         tial information in 360 degrees [65]. Prakash et al., in [60],
+performance than training neural networks that use naviga-          as discussed above, proposed the usage of the attention mech-
+tion commands as inputs.                                            anism of transformers to integrate RGB images and LiDAR
+           As an alternative to navigation commands, some authors   data. Authors argued that it is a robust and flexible way of
+have used the desired trajectory, provided by a global planner,     integrate different modalities of sensors in general, and not
+as input [14], [60], [81]. Usually the trajectory is conveyed       only the RGB camera and LiDAR (see Figure 3). Chen et al.
+into the system under the form of waypoints. For instance,          also used RGB images and LiDAR data as inputs. Instead of
+in  [60], Prakash et al.         used GPS coordinates provided by   using the raw point clouds from the LiDAR as input, they
+CARLA as input, to predict local waypoints (see Figure 3).          performed a prepossessing step, where the raw point clouds
+The GPS coordinates provided by CARLA are relatively                are converted into a 2D LiDAR bird’s eye image, which is
+sparse and can be spaced hundreds of meters apart. Con-             then conveyed into the network [65].
+versely, the waypoints predicted by the neural network refer                         Cai et al. in [81] explored even further the combination of
+to the trajectory that the agent should follow in subsequent        multiple modalities, where they proposed an end-to-end AD
+timestamps. Cai et al., in [81], instead of using the global        system that receives RGB camera, LiDAR and RADAR data
+planner from CARLA, implemented the A∗ [82], [83] algo-             as input. This multimodal information is processed by uni-
+rithm to plan the coarse route from the initial point to the        form alignment and projection onto the image plane. In addi-
+destination point based on static maps. The waypoints pro-          tion to cameras, LiDARs and RADARs, some authors also
+vided by global planners do not consider dynamic objects            use HD maps as inputs. For example, Zeng et al. proposed a
+nor information regarding traffic-lights. Its only purpose is       system that takes LiDAR data and HD maps as inputs of the
+to provide a global trajectory based on static elements of the      network [25].
+environment.                                                                             Multiple authors have also used high-level measurements
+       In the last few years, several authors suggested that, for   about the state of the vehicle, such as current velocity or
+urban environments, the integration of RGB cameras and              acceleration [37], [39], [44]. When the model only considers
+
+75302                                                                                                                            VOLUME 10, 2022
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+    FIGURE 6. Simplified version of the command input architecture proposed by Codevilla et al. [39]. The system takes a RGB image as an input,
+    alongside with vehicle measurements and navigation commands. These inputs are processed independently by three neural networks: a
+    convolutional neural network and two fully-connected neural networks, respectively. The outputs of these neural networks are then
+    concatenated to form the input of the control module, which is a fully-connected neural network. At the end, the control module produces the
+    control commands.
+
+one frame to make a decision, the usage of the current veloc- with the problem of navigating from one location to another,
+ity can be highly useful [24]. However, in IL approaches, navigation commands or desired trajectories, are often used.
+if the model receives the current speed and predicts the speed
+for the next timestamp as one of the outputs, there is high C. OUTPUT MODALITIES
+changes of causing the inertia problem. In most cases, the The majority of the end-to-end AD systems produce the steer-
+current speed and the speed in the next timestamp are highly ing angle and the speed for the next timestamp as outputs [27],
+correlated, which can induce the model to only consider the [58], [64], [77]. These properties are easily obtained from
+current speed to predict the speed in the next timestamp. This a vehicle and, therefore, can be used as labeled data for
+can seriously hamper the effectiveness of the agent, because IL approaches. Usually, traditional PID controllers [84] are
+it can lead to agents that are reluctant to change the velocity. required to convert the steering angle and speed outputted by
+  Although most of end-to-end approaches use a RGB cam- the network into acceleration/brake and steering torque of the
+era as the only input modality, several works reported that vehicle [14], [64], [66]. The downside of these approaches
+multimodality outperforms single modality configurations in is that it is very difficult to comprehend the decisions taken
+urban environments [39], [60], [65], [81]. Based on latest by the model. In other words, when the model produces an
+end-to-end AD papers, it is evident that researchers are mov- incorrect driving decision, it is not possible to understand the
+ing from single modality to multimodal configurations (see reason for that decision.
+Table 1). From all the available sensors, LiDAR appears to be In recent years, some authors have explored the usage
+the one that can add more valuable information to the RGB of trajectories (waypoints) as the output modality of the
+camera. Furthermore, as AD in urban environments deals system [25], [60]. For instance, Prakash et al. proposed
+
+VOLUME 10, 2022 75303
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+FIGURE 7. Simplified version of the branched architecture proposed by Codevilla et al. [39]. The system receives as inputs a RGB image, vehicle
+measurements and a navigation command. The RGB image and the vehicle measurements are processed independently by a convolutional neural
+network and a fully-connected neural network, respectively. The outputs of these neural networks are concatenated to form the input of the next stage.
+The navigation command is used as a switch that selects which fully-connected neural network should process the concatenated data and therefore
+produce the control commands.
+
+a system that predicts waypoints for the future 4 times- network [24]. These outputs are not directly related to the
+tamps [60] (see Figure 3). Zeng et al., in [25], proposed a main output of the network, but they provide information
+system that produces 3D detections as well as their future about the internal representation of the network, which is
+trajectories, and then uses a planner to choose from the set immensely useful to comprehend the driving decisions and
+of possible trajectories the one that minimizes a predefined to explain the failures. The authors, in [59], reported that the
+cost. In this output modality, it is also necessary to implement joint learning of the main and additional outputs leads to more
+a controller (usually a PID) that generates low-level steering robust and effective driving policies.
+and acceleration/braking commands to reach the desired tra- Although the majority of end-to-end AD produces steer-
+jectory [60], [72]. As an alternative to PID controllers, Gutiér- ing angle, throttle, and braking as final output of the net-
+rez et al. proposed a modular and scalable waypoint tracking work, the most promising output modality is waypoints. The
+controller, fully integrated in ROS [85]. One advantage of out- long-term planning and interpretability make waypoints more
+putting waypoints, instead of the steering angle and velocity suitable for AD, especially for urban environments. To further
+commands, is that the model is required to plan the action for increase the level of interpretability, the usage of additional
+the future timestamps, and not only for the next one. This outputs, learned in a joint learning mechanism, is highly
+long-term planning increases the robustness of the driving recommended.
+policy because it converts a reactive agent into a planning
+agent. Another advantage concerns interpretability: it is much III. EVALUATION
+easier to interpret and analyze waypoints rather than momen- This section focuses on quantitatively evaluating the
+tary steering and velocity commands. Using waypoints, it is results from the approaches described throughout the doc-
+possible to convey the intentions of the system. ument. However, to additionally provide a comparison
+  In order to further increase the interpretability of the sys- between end-to-end approaches and modular approaches,
+tems, some authors have also used additional outputs. For we have also included a modular approach, proposed by
+example, in [65], as discussed above, the system predicts a Dosovitskiy et al. [54], in this section. This approach divides
+semantic mask of the scene, and in [66] the system recon- the driving task into three modules: perception, planning, and
+structs semantic images using a scene understanding decoder. continuous control. The perception module uses semantic
+Usually, these additional outputs are computed by a separate segmentation to estimate lanes, dynamic objects, and other
+branch of the network based on an intermediate layer of the hazards. The planning module consists of a rule-based state
+
+75304 VOLUME 10, 2022
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+machine that implements a driving policy specially designed The CoRL2017 benchmark is the original CARLA bench-
+for urban environments. Finally, the continuous control mod- mark, and the goal is to navigate from a starting point to a
+ule is a PID controller that produces the steering, throttle, and destination point using a route planner [54]. There are four
+brake commands. driving tasks, with increasing difficulty levels: Straight, One
+  Table 1 depicts the summary of the aforementioned Turn, Navigation and Navigation with Dynamic Obstacles
+approaches divided by the three points of discussion: archi- (see Figure 8). In the Straight task, the destination is straight
+tecture, inputs and outputs. This table follows a chrono- ahead of the starting point, and there are no dynamic obstacles
+logical order to facilitate the extraction of possible trends. in the environment. In the One Turn task, the destination is
+Regarding the architectures, there is not a clear trend. Thus, one turn away from the starting point and the environment
+it is not possible to claim which approach, IL or RL, contains no dynamic obstacles. In the Navigation task there
+is the most suitable for urban environments. Concerning the is no restriction on the location of the destination and starting
+inputs, in 2018, none of the approaches used LiDAR as data point, and once again, there are no dynamic obstacles. Finally,
+source, while in 2021, four out of seven used LiDAR, which in the Navigation With Dynamic Obstacles, the scheme is
+clearly shows the applicability and usefulness of LiDAR in the same as the previous task, but with dynamic obstacles
+urban environments. Finally, regarding the outputs, in 2018, (cars and pedestrians) introduced in the scene. For each task,
+the only output modality was steering angle, throttle and for an episode to be considered successful the agent must
+braking, while in 2021, some authors have used future reach the destination within a time limit, defined as the time
+waypoints as the output of the models. As stated before, required to reach the destination along the optimal path at a
+around 65% of the approaches studied are from 2020 or speed of 10 km/h [54]. Driving infractions, such as collisions
+2021, which indicates that, more than ever, researchers or driving on the sidewalk do not lead to the termination of
+are focused on applying end-to-end AD system in urban the episode, which means that the primary objective of this
+environments. benchmark is to evaluate skills such as lane following and
+  Given that this paper focuses on evaluating end-to-end performing 90 degrees turns [55].
+AD systems tested on CARLA, we used two benchmarks Table 2 depicts, for the CoRL2017 benchmark, the percent-
+(CoRL2017 and NoCrash) of the simulator to accurately age of successfully completed episodes out of 25, for each
+compare the performance of the approaches. An additional task in training conditions, using 10 approaches. In general,
+advantage of comparing all approaches within the same the results of each approach are worsening with the increase
+benchmarks is that all approaches use the same sensors, in difficulty of the task. However, both Chen et al. [36] and
+and therefore share the technical specifications. For exam- Toromanoff et al. [77] achieved the maximum score in all
+ple, for all approaches, the camera sensor provides images tasks. Huang et al. [66] and Agarwal et al. [14] also achieved
+with 800 × 600 pixels and has a horizontal field of view excellent results. As expected, the overall results are very
+of 90 degrees. The LiDAR sensor is a Velodyne 64, with satisfactory, because the agents are being tested under the
+a range of 10 meters, and covers a horizontal field of view same conditions in which they were trained (same town and
+of 360 degrees. Lastly, the RaDAR sensor has a range of same weather).
+100 meters and a horizontal field of view of 30 degrees. Table 3 has the same structure as Table 2, but refer to the
+  Our goal was to compare all algorithms listed in Table 1; testing conditions. Chen et al. [36] kept the maximum score,
+however, some works were evaluated in different bench- while Toromanoff et al. [77] suffered a slightly decreased in
+marks, reason why they are not considered in the evaluations. the score. Huang et al. [66] also achieve very satisfactory
+Notwithstanding, the majority of the approaches were evalu- results. As expected, the scores in training conditions are
+ated in the aforementioned benchmarks. In both benchmarks, much better than in testing conditions. Nevertheless, the
+there are two towns: Town 01 and Town 02. overall results under testing conditions are surprisingly good,
+  Town 01 (see Figure 8) consists of 2.9 Km of road with suggesting that the models were able to generalize the driving
+11 intersections, and it is used to train the models. We will policy to unknown scenarios.
+refer to this as the training conditions. Town 02 (see Figure 9) The main difference between the system proposed by Chen
+consists of 1.4 Km of road with 8 intersections, and it is et al. and the others is that the system uses a teacher that has
+used to test the models under different weather conditions access to privileged information to train a vision-based agent.
+when comparing with the ones used in the training conditions. Based on the results described above, there are strong indi-
+We will refer to this as the test conditions. It is worth noting cations to conclude that this learning method is immensely
+that Town 01 and Town 02 are simplified versions of urban effective considering the evaluation metrics of the CoRL2017
+environments. Their layout consists of several T-junctions benchmark.
+with traffic lights. There are more realistic scenarios in Based on Table 2 and Table 3, it is also possible to unmask
+CARLA, as is the case of Town 3, which contains 5-lane some of the limitations of modular approaches, namely poor
+junctions, a roundabout, and a tunnel. However, only a few generalization, and error propagation. The testing results
+approaches have tested their algorithms under such condi- were considerably worse than the training conditions because
+tions and therefore it is unsuitable for comparisons, at least the perception module fails systematically under complex
+for now. and unseen conditions. When the perception module fails,
+
+VOLUME 10, 2022 75305
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+    TABLE 1. Contributions of AD systems in urban environments, described in terms of: architecture, inputs and outputs. The table follows a chronological
+    order of the papers.
+
+
+
+
+
+
+
+
+
+
+the planning module is not able to produce a reliable path The modular approach considered is from 2017, and it is
+and therefore the continuous control module is unable to pro- expected that novel and better ones have been developed in
+duce accurate control commands. However, we want to stress the meantime. Furthermore, such bold claim would require
+that these results do not allow us to conclude that current an extensive comparison between modular and end-to-end
+end-to-end approaches are superior to modular approaches. approaches, which is out of the scope of this paper.
+
+75306 VOLUME 10, 2022
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+ FIGURE 8. Illustration of the four driving tasks of CoRL2017 benchmark in Town 01. (a), (b), (c), and (d) represents the Straight task, One Turn task,
+ Navigation task, and Navigation with Dynamic Obstacles task, respectively.
+
+TABLE 2. Results of CoRL2017 benchmark. Each value corresponds to the percentage of successfully completed episodes, for each task in training
+conditions. Each column corresponds to an approach. Best scores are highlighted in bold.
+
+
+
+
+
+    TABLE 3. Results of CoRL2017 benchmark. Each value corresponds to the percentage of successfully completed episodes for each task in testing
+    conditions. Each column corresponds to an approach. Best scores are highlighted in bold.
+
+
+
+
+
+
+    TABLE 4. Results of NoCrash benchmark. Each value corresponds to the percentage of successfully completed episodes for each task in training
+    conditions. Each column corresponds to an approach. Best scores are highlighted in bold.
+
+
+
+
+
+
+  The NoCrash benchmark comprises three tasks with dis- that this benchmark is more difficult than the CoRL2017
+tinct levels of difficulties: Empty, Regular, and Dense (see benchmark. Once again, Chen et al. [36] achieved the best
+Figure 9) [55]. The Empty task corresponds to an uninhibited results in all tasks. Without considering Chen et al. [36], all
+town with no dynamic obstacles. The Regular task consists of other approaches presented relatively low scores in the Dense
+a town with a moderate number of vehicles and pedestrians. task, even though the conditions were exactly the same as in
+Finally, the Dense task corresponds to a town with many training.
+vehicles and pedestrians. This benchmark is more recent than Table 5 contains the results for the testing conditions,
+CoRL2017, so only a few approaches have assessed their and here, Ahmed et al. [37] achieved the best results, sur-
+algorithms in these tasks. The core idea of this benchmark passing Chen et al. [36] in two tasks. Agarwal et al. [14]
+is to introduce a new aspect in the evaluation of the agent: also achieved excellent scores in these conditions, achiev-
+the response to dynamic objects. Measuring an agent solely ing the same score as Ahmed et al. [37] in the Regular and
+based on whether it navigates to the destination point without Dense tasks. In the Empty and Regular tasks, all approaches
+considering what happened in the meantime is a limited have achieved good results, always above 80%. The poor
+judgement of its driving capabilities. As such, in the NoCrash results showed in the Dense task in training conditions
+benchmark, for an episode to be considered successful, the were amplified in test conditions. Toromanoff et al. [77] and
+agent must reach the destination under the time limit with Huang et al. [66] achieved a score of less than 50% success-
+the additional constraint of not colliding with any object. ful episodes, which clearly proves that current end-to-end AD
+This benchmark is a more complete assessment of the driving systems have a considerable difficulty in dealing with dense
+performance, although there are several other aspects of urban urban environments.
+driving which are yet to be considered. Some examples are Results from the quantitative evaluation are inconclusive
+respecting traffic lights and abiding to speed limits. in what concerns the best architecture for urban environ-
+  Table 4 contains the percentage of successfully completed ments. For the CoRL2017 benchmark, the most effective
+episodes out of 25, for each task in training conditions, for approach was IL-based architecture (Chen et al. [36]), while
+5 approaches. The overall scores, in this table, clearly indicate for the NoCrash benchmark the most effective approach
+
+VOLUME 10, 2022 75307
+
+    D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+
+
+
+
+
+
+
+        FIGURE 9. Illustration of the three driving tasks of NoCrash benchmark in Town 02. (a), (b), and (c) represents the
+        Empty task, Regular task, and Dense task, respectively.
+TABLE 5. Results of NoCrash benchmark. Each value corresponds to the percentage of successfully completed episodes for each task in testing
+conditions. Each column corresponds to an approach. Best scores are highlighted in bold.
+
+
+
+
+
+
+was RL-based architecture (Ahmed et al. [37]). Table 2 and avoiding human casualties and expensive crashes, changing
+Table 3 suggest that current end-to-end AD systems are lightning and weather conditions, and reshaping structural
+already very effective at tackling simple driving tasks, such elements of the scenes. It is also possible to reconstruct rare
+as Straight and One Turn. These approaches also appear to and dangerous scenarios that foster the learning of a robust
+be relatively well prepared for Navigation tasks. Conversely, and safer driving policy [86]. Furthermore, in simulators,
+Table 4 and Table 5 suggest that current end-to-end AD sys- we can exploit privileged information, such as the pose of
+tems are not yet prepared to cope with dense traffic situations, the vehicle and semantic information, that would otherwise
+characteristic of many real-world cities. The intricate prob- not be possible to have. However, the carry over from sim-
+lem of dealing with multiple agents and their unpredictability ulation to reality poses significant problems, mainly due to
+appears to be most challenging problem for end-to-end AD the simulation-reality gap [87]. The process of transferring a
+systems in urban environments. These results clearly indicate model trained in simulation to the real world is referred to as
+that further research is required in this area to tackle the dense transfer learning and, in the past years, several approaches
+urban environments. have been proposed to tackle this issue [86]–[89]. Due to
+        the novelty of end-to-end AD systems, none of the works
+IV. CONCLUSION addressed in this paper have been validated in real-sized
+This paper is the first evaluation of end-to-end AD systems vehicles in the real world. This is an important area to address
+in urban environments. We performed a detailed analysis of in the near future.
+17 approaches, based on three key points: architecture, inputs The complexity of driving situations that can be encoun-
+and outputs. Two CARLA benchmarks were used to quantita- tered makes it difficult to ensure that current end-to-end
+tively compare the approaches: CoRL2017 and NoCrash. For systems can be safely deployed on public roads. The lack of
+the CoRL2017 benchmark, we compared 10 approaches both interpretability, common to most end-to-end systems, is also
+in training and testing conditions, where we show that the a characteristic that can delay the implementation of these
+solution proposed by Chen et al. [36] achieved an excellent systems in the real world. For autonomous driving systems to
+score of 100% in all tasks considered. Furthermore, results be considered safe and viable, they must not only have fewer
+also suggest that modular approaches suffer from poor gener- accidents when compared to humans, but must also convey
+alization and error propagation. For the NoCrash benchmark, the reasoning behind their driving decisions. The feeling of
+we compared 5 approaches both in training and testing condi- safety in a self-driving car that is completely opaque in terms
+tions. In the training conditions Chen et al. [36], once again, of reasoning can only be achieved once we learn to fully trust
+achieved the best results, while in the testing conditions the autonomous systems, which is something that comes with
+approach proposed by Ahmed et al. [37] achieved the best years and years of safe driving behaviour.
+scores. From the analyses of Table 4 and Table 5, we can The next paragraphs of this section offer a critical analysis
+conclude that the current end-to-end AD systems are not of end-to-end AD, focused on the three points considered in
+prepared to deal with dense traffic, suggesting that additional this paper: architecture, inputs and outputs.
+research is required. IL is the most dominant strategy for end-to-end AD sys-
+  The use of simulators, such as CARLA, clearly plays a tems. However, there are some fundamental limitations that
+key role in the training of AD systems. Learning to drive should be highlighted. First, IL is limited to the average of
+in the simulation domain presents innumerous advantages: the training data, i.e., the model will learn the most repeated
+
+75308 VOLUME 10, 2022
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+              features in the data, ignoring the rare cases. In driving, a rare   [4]  L. Fridman, E. D. Brown, M. Glazer, W. Angell, S. Dodd, B. Jenik,
+                     case might be a child running towards a ball in the middle        J. Terwilliger, A.  Patsekin,   J.   Kindelsberger, L. Ding, S.       Seaman,
+                     of the road, and that is not a case that we are willing to        A. Mehler, A. Sipperley, A. Pettinato, B. Seppelt, L. Angell, B. Mehler,
+                  ignore. Second, and from our point of view, the most limiting        and B. Reimer, ‘‘MIT advanced vehicle technology study: Large-scale nat-
+                                                                                       uralistic driving study of driver behavior and interaction with automation,’’
+                    factor of IL concerns the limitation of the teachers. Since        IEEE Access, vol. 7, pp. 102021–102038, 2019.
+                      the goal of AD is to obtain systems that can drive better   [5]  Y. Zhang, H. Chen, L. Steven Waslander, J. Gong, G. Xiong, T. Yang,
+                       than humans, we cannot be limited by demonstrations from        and K. Liu, ‘‘Hybrid trajectory planning for autonomous driving in highly
+                                                                                       constrained environments,’’ IEEE Access, vol. 6, pp. 32800–32819, 2018.
+                      humans, otherwise, the best we can hope to achieve is the   [6]  C. Sun, X. Zhang, Q. Zhou, and Y. Tian, ‘‘A model predictive controller
+                      same driving performance of humans, and as we have noted,        with switched tracking error for autonomous vehicle path tracking,’’ IEEE
+                  it is not enough. For those reasons, we believe that the most   [7]  Access, vol. 7, pp. 53103–53114, 2019.
+                    promising architecture is RL-based. In recent years, agents        A. Kendall, J. Hawke, D. Janz, P. Mazur, D. Reda, J.-M. Allen, V.-D. Lam,
+                                                                                       A. Bewley, and A. Shah, ‘‘Learning to drive in a day,’’ in Proc. Int. Conf.
+                        trained with RL techniques have already achieved super-        Robot. Autom. (ICRA), May 2019, pp. 8248–8254.
+                     human performance, as in the case of game playing [90] and   [8]  M. Bansal, A. Krizhevsky, and A. Ogale, ‘‘ChauffeurNet: Learning to drive
+robotics [91].                                                                    [9]  by imitating the best and synthesizing the worst,’’ 2018, arXiv:1812.03079.
+                                                                                       E.   Santana   and  G.   Hotz,  ‘‘Learning   a  driving simulator,’’    2016,
+                        The most dominant strategy for input sensor modalities,        arXiv:1608.01230.
+                       in end-to-end AD, is to use RGB cameras. Most proponents  [10]  A. Hu, Z. Murez, N. Mohan, S. Dudas, J. Hawke, V. Badrinarayanan,
+                   of those configurations claim that it is the most affordable        R. Cipolla, and A. Kendall, ‘‘FIERY: Future instance prediction in bird’s-
+                                                                                       eye view from surround monocular cameras,’’ in Proc. IEEE/CVF Int.
+                          way to deploy AD systems. However, based on the works        Conf. Comput. Vis. (ICCV), Oct. 2021, pp. 15273–15282.
+                         described above, multimodality appears to be much more  [11]  T. Arakawa, ‘‘Trends and future prospects of the drowsiness detection and
+                       effective than the single modality RGB cameras. Further-  [12]  estimation technology,’’ Sensors, vol. 21, no. 23, p. 7921, Nov. 2021.
+                                                                                       S. Singh, Critical Reasons for Crashes Investigated in the National Motor
+                      more, as demonstrated by Chen et al. [65], RGB images and        Vehicle Crash Causation Survey, document DOT HS 812 506, Traffic
+                          LiDAR information are complementary, providing a more        Safety Facts Crash.Stats. Report No National Highway Traffic Safety
+                     detailed understanding of the scene. Concerning navigation  [13]  Administration, Washington, DC, USA, Mar. 2018.
+                    information, we believe that momentary indications, such as        P. Andersson and P. Ivehammar, ‘‘Benefits and costs of autonomous trucks
+                                                                                       and cars,’’ J. Transp. Technol., vol. 9, no. 2, pp. 121–145, 2019.
+                 ‘‘turn right’’, can induce ambiguity in a scene where multiple  [14]  T. Agarwal, H. Arora, and J. Schneider, ‘‘Learning urban driving policies
+                      roads may lead to the right. Based on that, it seems that        using deep reinforcement learning,’’ in Proc. IEEE Int. Intell. Transp. Syst.
+                      the model should receive the desired trajectory, provided  [15]  Conf. (ITSC), Sep. 2021, pp. 607–614.
+                                                                                       S. Arshad, M. Sualeh, D. Kim, D. V. Nam, and G.-W. Kim, ‘‘Clothoid: An
+                   by a global planner, as input. As it is widely used, vehicle        integrated hierarchical framework for autonomous driving in a dynamic
+measurements should also be taken into consideration.                            [16]  urban environment,’’ Sensors, vol. 20, no. 18, p. 5053, Sep. 2020.
+                           The most common outputs in end-to-end AD systems are        M. Buehler, K. Iagnemma, and S. Singh, The DARPA Urban Challenge:
+                                                                                       Autonomous Vehicles in City Traffic, 1st ed. Cham, Switzerland: Springer,
+                 steering angle, throttle and braking. At first glance, this is        2009.
+                        the logic approach since we are dealing with end-to-end  [17]  E. Yurtsever, J. Lambert, A. Carballo, and K. Takeda, ‘‘A survey of
+                 systems. However, we believe that it is not the most promising        autonomous driving: Common practices and emerging technologies,’’
+                                                                                       IEEE Access, vol. 8, pp. 58443–58469, 2020.
+                     approach. Momentary control commands are very difficult to  [18]  C.    Gómez-Huélamo,   J. D.         Egido,  L. M.    Bergasa, R.      Barea,
+                    interpret, and to explain the decisions taken by the model.        E. López-Guillén, F. Arango, J. Araluce, and J. López, ‘‘Train here, drive
+                 On the other hand, as used in [25], [60], waypoints are better        there: ROS based end-to-end autonomous-driving pipeline validation in
+                  to convey the intentions of the system. Furthermore, predict-        CARLA simulator using the NHTSA typology,’’ Multimedia Tools Appl.,
+                                                                                       vol. 81, no. 3, pp. 4213–4240, Jan. 2022.
+                   ing waypoints forces the model to plan the long-term trajec-  [19]  J. Levinson, J. Askeland, J. Becker, J. Dolson, D. Held, S. Kammel,
+                       tory instead of reacting to momentary inputs. When using        J. Z. Kolter, D. Langer, O. Pink, V. Pratt, M. Sokolsky, G. Stanek,
+                      waypoints, both the lateral and longitudinal movement are        D. Stavens, A. Teichman, M. Werling, and S. Thrun, ‘‘Towards fully
+                                                                                       autonomous driving: Systems and algorithms,’’ in Proc. IEEE Intell. Vehi-
+                   explained: the lateral movement is explicit in the waypoints        cles Symp., Jun. 2011, pp. 163–168.
+                   and the longitudinal movement can be easily explained by the  [20]  B. Paden, M. Čáp, S. Z. Yong, D. Yershov, and E. Frazzoli, ‘‘A survey of
+                    distance between successive points. To further increase the        motion planning and control techniques for self-driving urban vehicles,’’
+                                                                                       IEEE Trans. Intell. Vehicles, vol. 1, no. 1, pp. 33–55, Jun. 2016.
+                  visualization of the intentions of the model, and to increase  [21]  C. Urmson, J. Anhalt, D. Bagnell, C. Baker, R. Bittner, M. N. Clark,
+the effectiveness of the driving policy,                    additional outputs,        J.   Dolan, D.  Duggins,    T.  Galatali,    C. Geyer, and   M.    Gittleman,
+learned in a joint mechanism, are highly recommended.                                  ‘‘Autonomous driving in urban environments: Boss and the urban chal-
+                                                                                       lenge,’’ J. Field Robot., vol. 25, pp. 425–466, 2009.
+                                                                                 [22]  S. Yang, X. Mao, S. Yang, Z. Liu, G. Chen, S. Wang, J. Xue, and
+REFERENCES                                                                             Z. Xu, ‘‘Towards a robust software architecture for autonomous robot soft-
+                                                                                       ware,’’ in Proc. 7th Int. Workshop Comput. Sci. Eng., (WCSE), Apr. 2017,
+ [1]    J. Laconte, A. Kasmi, R. Aufrère, M. Vaidis, and R. Chapuis, ‘‘A survey  [23]  pp. 1197–1207.
+        of localization methods for autonomous vehicles in highway scenarios,’’        M. Quigley, ‘‘ROS: An open-source robot operating system,’’ in          Proc.
+     Sensors, vol. 22, no. 1, p. 247, Dec. 2021.                                 [24]  ICRA, 2009, pp. 1–6.
+ [2]     E. Horváth, C. Pozna, and M. Unger, ‘‘Real-time LIDAR-based urban road        A. Tampuu, T. Matiisen, M. Semikin, D. Fishman, and N. Muhammad,
+     and sidewalk detection for autonomous vehicles,’’ Sensors, vol. 22, no. 1,        ‘‘A survey of end-to-end driving: Architectures and training methods,’’
+     p. 194, Dec. 2021.                                                                IEEE Trans. Neural Netw. Learn. Syst., vol. 33, no. 4, pp. 1364–1384,
+                                                                                       Apr. 2022.
+ [3]    Y.-B. Chang, C. Tsai, C.-H. Lin, and P. Chen, ‘‘Real-time semantic seg-  [25]  W. Zeng, W. Luo, S. Suo, A. Sadat, B. Yang, S. Casas, and R. Urtasun,
+        mentation with dual encoder and self-attention mechanism for autonomous        ‘‘End-to-end interpretable neural motion planner,’’ in         Proc. IEEE/CVF
+     driving,’’ Sensors, vol. 21, no. 23, p. 8072, Dec. 2021.                          Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019, pp. 8652–8661.
+
+VOLUME 10, 2022                                                                                                                                                75309
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+[26]  B. Peng, Q. Sun, S. E. Li, D. Kum, Y. Yin, J. Wei, and T. Gu, ‘‘End-to-end         [49]  M. Hesham Eraqi, N. Mohamed Moustafa, and J. Honer, ‘‘End-to-end deep
+      autonomous driving through dueling double deep Q-network,’’ Automot.                     learning for steering autonomous vehicles considering temporal dependen-
+      Innov., vol. 4, no. 3, pp. 328–337, Aug. 2021.                                           cies,’’ in Proc. Conf., 31st Conf. Neural Inf. Process. Syst. (NIPS), MLITS
+[27]  Y. Xiao, F. Codevilla, A. Gurram, O. Urfalioglu, and A. M. Lopez, ‘‘Multi-               Workshop, Dec. 2017, pp. 1–8.
+      modal end-to-end autonomous driving,’’ IEEE Trans. Intell. Transp. Syst.,          [50]  S. K. Kwon, J. H. Seo, J.-W. Lee, and K.-D. Kim, ‘‘An approach for reliable
+      vol. 23, no. 1, pp. 537–547, Jan. 2020.                                                  end-to-end autonomous driving based on the simplex architecture,’’ in
+[28]  A. Adadi and     M. Berrada,      ‘‘Peeking inside  the black-box:  A       sur-         Proc. 15th Int. Conf. Control, Autom., Robot. Vis. (ICARCV), Nov. 2018,
+      vey on explainable artificial intelligence (XAI),’’ IEEE Access, vol. 6,                 pp. 1851–1856.
+      pp. 52138–52160, 2018.                                                             [51]  Y. Wang, D. Liu, H. Jeon, Z. Chu, and E. Matson, ‘‘End-to-end learning
+[29]  X.-W. Chen and X. Lin, ‘‘Big data deep learning: Challenges and perspec-                 approach for autonomous driving: A convolutional neural network model,’’
+      tives,’’ IEEE Access, vol. 2, pp. 514–525, 2014.                                         in Proc. 11th Int. Conf. Agents Artif. Intell., 2019, pp. 833–839.
+[30]  C. Yin, Y. Zhu, J. Fei, and X. He, ‘‘A deep learning approach for intru-           [52]  M. Campbell, M. Egerstedt, J. P. How, and R. Murray, ‘‘Autonomous
+      sion detection using recurrent neural networks,’’           IEEE Access, vol. 5,         driving in urban environments: Approaches, lessons and challenges,’’
+      pp. 21954–21961, 2017.                                                                   Philos. Trans. Roy. Soc. A, Math., Phys. Eng. Sci., vol. 368, no. 1928,
+[31]  R. Li, Z. Zhao, Q. Sun, C.-L. I, C. Yang, X. Chen, M. Zhao, and H. Zhang,                pp. 4649–4672, Oct. 2010.
+      ‘‘Deep reinforcement learning for resource management in network slic-             [53]  M. Aria, ‘‘A survey of self-driving urban vehicles development,’’ IOP Conf.
+      ing,’’ IEEE Access, vol. 6, pp. 74429–74441, 2018.                                       Ser., Mater. Sci. Eng., vol. 662, Nov. 2019, Art. no. 042006.
+[32]  Y. Wang, H. Liu, W. Zheng, Y. Xia, Y. Li, P. Chen, K. Guo, and H. Xie,             [54]  A. Dosovitskiy, G. Ros, F. Codevilla, A. Lopez, and V. Koltun, ‘‘CARLA:
+      ‘‘Multi-objective workflow scheduling with deep-q-network-based multi-                   An open urban driving simulator,’’ in Proc. CoRL, 2017, pp. 1–16.
+      agent reinforcement learning,’’            IEEE Access, vol. 7, pp. 39974–39982,   [55]  F. Codevilla, E. Santana, A. Lopez, and A. Gaidon, ‘‘Exploring the limi-
+      2019.                                                                                    tations of behavior cloning for autonomous driving,’’ in Proc. IEEE/CVF
+[33]  X. Li, J. Fang, W. Cheng, H. Duan, Z. Chen, and H. Li, ‘‘Intelligent power               Int. Conf. Comput. Vis. (ICCV), Oct. 2019, pp. 9328–9337.
+      control for spectrum sharing in cognitive radios: A deep reinforcement             [56]  P. Kaur, S. Taghavi, Z. Tian, and W. Shi, ‘‘A survey on simulators for
+      learning approach,’’ IEEE Access, vol. 6, pp. 25463–25473, 2018.                         testing self-driving cars,’’ in Proc. 4th Int. Conf. Connected Auto. Driving
+[34]  P. Mirowski, R. Pascanu, F. Viola, H. Soyer, J. A. Ballard, A. Banino,                   (MetroCAD), Apr. 2021, pp. 62–70.
+      M. Denil, R. Goroshin, L. Sifre, K. Kavukcuoglu, D. Kumaran, and                   [57]  C. Chen, A. Seff, A. Kornhauser, and J. Xiao, ‘‘DeepDriving: Learning
+      R. Hadsell, ‘‘Learning to navigate in complex environments,’’ in Proc. 5th               affordance for direct perception in autonomous driving,’’ in Proc. IEEE
+      Int. Conf. Learn. Represent. (ICLR) Conf. Track, 2017, pp. 1–16.                         Int. Conf. Comput. Vis. (ICCV), Dec. 2015, pp. 2722–2730.
+[35]  O.-E. L. Team, A. Stooke, A. Mahajan, C. Barros, C. Deck, J. Bauer,                [58]  A. Sauer, N. Savinov, and A. Geiger, ‘‘Conditional affordance learning
+      J. Sygnowski, M. Trebacz, M. Jaderberg, M. Mathieu, N. McAleese,                         for driving in urban environments,’’ in Proc. Conf. Robot Learn. (CoRL),
+      N. Bradley-Schmieg, N. Wong, N. Porcel, R. Raileanu, S. Hughes-Fitt,                     Jun. 2018, pp. 237–252.
+      V. Dalibard, and W. M. Czarnecki, ‘‘Open-ended learning leads to gen-              [59]  A. Mehta, A. Subramanian, and A. Subramanian, ‘‘Learning end-to-end
+      erally capable agents,’’ 2021.                                                           autonomous driving using guided auxiliary supervision,’’ in Proc. 11th
+[36]  D. Chen, B. Zhou, V. Koltun, and P. Krähenbühl, ‘‘Learning by cheating,’’                Indian Conf. Comput. Vis., Graph. Image Process., Dec. 2018, pp. 1–8.
+      in Proc. Conf. Robot Learn. (CoRL), 2019, pp. 66–75.                               [60]  A. Prakash, K. Chitta, and A. Geiger, ‘‘Multi-modal fusion transformer for
+[37]  M. Ahmed, A. Abobakr, C. P. Lim, and S. Nahavandi, ‘‘Policy-based                        end-to-end autonomous driving,’’ in Proc. IEEE/CVF Conf. Comput. Vis.
+      reinforcement learning for training autonomous driving agents in urban                   Pattern Recognit. (CVPR), Jun. 2021, pp. 7073–7083.
+      areas with affordance learning,’’ IEEE Trans. Intell. Transp. Syst., early         [61]  A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, N. A. Gomez,
+      access, Nov. 2, 2021, doi: 10.1109/TITS.2021.3115235.                                    L. Kaiser, and I. Polosukhin, ‘‘Attention is all you need,’’ in Proc. Adv.
+[38]  S. Liu, J. Tang, Z. Zhang, and J.-L. Gaudiot, ‘‘Computer architectures for               Neural Inf. Process. Syst., Dec. 2017, pp. 5999–6009.
+      autonomous driving,’’ Computer, vol. 50, no. 8, pp. 18–25, Aug. 2017.              [62]  Y. Gao and D. Glowacka, ‘‘Deep gate recurrent neural network,’’ J. Mach.
+[39]  F. Codevilla, M. Müller, A. Lopez, V. Koltun, and A. Dosovitskiy, ‘‘End-                 Learn. Res., vol. 63, pp. 350–365, Nov. 2016.
+      to-end driving via conditional imitation learning,’’ in Proc. IEEE Int. Conf.      [63]  G. Dai, C. Ma, and X. Xu, ‘‘Short-term traffic flow prediction method for
+      Robot. Autom. (ICRA), May 2018, pp. 4693–4700.                                           urban road sections based on space-time analysis and GRU,’’ IEEE Access,
+[40]  M. Bojarski, D. Del Testa, D. Dworakowski, B. Firner, B. Flepp, P. Goyal,                vol. 7, pp. 143025–143035, 2019.
+      L. Jackel, M. Monfort, U. Muller, J. Zhang, X. Zhang, J. Zhao, and                 [64]  L. Chen, X. Hu, B. Tang, and Y. Cheng, ‘‘Conditional DQN-based motion
+      K. Zieba,     ‘‘End to     end    learning  for   self-driving cars,’’     2016,         planning with fuzzy logic for autonomous driving,’’ IEEE Trans. Intell.
+      arXiv:160407316.                                                                         Transp. Syst., vol. 23, no. 4, pp. 2966–2977, Apr. 2022.
+[41]  J. Hua, L. Zeng, G. Li, and Z. Ju, ‘‘Learning for a robot: Deep rein-              [65]  J. Chen, S. E. Li, and M. Tomizuka, ‘‘Interpretable end-to-end urban
+      forcement learning, imitation learning, transfer learning,’’ Sensors, vol. 21,           autonomous driving with latent deep reinforcement learning,’’ IEEE Trans.
+      no. 4, p. 1278, Feb. 2021.                                                               Intell. Transp. Syst., vol. 23, no. 6, pp. 5068–5078, Jun. 2022.
+[42]  W. Zu, H. Yang, R. Liu, and Y. Ji, ‘‘A multi-dimensional goal aircraft             [66]  Z. Huang, C. Lv, Y. Xing, and J. Wu, ‘‘Multi-modal sensor fusion-
+      guidance approach based on reinforcement learning with a reward shaping                  based deep neural network for end-to-end autonomous driving with scene
+      algorithm,’’ Sensors, vol. 21, no. 16, p. 5643, Aug. 2021.                               understanding,’’ IEEE Sensors J., vol. 21, no. 10, pp. 11781–11790,
+[43]  H. Hu, Z. Lu, Q. Wang, and C. Zheng, ‘‘End-to-end automated lane-change                  May 2021.
+      maneuvering considering driving style using a deep deterministic policy            [67]  R. F. J. Dossa, S. Huang, S. Ontanon, and T. Matsubara, ‘‘An empirical
+      gradient algorithm,’’ Sensors, vol. 20, no. 18, pp. 1–22, 2020.                          investigation of early stopping optimizations in proximal policy optimiza-
+[44]  X. Liang, T. Wang, L. Yang, and E. Xing, ‘‘CIRL: Controllable imitative                  tion,’’ IEEE Access, vol. 9, pp. 117981–117992, 2021.
+      reinforcement learning for vision-based self-driving,’’ in Proc. Eur. Conf.        [68]  S. H. Silva, A. Alaeddini, and P. Najafirad, ‘‘Temporal graph traversals
+      Comput. Vis. in Lecture Notes in Computer Science, vol. 11211, 2018,                     using reinforcement learning with proximal policy optimization,’’      IEEE
+      pp. 604–620.                                                                             Access, vol. 8, pp. 63910–63922, 2020.
+[45]  H. Yi, E. Park, and S. Kim, ‘‘Multi-agent deep reinforcement learning for          [69]  U. M. Gidado, H. Chiroma, N. Aljojo, S. Abubakar, S. I. Popoola, and
+      autonomous driving,’’           KIISE Trans. Comput. Practices, vol. 24, no. 12,         M. A. Al-Garadi, ‘‘A survey on deep learning for steering angle prediction
+      pp. 670–674, Dec. 2018.                                                                  in autonomous vehicles,’’ IEEE Access, vol. 8, pp. 163797–163817, 2020.
+[46]  M. Bojarski, P. Yeres, A. Choromanska, K. Choromanski, B. Firner,                  [70]  S. Hochreiter and J. Schmidhuber, ‘‘Long short-term memory,’’ Neural
+      L. Jackel, and U. Muller, ‘‘Explaining how a deep neural network trained                 Comput., vol. 9, no. 8, pp. 1735–1780, 1997.
+      with end-to-end learning steers a car,’’ 2017, arXiv:1704.07911.                   [71]  E. Jo, M. Sunwoo, and M. Lee, ‘‘Vehicle trajectory prediction using hierar-
+[47]  V. Rausch, A. Hansen, E. Solowjow, C. Liu, E. Kreuzer, and J. K. Hedrick,                chical graph neural network for considering interaction among multimodal
+      ‘‘Learning a deep neural net policy for end-to-end control of autonomous                 maneuvers,’’ Sensors, vol. 21, no. 16, p. 5354, Aug. 2021.
+      vehicles,’’ in Proc. Amer. Control Conf. (ACC), May 2017, pp. 4914–4919.           [72]  C. Huang, R. Zhang, M. Ouyang, P. Wei, J. Lin, J. Su, and L. Lin,
+[48]  Z. Chen and X. Huang, ‘‘End-to-end learning for lane keeping of self-                    ‘‘Deductive reinforcement learning for visual autonomous urban driving
+      driving cars,’’ in            Proc. IEEE Intell. Vehicles Symp. (IV), Jun. 2017,         navigation,’’       IEEE Trans. Neural Netw. Learn. Syst., vol. 32, no. 12,
+      pp. 1856–1860.                                                                           pp. 5379–5391, Dec. 2021.
+
+75310                                                                                                                                                      VOLUME 10, 2022
+
+D. Coelho, M. Oliveira: Review of End-to-End Autonomous Driving in Urban Environments
+
+
+
+[73]  C. E. Van Uden, S. A. Nastase, A. C. Connolly, M. Feilong, I. Hansen,           [89]   X. Pan, Y. You, Z. Wang, and C. Lu, ‘‘Virtual to real reinforcement learning
+      M. I. Gobbini, and J. V. Haxby, ‘‘Modeling semantic encoding in a com-                   for autonomous driving,’’ in Proc. Brit. Mach. Vis. Conf., 2017, pp. 1–13.
+      mon neural representational space,’’ Frontiers Neurosci., vol. 12, p. 437,      [90]             D. Silver, A. Huang, C. Maddison, A. Guez, L. Sifre, G. Driessche,
+      2018.                                                                                J. Schrittwieser, I. Antonoglou,     V.   Panneershelvam,  M.         Lanctot,
+[74]  S. Zheng and H. Liu, ‘‘Improved multi-agent deep deterministic policy                S. Dieleman, D.   Grewe,     J. Nham,     N. Kalchbrenner, I.       Sutskever,
+      gradient for path planning-based crowd simulation,’’ IEEE Access, vol. 7,                      T. Lillicrap, M. Leach, K. Kavukcuoglu, T. Graepel, and D. Hassabis,
+      pp. 147755–147770, 2019.                                                                    ‘‘Mastering the game of Go with deep neural networks and tree search,’’
+[75]  Y. H. Xu, C. C. Yang, M. Hua, and W. Zhou, ‘‘Deep deterministic policy               Nature, vol. 529, no. 7587, pp. 484–489, 2016.
+      gradient (DDPG)-based resource allocation scheme for NOMA vehicular             [91] D. Kalashnikov, A. Irpan, P. Pastor, J. Ibarz, A. Herzog, E. Jang, D. Quillen,
+      communications,’’ IEEE Access, vol. 8, pp. 18797–18807, 2020.                               E. Holly, M. Kalakrishnan, V. Vanhoucke, and S. Levine, ‘‘QT-opt: Scal-
+[76]  Y. Qi, C. Shen, D. Wang, J. Shi, X. Jiang, and Z. Zhu, ‘‘Stacked sparse                   able deep reinforcement learning for vision-based robotic manipulation,’’
+      autoencoder-based deep network for fault diagnosis of rotating machin-               2018, arXiv:1806.10293.
+      ery,’’ IEEE Access, vol. 5, pp. 15066–15079, 2017.
+[77]  M. Toromanoff, E. Wirbel, and F. Moutarde, ‘‘End-to-end model-free
+      reinforcement learning for urban driving using implicit affordances,’’ in
+      Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020,
+      pp. 7151–7160.                                                                                                            DANIEL COELHO received the bachelor’s and
+[78]  K. He, X. Zhang, S. Ren, and J. Sun, ‘‘Deep residual learning for image
+      recognition,’’ in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR),                                              M.Sc. degrees from the University of Aveiro,
+      Jun. 2016, pp. 770–778.                                                                                   Aveiro,    Portugal, in 2019 and     2021,        respec-
+[79]  J. R. Sánchez-Ibáñez, C. J. Pérez-del-Pulgar, and A. García-Cerezo, ‘‘Path                                         tively, where he is currently pursuing the Ph.D.
+      planning for autonomous mobile robots: A review,’’ Sensors, vol. 21,                                               degree in mechanical engineering (specialization
+      no. 23, p. 7898, Nov. 2021.                                                                                    in robotics). His research interests include artifi-
+[80]  M. Alharbi and H. A. Karimi, ‘‘A global path planner for safe navigation of                                    cial intelligence, autonomous driving, localization,
+      autonomous vehicles in uncertain environments,’’ Sensors, vol. 20, no. 21,                                and robotics.
+      p. 6103, Oct. 2020.
+[81]  P. Cai, S. Wang, Y. Sun, and M. Liu, ‘‘Probabilistic end-to-end vehicle
+      navigation in complex dynamic environments with multimodal sensor
+      fusion,’’ IEEE Robot. Autom. Lett., vol. 5, no. 3, pp. 4218–4224, Jul. 2020.
+[82]  A. K. Guruji, H. Agarwal, and D. K. Parsediya, ‘‘Time-efficient A* algo-
+      rithm for robot path planning,’’ Proc. Technol., vol. 23, no. 1, pp. 144–149,
+      2016.                                                                                                                   MIGUEL OLIVEIRA received the bachelor’s and
+[83]  S. Erke, D. Bin, N. Yiming, Z. Qi, X. Liang, and Z. Dawei, ‘‘An improved                                               M.Sc. degrees from the University of Aveiro,
+      A-Star based path planning algorithm for autonomous land vehicles,’’ Int.                                 Aveiro,    Portugal, in 2004 and    2007,         respec-
+      J. Adv. Robotic Syst., vol. 17, no. 5, Sep. 2020, Art. no. 172988142096226.                               tively,    and the   Ph.D. degree     in       mechanical
+[84]  B. Hekimoˇglu, ‘‘Optimal tuning of fractional order PID controller for                                              engineering (specialization in robotics, on the
+      DC motor speed control via chaotic atom search optimization algorithm,’’                                             topic of autonomous driving systems), in 2013.
+[85]  IEEE Access, vol. 7, pp. 38100–38114, 2019.                                                                          From 2013 to 2017, he was an Active Researcher
+      R. Gutiérrez, E. López-Guillén, L. M. Bergasa, R. Barea, Ó. Pérez,                                                   with the Institute of Electronics and Telemat-
+      C. Gómez-Huélamo, F. Arango, J. del Egido, and J. López-Fernández,                                                  ics Engineering of Aveiro, Aveiro, and with the
+      ‘‘A waypoint tracking controller for autonomous road vehicles using ROS                                             Institute for Systems and Computer Engineering,
+[86]  framework,’’ Sensors, vol. 20, no. 14, p. 4062, Jul. 2020.                                Technology and Science, Porto, Portugal, where he participated in several
+      A. Bewley, J. Rigley, Y. Liu, J. Hawke, R. Shen, V.-D. Lam, and A. Kendall,          EU-funded projects, as well as national projects. He is currently an Assistant
+      ‘‘Learning to drive from simulation without real world labels,’’ in Proc. Int.               Professor with the Department of Mechanical Engineering, University of
+      Conf. Robot. Autom. (ICRA), May 2019, pp. 4818–4824.
+[87]  M. Müller, A. Dosovitskiy, B. Ghanem, and V. Koltun, ‘‘Driving policy                      Aveiro, where he is also the Director of the Masters in Automation Engi-
+      transfer via modularity and abstraction,’’ 2018, arXiv:1804.09364.                         neering. He has supervised more than 20 M.Sc. students. He authored over
+[88]  J. Tobin, R. Fong, A. Ray, J. Schneider, W. Zaremba, and P. Abbeel,                      20 journal publications, from 2015 to 2020. His research interests include
+      ‘‘Domain randomization for transferring deep neural networks from simu-                 autonomous driving, visual object recognition in open-ended domains, multi-
+      lation to the real world,’’ in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst.         modal sensor fusion, computer vision, and the calibration of robotic systems.
+      (IROS), Sep. 2017, pp. 23–30.
+
+
+
+
+
+
+
+
+
+
+VOLUME 10, 2022                                                                                                 75311
+

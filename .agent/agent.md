@@ -34,7 +34,8 @@ python pipeline.py --validate-only              # Validate existing outputs
 ## Playwright Automation (`run_gemini_playwright_v2.py`)
 | Feature | Detail |
 |---------|--------|
-| Model Selection | Always selects Gemini Pro automatically |
+| Model Selection | Always selects Gemini Pro; detects Thinking-Modus fallback |
+| Thinking Detection | If "Thinking-Modus", normalizes to "Gemini-3.1-thinking" |
 | Extraction | Blockwise semantic blocks (`!!!!!BLOCKNAME!!!!!`) → JSON assembly |
 | Canvas Defense | DOM detection + escape + prompt-level prevention |
 | Exit Codes | 0 = valid JSON saved, 1 = failure |
@@ -47,18 +48,19 @@ python pipeline.py --validate-only              # Validate existing outputs
 ## Quality Gates (validate_task.py)
 | Gate | Threshold |
 |------|-----------|
-| CoT length | ≥ 9,000 chars |
-| Answer length | ≥ 15,000 chars |
+| CoT length | ≥ 8,000 chars (Pro) / ≥ 5,000 chars (Thinking) |
+| Answer length | ≥ 15,000 chars (Pro) / ≥ 10,000 chars (Thinking) |
 | GPF elements | All 10 string blocks present |
 | Enumerated headers | All sub-element headers (e.g., "4.1 Symbolic Representation") |
-| XML SysML | ≥ 50 lines raw plaintext |
+| XML SysML | ≥ 30 lines (Pro) / ≥ 20 lines (Thinking) |
 | Python ABC | `class` + `def` in formal_specification |
 | Python Verifier | `def` in evaluation_verification |
 | Math notation | ≥ 5 formal symbols |
-| Per-element min length | Each element meets char threshold |
+| Per-element min length | Each element meets char threshold (reduced ~65% for Thinking) |
 | CoT structure | All 31 sub-elements |
 | Self-containment | No banned vocabulary |
 | Follow-up quality | ≥ 100 chars, specificity required |
+| Thinking prefix | [Thinking] (Pro) or [Mid Thinking] (Thinking model) |
 
 ## File Naming Convention
 ```

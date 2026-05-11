@@ -1,0 +1,583 @@
+arXiv:1711.06396v1  [cs.CV]  17 Nov 2017
+
+
+
+
+
+
+
+
+
+
+    VoxelNet: End-to-End Learning for Point Cloud Based 3D Object Detection
+
+    Yin Zhou        Oncel Tuzel
+   Apple Inc         Apple Inc
+yzhou3@apple.com  otuzel@apple.com
+
+
+        Abstract
+
+                                                                            33
+               Accurate detection of objects in 3D point clouds is a            :
+    central problem in many applications, such as autonomous             y                  4    EW
+    navigation, housekeeping robots, and augmented/virtual re-                              =                           AN
+    ality. To interface a highly sparse LiDAR point cloud with a
+    region proposal network (RPN), most existing efforts have
+    focused on hand-crafted feature representations, for exam-
+    ple, a bird’s eye view projection. In this work, we remove
+    the need of manual feature engineering for 3D point clouds              7
+    and propose VoxelNet, a generic 3D detection network that
+    unifies feature extraction and bounding box prediction into          iai      7      &
+    a single stage, end-to-end trainable deep network. Specifi-
+    cally, VoxelNet divides a point cloud into equally spaced 3D                                                        aN
+    voxels and transforms a group of points within each voxel           Figure 1. VoxelNet directly operates on the raw point cloud (no
+    into a unified feature representation through the newly in-         need for feature engineering) and produces the 3D detection re-
+    troduced voxel feature encoding (VFE) layer. In this way,           sults using a single end-to-end trainable network.
+    the point cloud is encoded as a descriptive volumetric rep-
+    resentation, which is then connected to a RPN to generate           tations for point clouds that are tuned for 3D object detec-
+    detections. Experiments on the KITTI car detection bench-           tion. Several methods project point clouds into a perspec-
+    mark show that VoxelNet outperforms the state-of-the-art            tive view and apply image-based feature extraction tech-
+    LiDAR based 3D detection methods by a large margin. Fur-            niques [28, 15, 22]. Other approaches rasterize point clouds
+thermore, our network learns an effective discriminative ~~ into a 3D voxel grid and encode each voxel with hand-
+    representation of objects with various geometries, leading          crafted features [41, 9, 37, 38, 21, 5]. However, these man-
+    to encouraging results in 3D detection of pedestrians and           ual design choices introduce an information bottleneck that
+    cyclists, based on only LiDAR.                                      prevents these approaches from effectively exploiting 3D
+                                                                        shape information and the required invariances for the de-
+    1. Introduction                                                     tection task. A major breakthrough in recognition [20] and
+                                                                        detection [13] tasks on images was due to moving from
+               Point cloud based 3D object detection is an important    hand-crafted features to machine-learned features.
+    component of a variety of real-world applications, such as                 Recently, Qi et al.[29] proposed PointNet, an end-to-
+    autonomous navigation [11, 14], housekeeping robots [26],           end deep neural network that learns point-wise features di-
+    and augmented/virtual reality [27].           Compared to image-    rectly from point clouds. This approach demonstrated im-
+    based detection, LiDAR provides reliable depth informa-             pressive results on 3D object recognition, 3D object part
+    tion that can be used to accurately localize objects and            segmentation, and point-wise semantic segmentation tasks.
+    characterize their shapes [21, 5].           However, unlike im-    In [30], an improved version of PointNet was introduced
+    ages, LiDAR point clouds are sparse and have highly vari-           which enabled the network to learn local structures at dif-
+    able point density, due to factors such as non-uniform              ferent scales. To achieve satisfactory results, these two ap-
+    sampling of the 3D space, effective range of the sensors,           proaches trained feature transformer networks on all input
+    occlusion, and the relative pose.          To handle these chal-    points (∼1k points).     Since typical point clouds obtained
+    lenges, many approaches manually crafted feature represen-          using LiDARs contain ∼100k points, training the architec-
+
+        1
+
+CEE —
+    3
+    = \
+
+
+     Partition|      Grouping         Sampling                                 Feature
+                                      Rand                                     Stacked
+ :                                                                                  Encodingⱽᵒˣᵉˡ         E          :
+
+ :                                                                                            ERE
+ :                                                              Tet                       7   HEH                   i:
+ :                                                                                                                   i
+ :                                                                             3              Hat]                   5
+ :                                                              int-wise   E                  3                      i
+ ::                                                                        Pointuise              foe)
+                                                                           Feature-1              Voxelwise
+ :                                                                             Feature            Feature           ::
+Figure 2. VoxelNet architecture.       The feature learning network takes a raw point cloud as input, partitions the space into voxels, and
+transforms points within each voxel to a vector representation characterizing the shape information. The space is represented as a sparse
+4D tensor. The convolutional middle layers processes the 4D tensor to aggregate spatial context. Finally, a RPN generates the 3D detection.
+
+tures as in [29, 30] results in high computational and mem-                methods by a large margin. We also demonstrate that Voxel-
+ory requirements. Scaling up 3D feature learning networks                  Net achieves highly encouraging results in detecting pedes-
+to orders of magnitude more points and to 3D detection                     trians and cyclists from LiDAR point cloud.
+tasks are the main challenges that we address in this paper.
+          Region proposal network (RPN) [32] is a highly opti-             1.1. Related Work
+mized algorithm for efficient object detection [17, 5, 31,                              Rapid development of 3D sensor technology has moti-
+24]. However, this approach requires data to be dense and                  vated researchers to develop efficient representations to de-
+organized in a tensor structure (e.g.      image, video) which             tect and localize objects in point clouds. Some of the earlier
+is not the case for typical LiDAR point clouds. In this pa-                methods for feature representation are [39, 8, 7, 19, 40, 33,
+per, we close the gap between point set feature learning and               6, 25, 1, 34, 2]. These hand-crafted features yield satisfac-
+RPN for 3D detection task.                                                 tory results when rich and detailed 3D shape information is
+         We present VoxelNet, a generic 3D detection framework             available. However their inability to adapt to more complex
+that simultaneously learns a discriminative feature represen-              shapes and scenes, and learn required invariances from data
+tation from point clouds and predicts accurate 3D bounding                 resulted in limited success for uncontrolled scenarios such
+boxes, in an end-to-end fashion, as shown in Figure 2. We                  as autonomous navigation.
+design a novel voxel feature encoding (VFE) layer, which                            Given that images provide detailed texture information,
+enables inter-point interaction within a voxel, by combin-                 many algorithms infered the 3D bounding boxes from 2D
+ing point-wise features with a locally aggregated feature.                 images [4, 3, 42, 43, 44, 36].          However, the accuracy of
+Stacking multiple VFE layers allows learning complex fea-                  image-based 3D detection approaches are bounded by the
+tures for characterizing local 3D shape information. Specif-               accuracy of the depth estimation.
+ically, VoxelNet divides the point cloud into equally spaced                             Several LIDAR based 3D object detection techniques
+3D voxels, encodes each voxel via stacked VFE layers, and                  utilize a voxel grid representation.         [41, 9] encode each
+then 3D convolution further aggregates local voxel features,               nonempty voxel with 6 statistical quantities that are de-
+transforming the point cloud into a high-dimensional volu-                 rived from all the points contained within the voxel. [37]
+metric representation.        Finally, a RPN consumes the vol-             fuses multiple local statistics to represent each voxel. [38]
+umetric representation and yields the detection result. This               computes the truncated signed distance on the voxel grid.
+efficient algorithm benefits both from the sparse point struc-             [21] uses binary encoding for the 3D voxel grid.         [5] in-
+ture and efficient parallel processing on the voxel grid.                  troduces a multi-view representation for a LiDAR point
+         We evaluate VoxelNet on the bird’s eye view detection             cloud by computing a multi-channel feature map in the
+and the full 3D detection tasks, provided by the KITTI                     bird’s eye view and the cylindral coordinates in the frontal
+benchmark [11]. Experimental results show that VoxelNet                    view. Several other studies project point clouds onto a per-
+outperforms the state-of-the-art LiDAR based 3D detection                  spective view and then use image-based feature encoding
+
+    schemes [28, 15, 22].
+           There are also several multi-modal fusion methods that
+              combine images and LiDAR to improve detection accu-
+         racy [10, 16, 5]. These methods provide improved perfor-
+          mance compared to LiDAR-only 3D detection, particularly
+    for small objects (pedestrians, cyclists) or when the objects        Point-wise
+                                                                         Input
+        are far, since cameras provide an order of magnitude more        Point-wise
+                                                                         Feature
+           measurements than LiDAR. However the need for an addi-                                         Locally
+                                                                         Aggregated
+      tional camera that is time synchronized and calibrated with                                         Feature  Point-wise
+        the LiDAR restricts their use and makes the solution more                                                 concatenated
+                                                                                                                    Feature
+      sensitive to sensor failure modes. In this work we focus on        Figure 3. Voxel feature encoding layer.
+    LiDAR-only detection.
+    1.2. Contributions                                               point cloud is sparse and has highly variable point density
+            • We propose a novel end-to-end trainable deep archi-    throughout the space.         Therefore, after grouping, a voxel
+            tecture for point-cloud-based 3D detection, VoxelNet,    will contain a variable number of points. An illustration is
+            that directly operates on sparse 3D points and avoids    shown in Figure 2, where Voxel-1 has significantly more
+             information bottlenecks introduced by manual feature    points than Voxel-2 and Voxel-4, while Voxel-3 contains no
+     engineering.                                                    point.
+                                                                     Random Sampling                Typically a high-definition LiDAR
+           • We present an efficient method to implement VoxelNet    point cloud is composed of ∼100k points.           Directly pro-
+          which benefits both from the sparse point structure and    cessing all the points not only imposes increased mem-
+     efficient parallel processing on the voxel grid.                ory/efficiency burdens on the computing platform, but also
+                                                                     highly variable point density throughout the space might
+                  • We conduct experiments on KITTI benchmark and    bias the detection. To this end, we randomly sample a fixed
+             show that VoxelNet produces state-of-the-art results    number, T , of points from those voxels containing more
+            in LiDAR-based car, pedestrian, and cyclist detection    than T points.          This sampling strategy has two purposes,
+     benchmarks.                                                     (1) computational savings (see Section 2.3 for details); and
+    2. VoxelNet                                                      (2) decreases the imbalance of points between the voxels
+                                                                     which reduces the sampling bias, and adds more variation
+         In this section we explain the architecture of VoxelNet,    to training.
+      the loss function used for training, and an efficient algo-    Stacked Voxel Feature Encoding             The key innovation is
+    rithm to implement the network.                                  the chain of VFE layers. For simplicity, Figure 2 illustrates
+    2.1. VoxelNet Architecture                                       the hierarchical feature encoding process for one voxel.
+                                                                     Without loss of generality, we use VFE Layer-1 to describe
+               The proposed VoxelNet consists of three functional    the details in the following paragraph. Figure 3 shows the
+    blocks:       (1) Feature learning network, (2) Convolutional    architecture for VFE Layer-1.
+      middle layers, and (3) Region proposal network [32], as il-    Denote V = {pi = [xi, yi, zi, ri]T             ∈ R4}i=1...t as a
+     lustrated in Figure 2. We provide a detailed introduction of    non-empty voxel containing t ≤ T             LiDAR points, where
+    VoxelNet in the following sections.                              pi contains XYZ coordinates for the i-th point and ri is the
+                                                                     received reflectance.         We first compute the local mean as
+    2.1.1   Feature Learning Network                                 the centroid of all the points in V, denoted as (vx, vy, vz).
+                                                                     Then we augment each point pi with the relative offset w.r.t.
+    Voxel Partition      Given a point cloud, we subdivide the 3D    the centroid and obtain the input feature set Vin       = {pˆi =
+      space into equally spaced voxels as shown in Figure 2. Sup-    [xi, yi, zi, ri, xi − vx, yi − vy, zi − vz]T ∈ R7}i=1...t. Next,
+          pose the point cloud encompasses 3D space with range D,    each pˆi is transformed through the fully connected network
+        H , W along the Z, Y, X axes respectively. We define each    (FCN) into a feature space, where we can aggregate in-
+    voxel of size vD, vH , and vW      accordingly. The resulting    formation from the point features fi          ∈ Rm to encode the
+    3D voxel grid is of size D′        = D/vD, H ′ = H/vH , W ′ =    shape of the surface contained within the voxel. The FCN
+    W/vW .  Here, for simplicity, we assume D, H ,        W are a    is composed of a linear layer, a batch normalization (BN)
+    multiple of vD, vH , vW .                                        layer, and a rectified linear unit (ReLU) layer. After obtain-
+    Grouping      We group the points according to the voxel they    ing point-wise feature representations, we use element-wise
+    reside in.    Due to factors such as distance, occlusion, ob-    MaxPooling across all fi associated to V to get the locally
+        ject’s relative pose, and non-uniform sampling, the LiDAR    aggregated feature ˜f ∈ Rm for V.            Finally, we augment
+
+
+
+
+
+
+
+
+
+
+    Fully Connected Neural Net
+
+
+Element - wise Maxpool
+
+    Point - wise Concatenate
+
+    128               Block 1:
+                      Conv2D(128, 128, 3, 2, 1) x 1
+                      Conv2D(128, 128, 3, 1, 1) x 3                                                                     Probability score map
+                                  Block 2:                                                                                  2
+                              Conv2D(128, 128, 3, 2, 1) x 1                                                     Conv2D(768, 2, 1, 1, 0) x 1
+                              Conv2D(128, 128, 3, 1, 1) x 5
+                H’            128                      Block 3:                             768                         H’/2
+                                                       Conv2D(128, 256, 3, 2, 1) x 1
+                                           128         Conv2D(256, 256, 3, 1, 1) x 5                                        W’/2
+                  W’      H’/2     W’/2    H’/4     W’/4      256  H’/8 W’/8                                H’/2            W’/2  14
+                                                           Deconv2D(256, 256, 4, 4, 0) x 1
+                                  Deconv2D(128, 256, 2, 2, 0) x 1                                                       H’/2   W’/2
+                                                                                            Conv2D(768, 14, 1, 1, 0) x 1
+                              Deconv2D(128, 256, 3, 1, 0) x 1                                                               Regression map
+                                  Figure 4. Region proposal network architecture.
+
+each fi with ˜f to form the point-wise concatenated feature                             BN layer, and ReLU layer sequentially. The convolutional
+as fiout = [fiT , ˜fT ]T ∈ R2m.                Thus we obtain the output                middle layers aggregate voxel-wise features within a pro-
+feature set Vout  = {fiout}i...t.               All non-empty voxels are                gressively expanding receptive field, adding more context
+encoded in the same way and they share the same set of                                  to the shape description. The detailed sizes of the filters in
+parameters in FCN.                                                                      the convolutional middle layers are explained in Section 3.
+                 We use VFE-i(cin, cout) to represent the i-th VFE layer
+that transforms input features of dimension cin into output                             2.1.3 Region Proposal Network
+features of dimension cout.                The linear layer learns a ma-
+trix of size cin × (cout/2), and the point-wise concatenation                           Recently, region proposal networks [32] have become an
+yields the output of dimension cout.                                                    important building block of top-performing object detec-
+                     Because the output feature combines both point-wise                tion frameworks [38, 5, 23]. In this work, we make several
+features and locally aggregated feature, stacking VFE lay-                              key modifications to the RPN architecture proposed in [32],
+ers encodes point interactions within a voxel and enables                               and combine it with the feature learning network and con-
+the final feature representation to learn descriptive shape                             volutional middle layers to form an end-to-end trainable
+information. The voxel-wise feature is obtained by trans-                               pipeline.
+forming the output of VFE-n into RC via FCN and apply-                                                 The input to our RPN is the feature map provided by
+ing element-wise Maxpool where C is the dimension of the                                the convolutional middle layers.          The architecture of this
+voxel-wise feature, as shown in Figure 2.                                               network is illustrated in Figure 4.          The network has three
+Sparse Tensor Representation                      By processing only the                blocks of fully convolutional layers. The first layer of each
+non-empty voxels, we obtain a list of voxel features, each                              block downsamples the feature map by half via a convolu-
+uniquely associated to the spatial coordinates of a particu-                            tion with a stride size of 2, followed by a sequence of con-
+lar non-empty voxel. The obtained list of voxel-wise fea-                               volutions of stride 1 (×q means q applications of the filter).
+tures can be represented as a sparse 4D tensor, of size                                 After each convolution layer, BN and ReLU operations are
+C × D′ × H ′ × W ′ as shown in Figure 2. Although the                                   applied. We then upsample the output of every block to a
+point cloud contains ∼100k points, more than 90% of vox-                                fixed size and concatanate to construct the high resolution
+els typically are empty. Representing non-empty voxel fea-                              feature map. Finally, this feature map is mapped to the de-
+tures as a sparse tensor greatly reduces the memory usage                               sired learning targets: (1) a probability score map and (2) a
+and computation cost during backpropagation, and it is a                                regression map.
+critical step in our efficient implementation.                                          2.2. Loss Function
+2.1.2    Convolutional Middle Layers                                                    Let   {aposi }i=1...Npos be the set of           Npos positive an-
+We use ConvM D(cin, cout, k, s, p)     to represent an               M -                chors and    {anegj }j=1...Nneg be the set of     Nneg    negative
+                                                                                        anchors.                  We parameterize a 3D ground truth box as
+dimensional convolution operator where cin and cout are                                 (xgc, ycg, zcg, lg, wg, hg, θg), where xgc, ycg, zcg represent the
+the number of input and output channels, k, s, and p are the                            center location, lg, wg, hg       are length, width, height of the
+M -dimensional vectors corresponding to kernel size, stride                             box, and  θg is the yaw rotation around Z-axis.             To re-
+size and padding size respectively. When the size across the                            trieve the ground truth box from a matching positive anchor
+M -dimensions are the same, we use a scalar to represent                                parameterized as (xac, yca, zca, la, wa, ha, θa), we define the
+the size e.g. k for k = (k, k, k).                                                      residual vector u∗           ∈ R7 containing the 7 regression tar-
+                 Each convolutional middle layer applies 3D convolution,                gets corresponding to center location ∆x, ∆y, ∆z, three di-
+
+                 Point     Voxel Input           Voxel-wise                            The method is summarized in Figure 5. We initialize a
+                 Cloud    Feature    Buffer      Feature                         K × T × 7 dimensional tensor structure to store the voxel
+                                                     K         Memory Copy       input feature buffer where K       is the maximum number of
+                                             K                                   non-empty voxels,         T is the maximum number of points
+                                                     C                           per voxel, and 7 is the input encoding dimension for each
+                               7                                                 point. The points are randomized before processing.     For
+                              T                  1                               each point in the point cloud, we check if the corresponding
+                                                                                 voxel already exists.   This lookup operation is done effi-
+                               K                                                 ciently in O(1) using a hash table where the voxel coordi-
+                               3             Indexing                            nate is used as the hash key. If the voxel is already initial-
+                              1                                                  ized we insert the point to the voxel location if there are less
+                     Voxel Coordinate                          Sparse
+                           Buffer                                 Tensor         than T points, otherwise the point is ignored. If the voxel
+              Figure 5. Illustration of efficient implementation.                is not initialized, we initialize a new voxel, store its coordi-
+                                                                                 nate in the voxel coordinate buffer, and insert the point to
+    mensions ∆l, ∆w, ∆h, and the rotation ∆θ, which are com-                     this voxel location. The voxel input feature and coordinate
+    puted as:                                                                    buffers can be constructed via a single pass over the point
+                                                                                 list, therefore its complexity is O(n).  To further improve
+            ∆x = xgc d−a xac , ∆y = ycg d−a yca , ∆z = zcg h−a zca ,             the memory/compute efficiency it is possible to only store
+                                                                                 a limited number of voxels (K ) and ignore points coming
+            ∆l = log( llag ), ∆w = log( wg ), ∆h = log( hg ),              (1)   from voxels with few points.
+                                                   wa             ha                After the voxel input buffer is constructed, the stacked
+            ∆θ = θg − θa                                                         VFE only involves point level and voxel level dense oper-
+
+                                                                                 that, after concatenation operations in VFE, we reset the
+    where da                      = √(la)2 + (wa)2 is the diagonal of the base   ations which can be computed on a GPU in parallel. Note
+    of the anchor box.                   Here, we aim to directly estimate the   features corresponding to empty points to zero such that
+    oriented 3D box and normalize ∆x and ∆y homogeneously                        they do not affect the computed voxel features.    Finally,
+    with the diagonal da, which is different from [32, 38, 22, 21,               using the stored coordinate buffer we reorganize the com-
+    4, 3, 5]. We define the loss function as follows:                            puted sparse voxel-wise structures to the dense voxel grid.
+                                                                                 The following convolutional middle layers and RPN oper-
+    L       =    α     1  ∑ Lcls(ppos, 1) + β N1               ∑ Lcls(pneg, 0)   ations work on a dense voxel grid which can be efficiently
+                   Npos    i                 i      neg        j      j          implemented on a GPU.
+            +    N1pos ∑i     Lreg(ui, u∗i )                               (2)   3. Training Details
+                                                                                   In this section, we explain the implementation details of
+    where pposi    and pnegj            represent the softmax output for posi-   the VoxelNet and the training procedure.
+    tive anchor aposi    and negative anchor anegj         respectively, while   3.1. Network Details
+    ui     ∈ R7 and u∗i                     ∈ R7 are the regression output and         Our experimental setup is based on the LiDAR specifi-
+    ground truth for positive anchor aposi           . The first two terms are   cations of the KITTI dataset [11].
+    the normalized classification loss for {aposi              }i=1...Npos and   Car Detection       For this task, we consider point clouds
+    {anegj             }j=1...Nneg, where the Lcls stands for binary cross en-   within the range of [−3, 1] × [−40, 40] × [0, 70.4] meters
+    tropy loss and α, β are postive constants balancing the rel-                 along Z, Y, X axis respectively.  Points that are projected
+    ative importance. The last term Lreg is the regression loss,                 outside of image boundaries are removed [5]. We choose
+    where we use the SmoothL1 function [12, 32].                                 a voxel size of vD  = 0.4, vH  = 0.2, vW      = 0.2 meters,
+    2.3. Efficient Implementation                                                which leads to D′   = 10, H ′  = 400, W ′ = 352.         We
+                                                                                 set T           = 35 as the maximum number of randomly sam-
+                         GPUs are optimized for processing dense tensor struc-   pled points in each non-empty voxel.         We use two VFE
+    tures.                    The problem with working directly with the point   layers VFE-1(7, 32) and VFE-2(32, 128).       The final FCN
+    cloud is that the points are sparsely distributed across space               maps VFE-2 output to R128. Thus our feature learning net
+    and each voxel has a variable number of points. We devised                   generates a sparse tensor of shape 128 × 10 × 400 × 352.
+    a method that converts the point cloud into a dense tensor                   To aggregate voxel-wise features, we employ three convo-
+    structure where stacked VFE operations can be processed                      lution middle layers sequentially as Conv3D(128, 64, 3,
+    in parallel across points and voxels.                                        (2,1,1), (1,1,1)), Conv3D(64, 64, 3, (1,1,1), (0,1,1)), and
+
+
+
+
+
+
+
+
+
+
+Stacked VFE
+
+Conv3D(64, 64, 3, (2,1,1), (1,1,1)), which yields a 4D ten-              Define set M = {pi = [xi, yi, zi, ri]T      ∈ R4}i=1,...,N as
+sor of size 64 × 2 × 400 × 352. After reshaping, the input               the whole point cloud, consisting of N points. We parame-
+to RPN is a feature map of size 128 × 400 × 352, where                   terize a 3D bouding box bi as (xc, yc, zc, l, w, h, θ), where
+the dimensions correspond to channel, height, and width of               xc, yc, zc are center locations, l, w, h   are length, width,
+the 3D tensor. Figure 4 illustrates the detailed network ar-             height, and  θ is the yaw rotation around Z-axis.      We de-
+chitecture for this task. Unlike [5], we use only one anchor             fine Ωi = {p|x ∈ [xc − l/2, xc + l/2], y ∈ [yc − w/2, yc +
+size, la  = 3.9, wa    = 1.6, ha       = 1.56 meters, centered at        w/2], z ∈ [zc − h/2, zc + h/2], p        ∈ M} as the set con-
+zca           = −1.0 meters with two rotations, 0 and 90 degrees.        taining all LiDAR points within bi, where p = [x, y, z, r]
+Our anchor matching criteria is as follows: An anchor is                 denotes a particular LiDAR point in the whole set M.
+considered as positive if it has the highest Intersection over                The first form of data augmentation applies perturbation
+Union (IoU) with a ground truth or its IoU with ground truth             independently to each ground truth 3D bounding box to-
+is above 0.6 (in bird’s eye view). An anchor is considered               gether with those LiDAR points within the box.       Specifi-
+as negative if the IoU between it and all ground truth boxes             cally, around Z-axis we rotate bi and the associated Ωi with
+is less than 0.45. We treat anchors as don’t care if they have           respect to (xc, yc, zc) by a uniformally distributed random
+0.45 ≤ IoU ≤ 0.6 with any ground truth. We set α = 1.5                   variable ∆θ ∈ [−π/10, +π/10]. Then we add a translation
+and β = 1 in Eqn. 2.                                                     (∆x, ∆y, ∆z) to the XYZ components of bi and to each
+Pedestrian and Cyclist Detection     The input range1          is        point in Ωi, where ∆x, ∆y, ∆z are drawn independently
+[−3, 1] × [−20, 20] × [0, 48] meters along Z, Y, X axis re-              from a Gaussian distribution with mean zero and standard
+spectively. We use the same voxel size as for car detection,             deviation 1.0. To avoid physically impossible outcomes, we
+which yields D = 10, H = 200, W              = 240. We set T = 45        perform a collision test between any two boxes after the per-
+in order to obtain more LiDAR points for better capturing                turbation and revert to the original if a collision is detected.
+shape information. The feature learning network and con-                 Since the perturbation is applied to each ground truth box
+volutional middle layers are identical to the networks used              and the associated LiDAR points independently, the net-
+in the car detection task. For the RPN, we make one mod-                 work is able to learn from substantially more variations than
+ification to block 1 in Figure 4 by changing the stride size             from the original training data.
+in the first 2D convolution from 2 to 1. This allows finer                       Secondly, we apply global scaling to all ground truth
+resolution in anchor matching, which is necessary for de-                boxes bi and to the whole point cloud M.        Specifically,
+tecting pedestrians and cyclists. We use anchor size la         =        we multiply the XYZ coordinates and the three dimen-
+0.8, wa   = 0.6, ha = 1.73 meters centered at zca          = −0.6        sions of each       bi, and the XYZ coordinates of all points
+meters with 0 and 90 degrees rotation for pedestrian detec-              in M with a random variable drawn from uniform distri-
+tion and use anchor size la   = 1.76, wa  = 0.6, ha        = 1.73        bution [0.95, 1.05]. Introducing global scale augmentation
+meters centered at zca         = −0.6 with 0 and 90 degrees rota-        improves robustness of the network for detecting objects
+tion for cyclist detection. The specific anchor matching cri-            with various sizes and distances as shown in image-based
+teria is as follows: We assign an anchor as postive if it has            classification [35, 18] and detection tasks [12, 17].
+the highest IoU with a ground truth, or its IoU with ground                      Finally, we apply global rotation to all ground truth
+truth is above 0.5. An anchor is considered as negative if its           boxes bi and to the whole point cloud M.         The rotation
+IoU with every ground truth is less than 0.35. For anchors               is applied along Z-axis and around (0, 0, 0). The global ro-
+having 0.35 ≤ IoU ≤ 0.5 with any ground truth, we treat                  tation offset is determined by sampling from uniform dis-
+them as don’t care.                                                      tribution [−π/4, +π/4]. By rotating the entire point cloud,
+    During training,           we use stochastic gradient descent        we simulate the vehicle making a turn.
+(SGD) with learning rate 0.01 for the first 150 epochs and
+decrease the learning rate to 0.001 for the last 10 epochs.              4. Experiments
+We use a batchsize of 16 point clouds.                                           We evaluate VoxelNet on the KITTI 3D object detection
+3.2. Data Augmentation                                                   benchmark [11] which contains 7,481 training images/point
+          With less than 4000 training point clouds, training our        clouds and 7,518 test images/point clouds, covering three
+network from scratch will inevitably suffer from overfitting.            categories:  Car, Pedestrian, and Cyclist.    For each class,
+To reduce this issue, we introduce three different forms of              detection outcomes are evaluated based on three difficulty
+data augmentation. The augmented training data are gener-                levels: easy, moderate, and hard, which are determined ac-
+ated on-the-fly without the need to be stored on disk [20].              cording to the object size, occlusion state, and truncation
+                                                                         level.  Since the ground truth for the test set is not avail-
+1Our empirical observation suggests that beyond this range, LiDAR        able and the access to the test server is limited, we con-
+returns from pedestrians and cyclists become very sparse and therefore   duct comprehensive evaluation using the protocol described
+detection results will be unreliable.                                    in [4, 3, 5] and subdivide the training data into a training set
+
+      Method         Modality                   Easy    Car                  Pedestrian              Cyclist
+                                                       Moderate  Hard   Easy  Moderate  Hard   Easy  Moderate  Hard
+    Mono3D [3]         Mono                     5.22   5.19      4.13   N/A     N/A     N/A    N/A     N/A     N/A
+     3DOP [4]         Stereo                   12.63   9.49      7.59   N/A     N/A     N/A    N/A     N/A     N/A
+   VeloFCN [22]       LiDAR                    40.14  32.08     30.47   N/A     N/A     N/A    N/A     N/A     N/A
+  MV (BV+FV) [5]      LiDAR                    86.18  77.32     76.33   N/A     N/A     N/A    N/A     N/A     N/A
+MV (BV+FV+RGB) [5]  LiDAR+Mono                 86.55  78.10     76.67   N/A     N/A     N/A    N/A     N/A     N/A
+   HC-baseline        LiDAR                    88.26  78.42     77.66  58.96   53.79   51.47  63.63   42.75   41.06
+     VoxelNet         LiDAR                    89.60  84.81     78.57  65.95   61.05   56.98  74.41   52.18   50.49
+Table 1. Performance comparison in bird’s eye view detection: average precision (in %) on KITTI validation set.
+      Method         Modality                   Easy    Car                  Pedestrian              Cyclist
+                                                       Moderate  Hard   Easy  Moderate  Hard   Easy  Moderate     Hard
+    Mono3D [3]         Mono                     2.53   2.31      2.31   N/A     N/A     N/A    N/A     N/A     N/A
+     3DOP [4]         Stereo                    6.55   5.07      4.10   N/A     N/A     N/A    N/A     N/A     N/A
+   VeloFCN [22]       LiDAR                    15.20  13.66     15.98   N/A     N/A     N/A    N/A     N/A     N/A
+  MV (BV+FV) [5]      LiDAR                    71.19  56.60     55.30   N/A     N/A     N/A    N/A     N/A     N/A
+MV (BV+FV+RGB) [5]  LiDAR+Mono                 71.29  62.68     56.56   N/A     N/A     N/A    N/A     N/A     N/A
+   HC-baseline        LiDAR                    71.73  59.75     55.69  43.95   40.18   37.48  55.35   36.07   34.15
+     VoxelNet         LiDAR                    81.97  65.46     62.85  57.86   53.42   48.87  67.17   47.65   45.11
+    Table 2. Performance comparison in 3D detection: average precision (in %) on KITTI validation set.
+
+  and a validation set, which results in 3,712 data samples for   4.1. Evaluation on KITTI Validation Set
+training and 3,769 data samples for validation.       The split   Metrics    We follow the official KITTI evaluation protocol,
+        avoids samples from the same sequence being included in   where the IoU threshold is 0.7 for class Car and is 0.5 for
+  both the training and the validation set [3]. Finally we also   class Pedestrian and Cyclist. The IoU threshold is the same
+present the test results using the KITTI server.                  for both bird’s eye view and full 3D evaluation. We compare
+                                                                  the methods using the average precision (AP) metric.
+           For the Car category, we compare the proposed method
+        with several top-performing algorithms, including image   Evaluation in Bird’s Eye View       The evaluation result is
+based approaches:                Mono3D [3] and 3DOP [4]; LiDAR   presented in Table 1. VoxelNet consistently outperforms all
+          based approaches: VeloFCN [22] and 3D-FCN [21]; and a   the competing approaches across all three difficulty levels.
+          multi-modal approach MV [5]. Mono3D [3], 3DOP [4] and   HC-baseline also achieves satisfactory performance com-
+      MV [5] use a pre-trained model for initialization whereas   pared to the state-of-the-art [5], which shows that our base
+       we train VoxelNet from scratch using only the LiDAR data   region proposal network (RPN) is effective. For Pedestrian
+provided in KITTI.                                                and Cyclist detection tasks in bird’s eye view, we compare
+                                                                  the proposed VoxelNet with HC-baseline. VoxelNet yields
+           To analyze the importance of end-to-end learning, we   substantially higher AP than the HC-baseline for these more
+      implement a strong baseline that is derived from the Vox-   challenging categories, which shows that end-to-end learn-
+   elNet architecture but uses hand-crafted features instead of   ing is essential for point-cloud based detection.
+      the proposed feature learning network. We call this model         We would like to note that [21] reported 88.9%, 77.3%,
+      the hand-crafted baseline (HC-baseline). HC-baseline uses   and 72.7% for easy, moderate, and hard levels respectively,
+        the bird’s eye view features described in [5] which are   but these results are obtained based on a different split of
+computed at 0.1m resolution.         Different from [5], we in-   6,000 training frames and      ∼1,500 validation frames, and
+      crease the number of height channels from 4 to 16 to cap-   they are not directly comparable with algorithms in Table 1.
+       ture more detailed shape information– further increasing   Therefore, we do not include these results in the table.
+      the number of height channels did not lead to performance
+improvement.           We replace the convolutional middle lay-   Evaluation in 3D         Compared to the bird’s eye view de-
+     ers of VoxelNet with similar size 2D convolutional layers,   tection, which requires only accurate localization of ob-
+        which are Conv2D(16, 32, 3, 1, 1), Conv2D(32, 64, 3, 2,   jects in the 2D plane, 3D detection is a more challeng-
+      1), Conv2D(64, 128, 3, 1, 1). Finally RPN is identical in   ing task as it requires finer localization of shapes in 3D
+VoxelNet and HC-baseline.           The total number of parame-   space.   Table 2 summarizes the comparison.          For the
+    ters in HC-baseline and VoxelNet are very similar. We train   class Car, VoxelNet significantly outperforms all other ap-
+     the HC-baseline using the same training procedure and data   proaches in AP across all difficulty levels.   Specifically,
+augmentation described in Section 3.                              using only LiDAR, VoxelNet significantly outperforms the
+
+=e. fa  haA    ITJ  |4d i    A 2 r3
+            =
+            =     4      AN
+            AT
+    .,  A     |     1        3    1:4ⁱᵗ₁ J
+        Siw        sg
+        Ba      =
+
+
+
+        .    pm
+            =  2    5  =
+             1      “&
+             [FF       i
+
+
+                                                               =
+:      Car        Pedestrian                                             Cyclist
+   Figure 6. Qualitative results. For better visualization 3D boxes detected using LiDAR are projected on to the RGB images.
+
+state-of-the-art method MV (BV+FV+RGB) [5] based on                  Benchmark     | Easy [ Moderate | Hard |
+LiDAR+RGB, by 10.68%, 2.78% and 6.29% in easy, mod-                  Car (3D Detection)           77.47      65.11    57.73
+erate, and hard levels respectively.        HC-baseline achieves    Car (Bird’s Eye View)         89.35  |   79.26   | 77.39
+similar accuracy to the MV [5] method.                             Pedestrian (3D Detection)      39.48      33.69    31.51
+           As in the bird’s eye view evaluation, we also compare   Pedestrian (Bird’s Eye View) | 46.13      40.74    38.11
+VoxelNet with HC-baseline on 3D Pedestrian and Cyclist              Cyclist (3D Detection)        61.22  |   48.36   | 44.37
+detection. Due to the high variation in 3D poses and shapes,       Cyclist (Bird’s Eye View)      66.70      54.76    50.55
+successful detection of these two categories requires better         Table 3. Performance evaluation on KITTI test set.
+3D shape representation. As shown in Table 2 the improved
+performance of VoxelNet is emphasized for more challeng-           and region proposal net takes 30ms on a TitanX GPU and
+ing 3D detection tasks (from ∼8% improvement in bird’s             1.7Ghz CPU.
+eye view to ∼12% improvement on 3D detection) which                5. Conclusion
+suggests that VoxelNet is more effective in capturing 3D
+shape information than hand-crafted features.                                 Most existing methods in LiDAR-based 3D detection
+4.2. Evaluation on KITTI Test Set                                  rely on hand-crafted feature representations, for example,
+                                                                   a bird’s eye view projection. In this paper, we remove the
+          We evaluated VoxelNet on the KITTI test set by submit-   bottleneck of manual feature engineering and propose Vox-
+ting detection results to the official server. The results are     elNet, a novel end-to-end trainable deep architecture for
+summarized in Table 3. VoxelNet, significantly outperforms         point cloud based 3D detection. Our approach can operate
+the previously published state-of-the-art [5] in all the tasks     directly on sparse 3D points and capture 3D shape infor-
+(bird’s eye view and 3D detection) and all difficulties. We        mation effectively. We also present an efficient implemen-
+would like to note that many of the other leading methods          tation of VoxelNet that benefits from point cloud sparsity
+listed in KITTI benchmark use both RGB images and Li-              and parallel processing on a voxel grid.     Our experiments
+DAR point clouds whereas VoxelNet uses only LiDAR.                 on the KITTI car detection task show that VoxelNet outper-
+           We present several 3D detection examples in Figure 6.   forms state-of-the-art LiDAR based 3D detection methods
+For better visualization 3D boxes detected using LiDAR are         by a large margin. On more challenging tasks, such as 3D
+projected on to the RGB images. As shown, VoxelNet pro-            detection of pedestrians and cyclists, VoxelNet also demon-
+vides highly accurate 3D bounding boxes in all categories.         strates encouraging results showing that it provides a better
+          The inference time for the VoxelNet is 225ms where the   3D representation. Future work includes extending Voxel-
+voxel input feature computation takes 5ms, feature learn-          Net for joint LiDAR and image based end-to-end 3D detec-
+ing net takes 20ms, convolutional middle layers take 170ms,        tion to further improve detection and localization accuracy.
+
+Acknowledgement:                 We are grateful to our colleagues        [15] A. Gonzalez, G. Villalonga, J. Xu, D. Vazquez, J. Amores,
+          Russ Webb, Barry Theobald, and Jerremy Holland for their    and A. Lopez. Multiview random forest of local experts com-
+valuable input.                                                       bining rgb and lidar data for pedestrian detection. In IEEE
+                                                                      Intelligent Vehicles Symposium (IV), 2015. 1, 2
+References                                                           [16] A. Gonzlez, D. Vzquez, A. M. Lpez, and J. Amores.          On-
+                                                                      board object detection: Multicue, multimodal, and multiview
+ [1] P. Bariya and K. Nishino. Scale-hierarchical 3d object recog-    random forest of local experts. IEEE Transactions on Cyber-
+  nition in cluttered scenes.   In        2010 IEEE Computer Soci-    netics, 47(11):3980–3990, Nov 2017. 3
+        ety Conference on Computer Vision and Pattern Recognition,      [17] K. He, X. Zhang, S. Ren, and J. Sun. Deep residual learning
+  pages 1657–1664, 2010. 2                                            for image recognition.             In 2016 IEEE Conference on Com-
+ [2] L. Bo, X. Ren, and D. Fox.       Depth Kernel Descriptors for    puter Vision and Pattern Recognition (CVPR), pages 770–
+  Object Recognition. In IROS, September 2011. 2                      778, June 2016. 2, 6
+   [3] X. Chen, K. Kundu, Z. Zhang, H. Ma, S. Fidler, and R. Urta-   [18] A. G. Howard.               Some improvements on deep convolu-
+        sun. Monocular 3d object detection for autonomous driving.    tional neural network based image classification.            CoRR,
+  In IEEE CVPR, 2016. 2, 5, 6, 7                                      abs/1312.5402, 2013. 6
+   [4] X. Chen, K. Kundu, Y. Zhu, A. Berneshawi, H. Ma, S. Fidler,     [19] A. E. Johnson and M. Hebert. Using spin images for efficient
+     and R. Urtasun. 3d object proposals for accurate object class    object recognition in cluttered 3d scenes. IEEE Transactions
+  detection. In NIPS, 2015. 2, 5, 6, 7                                on Pattern Analysis and Machine Intelligence, 21(5):433–
+      [5] X. Chen, H. Ma, J. Wan, B. Li, and T. Xia. Multi-view 3d    449, 1999. 2
+  object detection network for autonomous driving.         In IEEE   [20] A. Krizhevsky, I. Sutskever, and G. E. Hinton.        Imagenet
+  CVPR, 2017. 1, 2, 3, 4, 5, 6, 7, 8                                  classification with deep convolutional neural networks.         In
+        [6] C. Choi, Y. Taguchi, O. Tuzel, M. Y. Liu, and S. Rama-    F. Pereira, C. J. C. Burges, L. Bottou, and K. Q. Weinberger,
+         lingam. Voting-based pose estimation for robotic assembly    editors, Advances in Neural Information Processing Systems
+  using a 3d sensor.         In 2012 IEEE International Conference    25, pages 1097–1105. Curran Associates, Inc., 2012. 1, 6
+  on Robotics and Automation, pages 1724–1731, 2012. 2                  [21] B. Li. 3d fully convolutional network for vehicle detection
+ [7] C. S. Chua and R. Jarvis.      Point signatures: A new repre-    in point cloud. In IROS, 2017. 1, 2, 5, 7
+  sentation for 3d object recognition.    International Journal of     [22] B. Li, T. Zhang, and T. Xia. Vehicle detection from 3d lidar
+  Computer Vision, 25(1):63–85, Oct 1997. 2                           using fully convolutional network. In Robotics: Science and
+   [8] C. Dorai and A. K. Jain. Cosmos-a representation scheme for    Systems, 2016. 1, 2, 5, 7
+       3d free-form objects. IEEE Transactions on Pattern Analysis   [23] T. Lin, P. Goyal, R. B. Girshick, K. He, and P. Doll´ar. Focal
+  and Machine Intelligence, 19(10):1115–1130, 1997. 2                 loss for dense object detection. IEEE ICCV, 2017. 4
+   [9] M. Engelcke, D. Rao, D. Z. Wang, C. H. Tong, and I. Posner.        [24] W. Liu, D. Anguelov, D. Erhan, C. Szegedy, S. Reed, C.-Y.
+         Vote3deep: Fast object detection in 3d point clouds using    Fu, and A. C. Berg. Ssd: Single shot multibox detector. In
+  efficient convolutional neural networks. In        2017 IEEE In-    ECCV, pages 21–37, 2016. 2
+         ternational Conference on Robotics and Automation (ICRA),
+  pages 1355–1361, May 2017. 1, 2                                    [25] A. Mian, M. Bennamoun, and R. Owens.           On the repeata-
+     [10] M. Enzweiler and D. M. Gavrila. A multilevel mixture-of-    bility and quality of keypoints for local feature-based 3d ob-
+      experts framework for pedestrian classification. IEEE Trans-    ject retrieval from cluttered scenes. International Journal of
+          actions on Image Processing, 20(10):2967–2979, Oct 2011.    Computer Vision, 89(2):348–361, Sep 2010. 2
+  3                                                                        [26] Y.-J. Oh and Y. Watanabe. Development of small robot for
+[11] A. Geiger, P. Lenz, and R. Urtasun.      Are we ready for au-    home floor cleaning. In Proceedings of the 41st SICE Annual
+  tonomous driving?  the kitti vision benchmark suite.          In    Conference. SICE 2002., volume 5, pages 3222–3223 vol.5,
+             Conference on Computer Vision and Pattern Recognition    Aug 2002. 1
+  (CVPR), 2012. 1, 2, 5, 6                                             [27] Y. Park, V. Lepetit, and W. Woo. Multiple 3d object tracking
+[12] R. Girshick.  Fast r-cnn.     In Proceedings of the 2015 IEEE    for augmented reality. In 2008 7th IEEE/ACM International
+          International Conference on Computer Vision (ICCV), ICCV    Symposium on Mixed and Augmented Reality, pages 117–
+  ’15, 2015. 5, 6                                                     120, Sept 2008. 1
+ [13] R. Girshick, J. Donahue, T. Darrell, and J. Malik. Rich fea-      [28] C. Premebida, J. Carreira, J. Batista, and U. Nunes. Pedes-
+       ture hierarchies for accurate object detection and semantic    trian detection combining RGB and dense LIDAR data. In
+  segmentation.     In       Proceedings of the IEEE conference on    IROS, pages 0–1. IEEE, Sep 2014. 1, 2
+           computer vision and pattern recognition, pages 580–587,   [29] C. R. Qi, H. Su, K. Mo, and L. J. Guibas.       Pointnet: Deep
+  2014. 1                                                             learning on point sets for 3d classification and segmentation.
+[14] R. Gomez-Ojeda, J. Briales, and J. Gonzalez-Jimenez.      Pl-    Proc. Computer Vision and Pattern Recognition (CVPR),
+           svo: Semi-direct monocular visual odometry by combining    IEEE, 2017. 1
+  points and line segments.         In 2016 IEEE/RSJ International       [30] C. R. Qi, L. Yi, H. Su, and L. J. Guibas. Pointnet++: Deep
+        Conference on Intelligent Robots and Systems (IROS), pages    hierarchical feature learning on point sets in a metric space.
+  4211–4216, Oct 2016. 1                                              arXiv preprint arXiv:1706.02413, 2017. 1
+
+[31] J. Redmon and A. Farhadi. YOLO9000:            better, faster,
+ stronger. In IEEE Conference on Computer Vision and Pat-
+ tern Recognition (CVPR), 2017. 2
+[32] S. Ren, K. He, R. Girshick, and J. Sun.      Faster r-cnn: To-
+ wards real-time object detection with region proposal net-
+ works. In Advances in Neural Information Processing Sys-
+ tems 28, pages 91–99. 2015. 2, 3, 4, 5
+[33] R. B. Rusu, N. Blodow, and M. Beetz.        Fast point feature
+ histograms (fpfh) for 3d registration. In 2009 IEEE Interna-
+ tional Conference on Robotics and Automation, pages 3212–
+ 3217, 2009. 2
+       [34] J. Shotton, A. Fitzgibbon, M. Cook, T. Sharp, M. Finoc-
+ chio, R. Moore, A. Kipman, and A. Blake. Real-time human
+ pose recognition in parts from single depth images. In CVPR
+ 2011, pages 1297–1304, 2011. 2
+[35] K. Simonyan and A. Zisserman.               Very deep convolu-
+ tional networks for large-scale image recognition.           CoRR,
+ abs/1409.1556, 2014. 6
+   [36] S. Song and M. Chandraker. Joint sfm and detection cues for
+ monocular 3d localization in road scenes. In IEEE Confer-
+ ence on Computer Vision and Pattern Recognition (CVPR),
+ pages 3734–3742, June 2015. 2
+[37] S. Song and J. Xiao. Sliding shapes for 3d object detection in
+ depth images. In European Conference on Computer Vision,
+ Proceedings, pages 634–651, Cham, 2014. Springer Interna-
+ tional Publishing. 1, 2
+[38] S. Song and J. Xiao.         Deep Sliding Shapes for amodal 3D
+ object detection in RGB-D images. In CVPR, 2016. 1, 2, 4,
+ 5
+   [39] F. Stein and G. Medioni. Structural indexing: efficient 3-d
+ object recognition.          IEEE Transactions on Pattern Analysis
+ and Machine Intelligence, 14(2):125–145, 1992. 2
+   [40] O. Tuzel, M.-Y. Liu, Y. Taguchi, and A. Raghunathan. Learn-
+ ing to rank 3d features. In            13th European Conference on
+ Computer Vision, Proceedings, Part I, pages 520–535, 2014.
+ 2
+   [41] D. Z. Wang and I. Posner. Voting for voting in online point
+ cloud object detection. In Proceedings of Robotics: Science
+ and Systems, Rome, Italy, July 2015. 1, 2
+[42] Y. Xiang, W. Choi, Y. Lin, and S. Savarese.        Data-driven
+ 3d voxel patterns for object category recognition.  In        Pro-
+ ceedings of the IEEE International Conference on Computer
+ Vision and Pattern Recognition, 2015. 2
+[43] M. Z. Zia, M. Stark, B. Schiele, and K. Schindler.         De-
+ tailed 3d representations for object recognition and model-
+ ing.             IEEE Transactions on Pattern Analysis and Machine
+ Intelligence, 35(11):2608–2623, 2013. 2
+[44] M. Z. Zia, M. Stark, and K. Schindler.        Are cars just 3d
+ boxes? jointly estimating the 3d shape of multiple objects.
+ In 2014 IEEE Conference on Computer Vision and Pattern
+ Recognition, pages 3678–3685, June 2014. 2
+

@@ -1,0 +1,728 @@
+    Received: 18 November 2020 Revised: 28 December 2020 Accepted: 21 January 2021 CAAI Transactions on Intelligence Technology
+    DOI: 10.1049/cit2.12025
+
+    O R I G I N A L R E S E A R C H P A P E R
+
+
+    Deep imitation reinforcement learning for self‐driving by vision
+
+Qijie Zou1,2 | Kang Xiong² | Qiang Fang1 | Bohan Jiang¹
+
+
+    1College of Intelligence Science and Technology,        Abstract
+    National University of Defense Technology,               Deep reinforcement learning has achieved some remarkable results in self‐driving. There
+    2Changsha, China                                          is quite a lot of work to do in the area of autonomous driving with high real‐time re-
+    Information Engineering Faculty, Dalian University,          quirements because of the inefficiency of reinforcement learning in exploring large
+    Dalian, China                                              continuous motion spaces. A deep imitation reinforcement learning (DIRL) framework is
+    Correspondence                                            presented to learn control policies of self‐driving vehicles, which is based on a deep
+    Kang Xiong, Information Engineering Faculty,                   deterministic policy gradient algorithm (DDPG) by vision. The DIRL framework com-
+    Dalian University, Dalian, China.                           prises two components, the perception module and the control module, using imitation
+    Email: terryxk@gmail.com                                   learning (IL) and DDPG, respectively. The perception module employs the IL network as
+    Funding information                                       an encoder which processes an image into a low‐dimensional feature vector. This vector
+    Liaoning Provincial Natural Science Foundation            is then delivered to the control module which outputs control commands. Meanwhile, the
+    project, Grant/Award Number: 2019‐zd‐0578                        actor network of the DDPG is initialized with the trained IL network to improve
+                                                                exploration efficiency. In addition, a reward function for reinforcement learning is
+                                                            defined to improve the stability of self‐driving vehicles, especially on curves. DIRL is
+                                                            verified by the open racing car simulator (TORCS), and the results show that the correct
+                                                            control strategy is learned successfully and has less training time.
+
+    1 |                 INTRODUCTION                                                    A number of existing studies have also explored the learning
+                                                                                           efficiency of DRL [14‐16], mainly using the demo data for
+    With the development of deep neural network (DNN) [1], a                           preliminary training or modifications to the experience pool.
+    method     for      reinforcement    learning     using it, that       is  deep     The authors propose a vision‐based deep imitation reinforce-
+    reinforcement learning algorithm (DRL), was proposed in [2].                         ment learning (DIRL) framework in order to improve learning
+    In contrast to imitation learning (IL), which relies on large                    efficiency by preliminary training and use a deep deterministic
+    amounts of labelled data for good performance [3, 4], DRL                          policy gradient algorithm (DDPG) [17] that has a great advan-
+    does not require the manual collection of large amounts of                         tage for continuous decision making [18]. The control process
+    driving data, but acquires performance through interactive                              of DIRL is divided into two parts, perception module and
+    learning [5]. The tremendous success of DRL has attracted                            control module, which consist of IL and DDPG, respectively.
+    widespread     attention     in     the     field   of  self‐driving,  and  re-   Furthermore, the IL network is split into a perception network
+    searchers have proposed a series of self‐driving policies based                    and an action‐generating network. The former is used to build
+    on DRL. DRL has been used to learn automatic braking [6],                         image encoders and the latter produces the control signals and
+    safe lane‐changing [7, 8], high‐speed convergence [9], lane‐                      shares weights to initialize the actor network of DDPG.
+    keeping [10, 11], and urban driving tasks [12, 13]. The most                              The contributions of authors can be summarized as: (1)
+    critical challenge of deep reinforcement learning in practice is                  propose a novel DIRL framework to     integrate      imitation
+    the large scale, and high dimensional continuous action space,                      learning and reinforcement learning by network‐splitting and
+    which is time‐consuming and prone to cause the local opti-                         weight‐sharing for vision‐based autonomous driving tasks. The
+    mality in exploration learning. Therefore, there is a need to                         combined performance is better than any of them alone; (2)
+    reduce the scope of feasible action space to help speed up the                     Divide, the driving process into two parts: perception module
+    exploration.        So, the     authors     introduce   IL  to  solve      this   and control module. Imitation learning    is used to     build
+    problem.                                                                                 perception module and DDPG to build control module; and
+
+
+    This is an open access article under the terms of the Creative Commons Attribution‐NonCommercial‐NoDerivs License, which permits use and distribution in any medium, provided the-
+    original work is properly cited, the use is non‐commercial and no modifications or adaptations are made.
+    © 2021 The Authors. CAAI Transactions on Intelligence Technology published by John Wiley & Sons Ltd on behalf of The Institution of Engineering and Technology and Chongqing
+    University of Technology.
+
+    CAAI Trans. Intell. Technol. 2021;6:493–503.                                          wileyonlinelibrary.com/journal/cit2     493
+
+494  -                                                                                                                               ZOU ET AL.
+(3) Discuss about reward functions, which are used to make                   where f ¼ ðoi; θÞ is the predicted action of the network, and
+smooth driving of cars .                                                     the loss function L is used to minimize the gap between the
+                The work of the authors is organized as follows. Section 2   predicted actions of the network and the expert actions.
+provides  the background    knowledge     related to             imitation              The advantage of IL is that it allows agents to quickly
+learning and reinforcement learning. Section 3 presents the                  obtain    expert driving strategies  from demonstration       data
+framework of DIRL, the main components and the training                      through supervised learning, and therefore IL is widely used
+scheme. Section 4 presents the experimental results of the                   for all kinds of driving tasks such as off‐road driving [20],
+method in the open racing car simulator (TORCS) [19]. Finally,               following the road [21, 22, 23], and urban driving tasks [24, 25].
+the entire work is summarized in Section 5.
+
+2    |                          BACKGROUND KNOWLEDGE                         2.2    |   DDPG algorithm
+In the DIRL framework, a new approach is adopted that                        In a standard reinforcement learning process, an agent needs
+combines the advantages of IL and DRL. IL allows the                         to interact with the environment     e  at each time step   t, and
+framework to have an initial performance in a short period of                observes the state st. Then it will map a state to a deterministic
+time, and DRL can deal with unknown situations and obtain                    action  at      or a probability distribution over the actions ac-
+driving strategies. Therefore, the DIRL framework can not                    cording to its policyπ. As a result, it can obtain the appropriate
+only give play to expert driving experience, but also obtain                 reward rðst; atÞ from the environment and the next statestþ1.
+driving strategies beyond expert demonstration.                              The cumulative reward acquired by an agent in a given time
+                                                                             step t is defined as:
+
+2.1   |   Imitation learning                                                     R ¼ XT     γtrt                                            ð2Þ
+IL refers to learning from lots of demonstration data provided                   t¼0
+by a demonstrator. The demonstration data from human ex-
+perts is described as decision strategiesfτ1; τ2; τ3; ::::; τmg, each        where γ ∈ ½0; 1� is the discount factor. The goal of the rein-
+one containing a sequence of pairs of states and actions                     forcement learning task is to learn the optimal strategy π∗ by
+τi ¼ <si1; ai1; si2; ai2; :::>, and extracting all state‐action pairs to     maximizing the expected cumulative reward            EðRÞ from the
+construct a new set D ¼ fðs1; a1Þ; ðs2; a2Þ; ðs3; a3Þ; ::::g. Typi-          initial state. The training process is shown in Figure 2.
+cally, the state as a feature and the action as a marker can be                         The DDPG separates the exploration of action strategies
+used to obtain the optimal policy model by learning.                         from the updating of action strategy learning. The action
+           In the simple autopilot task (Figure 1), the state is the first   exploration still uses stochastic strategies, while the strategies
+view image ot of each time step     t              during driving, and the   to be learned are deterministic strategies. Secondly, it in-
+actions at are steering angle, throttle, and brakes, which make              troduces the actor‐critic [26, 27] framework, which separates
+up the training data pair                D ¼ fðot; atÞgNt¼1. The imitation   the policy network from the value network. Finally, it con-
+learning strategy function is defined as f           ¼ ðo; θÞ and θ is the   tinues the empirical reuse in the deep Q learning (DQN) [2]
+network parameter. By treating the imitation learning problem                algorithm to train the network non‐strategically in order to
+as supervised learning, the goal is to optimize the network                  minimize the correlation between samples. It also uses the
+parameter θ to minimize the loss function L:                                 target Q network to train the network to provide consistent
+                                                                             targets during time‐differentiated backups. Batch normaliza-
+    minθ ∑     Lðf ðoi; θÞ; aiÞ                                        ð1Þ   tion   is  also added to the DDPG algorithm to             prevent
+     ðoi;aiÞ∈D                                                               gradient explosion.
+
+                              I]                                                    e_®
+                              Fr        \                                                                            @
+    KO
+    Image                                                                                                            Throttle
+
+F I G U R E 1 Imitation learning training process
+
+
+
+
+
+
+
+
+
+
+24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+ZOU ET AL.                                                                -                                                        495
+        The actor network is updated by the following function (3):   3   |   DEEP IMITATION
+                                                                      REINFORCEMENT LEARNING
+∇θμJ ≈ N1 ∑i ∇aQ s; a | θQ�|s¼si;a¼μðsiÞ∇θμμðs | θμÞ            ð3Þ   3.1   | DIRL framework
+
+where    Qðs; a | θQÞ         is the direction of the maximum value   The proposed DIRL framework combines IL with DRL by
+function passed from the critic network, and        ∇θμμðs | θμÞ is   sharing the initial weights of the network. The framework has
+ the action probability. The update of critic network is similar to   two parts, perception module and control module, which use
+           the DQN algorithm, which uses the difference between the   imitation learning and deep reinforcement learning DDPG,
+     real value and the predicted value to update the parameters by   respectively, as shown in Figure 3.
+using function (4) and (5).                                                      Typical DRL algorithms use raw images as input to the
+                                                                      network, so they consume a lot of computing resources [13].
+
+                                                                      module is trained by IL to transform the high‐dimensional
+                      yi ¼ ri þ γQ0 siþ1; μ0ðsiþ1jθμ⁰ Þ��θQ⁰ �  ð4Þ   Now the input representation is changed and the perception
+                            L ¼ 1 X y − Q si; ai��θQ��2         ð5Þ   images into low‐dimensional feature vectors, which greatly
+                      N    i   i                                      reduces the processing burden of DRL and improves the
+                                                                      learning efficiency of the whole framework.
+                                                                         Specifically, a nine‐layer IL network is built including five
+where siþ1 is the next state value of the current state, y   is the   convolution layers and four fully connected layers to train the
+    ;                     θ    Þ is the predicted value.     i        perception module. The structure is given in Figure 5. Better
+real value, and Qðsi  ai |   Q
+             The DDPG algorithm uses the empirical replay mechanism   training results obtained with less data, and the DAgger algo-
+     to break the correlation between the training experiences, and   rithm [29] is utilized to make the agent recover from errors and
+       adopts the target network method to provide consistent goals   improve the performance of IL. After the IL network training
+       for the training process. These methods stabilize the entire   was   completed, it is divided further into the       perception
+       training process. It has a good processing power for contin-   network and the action‐generation network. The perception
+    uous actions and therefore is widely used on self‐driving tasks   network consists of the first five convolutional layers and the
+[28].                                                                 subsequent two fully connected layers, and the action‐genera-
+                                                                      tion network consists of the last two fully connected layers, as
+                                                                      shown in Figure 4.
+                                                                                    The control module consists of the DDPG algorithm,
+                                       Agent                          which is divided into an actor network and a critic network,
+                                                                      and its structure is shown in Figures 6 and 7 . The role of the
+                                             reward                   actor network is to generate control commands, and the critic
+    action                                       r                    network is to generate the corresponding value for the actions
+                                             state     s,,,           of the actor network and combine them with the acquired
+                      |                                               rewards. The value generated by the critic network is an
+                                                                      important parameter for adjusting the weights of the DDPG
+                                                                      network. The actor network has the same structure with the
+                          policy    7                                 action‐generating network, and so, we can say that this part is
+                                                                      from the IL network and can be initialized using the weights
+F I G U R E 2   Basic framework for reinforcement learning            W IL of the action‐generating network.
+
+
+
+
+
+
+                                                                      { “image encoder        § Action
+                                                                          states     = [| [|  = oe|
+
+                                                                                      ax (Ul
+
+F I G U R E 3   The structure of DIRL                                     DDPG
+
+
+
+
+
+
+
+
+
+
+24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+    496 -                                                                                                                    ZOU ET AL.
+               Taking advantage of IL, a perception network and an ac-        IL can effectively use expert demonstration data to learn
+    tion‐generation network can be constructed by collecting a           driving strategies in a short period of time, and also quickly
+    certain amount of driving data. The perception network ex-           build image encoder as the perception module. The disad-
+    tracts key information from the images, and the action‐gen-          vantages of IL are also obvious, as the performance depends
+    eration network initializes the actor‐network in the DDPG.           on the quality of the expert data and the generalizability of
+    This structure allows the perception model and the actor             unknown scenarios is weak. The reinforcement learning can
+    network in the control model to form a complete IL network           further improve the performance of the model owing to
+    and has some initial performance, as shown in Figure 3.              explore unforeseen circumstances.
+Reinforcement learning is then used to obtain a better control
+strategy by introducing exploration noise. This framework
+saves a lot of exploration time during the initialization process ~~ 3.3 | The DDPG network
+and allows the model to achieve excellent performance in a
+    short period of time.                                                The DDPG has excellent performance on continuous control
+                                                                         tasks and is the controller in the DIRL framework.
+    3.2     | The IL network                                             The algorithm is divided into an actor network and a critic
+                                                                         network. The  former receives input from the        perception
+                                                                         module and generates control commands, while the latter re-
+    The IL network is a convolutional neural network (CNN) that          ceives control commands from the actor network and the
+    has     good processing  power for images. With the          image   features generated by the perception module to compute Q
+    convolution processed by CNN, we can directly map the first‐
+    person view of the driving image into the control signals
+    (including steering, throttle, brake) of the self‐driving vehicle.
+                The proposed network mainly consists of nine layers of    Steer layer      Accel layer      Brake layer
+    neural networks, including five convolution layers, and four
+    fully connected layers, and the output layer consists of three
+    full‐connected networks, corresponding to steering, throttle
+    and brake, respectively. The specific structure is shown in              iter
+    Figure 5.
+
+
+
+    imagei > |                 Il|ˡⁱ  ol||                          Actionₐ  F I G U R E 6 The structure of actor network
+
+        7                      al
+                           i                                    =)|                                                  [==]
+        i  Image encoder   ||                                   ||     TAcin        concater      Fitter
+                           |
+                           |       0                            i=|
+                                   DOPG
+
+    F I G U R E 4 Network splitting and weight sharing in IL        F I G U R E 7         The structure of critic network
+
+
+
+    yy                         p                                sz   [Ji — sew
+    [=                                                               0
+    images                                                           [Jr  sane
+                                                                             F I G U R E 5 The structure of IL
+
+
+
+
+
+
+
+
+
+
+    24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+ZOU ET AL.                                                                                                                            -     497
+values for each control signal, and adjust the network weights                     � �1 − jvx − αj�I₁½d₁≤10��
+according to the update functions (3), (4), and (5).                      R2 ¼  vx �              β        x              cos θ
+    In the perception module, we transform the raw images                                                 �     �                           ð7Þ
+into low‐dimensional feature vectors as input to the DDPG                                         jd1j                    I2½d1≤50�
+network in order to reduce the processing burden of the                         x 1 − jsin θjÞ � ð1 − jd2          x  50      − C
+reinforcement learning network. The actor network is divided
+into three layers namely an input layer that receives features                           Equation (7) is similar to Equation (6) and the reward
+from the perception module, a hidden layer of a fully con-                     function consists mainly of the longitudinal speed vx of the car
+nected network to reduce the dimension of the images, and                      and the angle θ between the car and the lane, d1      is used to
+finally an output layer consisting of three fully connected                    determine if there is a curve ahead, while C is the penalty term
+networks corresponding to output steering, throttle, and brakes                    that works the same as function 6. More importantly, the two
+and this structure is shown in Figure 6.                              switches, I 1 and    I 2,           are designed to limit the speed. When
+    The critic network consists of a fully connected layer that       d1  ≤ 10 indicates that the car is at a curve and       I 1; I 2 ¼ 1, the
+takes the features from the perception module and the action                        reward function becomes Equation (8). In this case, the car
+information from the actor network. Finally, the output layer                   gets a greater penalty if its speed differs from target speedα.
+outputs the values of three actions for the network to learn.             The witch I 1        limits the car to maintain the speed of α   on a
+The critic network structure is shown in Figure 7.                    curve.
+
+3.4 | Reward function                                                     R2¼vx � �1 − jvxβ − αj� x        cos θ x        1 − jsin θjÞ
+                                                                                                  �     �                                   ð8Þ
+Appropriate reward function is the key to learn sufficient                            1 − jd      jd1j
+policy for reinforcement learning. Most existing reward func-                   x             2    x   50
+tions of DRL‐based self‐driving algorithm generally focused
+on  increasing     speed and maintaining    lane  center  [7].    We                    In the second case, 10 < d1 ≤ 50; it indicates that the
+consider not only the above, but also the stability of the high‐          vehicle  is going  to    enter a curve.     At  this  moment,     the
+speed vehicles.                                                       two switches change states, I 1 ¼ 0 and I 2 ¼ 1, and the reward
+    Firstly, the specific parameters presented in Table 1 are the     function becomes into Equation (9).      I 2           encourages the car
+commonly used reward function and the reward function is                            to fine‐tune its direction in preparation to steer into the
+shown in Equation (6).                                                     curve.
+
+               R1 ¼ vx cosðθÞ − vx sinðθÞ − vx | d2 | −C          ð6Þ            R ¼ vx       cos θ x    1 − jsin θjÞ � ð1 − jd2
+                                                                                      �       �
+    Equation (6) allows the car to drive in the center of the lane                  �      jd1j                               ð9Þ
+by the angle θ between the car and the axial direction of the                             50
+road, vx is the longitudinal speed of the car,     d2 measures the
+extent to which the vehicle remains centrally driven, as defined                 When d1 > 50, it means that the car is traveling in a straight
+in Table 1. C is an additional penalty. When a car crashes or                 line and there is no curve ahead, so I 1; I 2 ¼ 0, and the reward
+derails, additional penalties 200 will be given.                                    function becomes Equation (10). The speed limit is based on
+    Secondly,     the stability of the high‐speed     vehicles    is                the rules of the road and the state of the vehicle, with no
+considered. Human drivers are used to drive a car with the                     additional limits. The car is encouraged to accelerate according
+option of accelerating on a straightaway and slowing down on a            to the traffic rule.
+curve to ensure the stability of the vehicle. Therefore, a new
+reward function, Equation (7) was defined to encourage the
+vehicle to learn human habits.                                              R ¼ vx x     cos θ 1 − jsin θjÞ � ð1 − jd2                     ð10Þ
+
+
+T A B L E 1  The vehicle‐related parameters
+Name          Range                        Description
+Angle θ       ½−π; π�ðradÞ                 The angle between the direction of the vehicle and the direction of the road axis.
+Speed Xvx     ð0; 100Þðkm=hÞ               Speed of the car along the longitudinal axis of the car
+Track d₁      ½0; 200�ðmÞ                  The distance between the car and the track edge in front of the car.
+TrackPos d₂   ð−∞; þ∞Þ                     The distance between the car and the road axis, a value of 0 means the car is on the central axis,
+                                           greater than 1 or less than −1 means the car runs off the road.
+
+
+
+
+
+
+
+
+
+
+24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+498 -                                                                   ZOU ET AL.
+    Then we will experimentally test the applicability of the two   4   | EXPERIMENTAL RESULTS
+reward functions in our algorithm. In our experiments, the
+target speed α of the car at the curve is set to 50 and β to 200,   Now, the open‐source racing simulator TORCS is used to
+and both can be adjusted according to the results of identifying    implement our algorithm and compare the performance with
+traffic signs.                                                      existing algorithms. This section describes about the collection
+                                                                    of label data, completion of algorithm training, verification of
+3.5     | Training scheme                                           the applicability of the reward function, and comparison with
+                                                                    existed algorithms in terms of convergence efficiency and
+                                                                    other performance.
+There are two stages in the training process of the DIRL
+framework. The first stage is to collect driving data for training
+the IL network, which is used to train the perceptual model         4.1   | The open racing car simulator
+and then further to initialize the DDPG network. The second
+stage is to explore and learn from the DDPG algorithm, as           The TORCS is the competition software for the simulated car
+shown in Table 2.                                                   racing championship based on the client‐server structure [30].
+
+
+                                                                        T A B L E 2     The framework of the DIRL
+
+  Algorithm 1 Framework of the DIRL
+Randomly initialize imitation learning network θᴵᴸ
+
+Collect data ðsᴵᴸₜ ; aILt Þ and complete the IL training
+
+Split the IL network generates a perception module Pðs��θᴾÞ with weight�  θP and an action‐generation
+network with weight θυrandomly initialize critic network Qðs; a�θQÞ and actor μðsjθμÞ with weight θQ
+and θυ
+
+Initialize target network Q⁰     and μ0 with weights θQ⁰ ← θQ, θμ⁰ ← θυ
+
+Initialize replay buffer  R
+
+for episode = 1, M do
+
+ Initialize a random process N for action exploration
+
+ Receive initial observation state s₁
+
+ Get the low‐dimensional characteristics s₁ 0 ←Pðs₁��θᴾÞ
+
+ For t = 1, T do
+
+  Select action    at ¼ μðst 0 ��θμÞ þ Nt according to the current policy and exploration noise
+
+  Execute action at and observe reward rt and get new characteristic stþ1 0 ←Pðstþ1��θᴾÞ
+
+  Store transition ðst⁰; at; rt; stþ1 0Þ in R
+
+  Sample a random minibatch of N transitions ðsi⁰; ai; ri; siþ1⁰Þ from R
+
+  Set      yi ¼ ri þ γQ0ðsiþ10; μ0ðsiþ1 0 ��θμ⁰ Þ��θQ⁰Þ
+
+  Update critic by minimizing the loss:
+
+L ¼ N1 Pi  ðyi − Qðsi0; ai��θQÞÞ2
+
+  Update the actor policy using the sampled policy gradient:
+
+∇θμJ ≈ N1 Pi ∇aQ ðs; a��θQÞjs¼si₀;a¼μðsi0 Þ∇θμμ ðsjθμÞ
+
+  Update the target networks:
+
+            θQ⁰ ← τθQ     þ ð1 − τÞθQ⁰
+
+            θμ⁰ ← τθμ þ ð1 − τÞθμ⁰
+
+  end for
+
+end for
+
+
+
+
+
+
+
+
+
+
+24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+    ZOU ET AL.                                                              -                                                      499
+    Figure 8 presents the TORCS structure, in which the client is           dxt ¼ θðμ − xtÞdt þ σdwt                              ð11Þ
+    the controller of the vehicle and the server is the centre of the
+    game.                                                              where θ implies how quickly the variable reverts to the mean, μ
+             In TORCS, a car perceives the racing environment through   represents the mean, and σ is the degree of fluctuation of the
+    a number of sensors to get the status data and then it can          process. The parameter values used are shown in Table. 4.
+    perform the driving actions, by following a specific control            Data collection The authors collected 3000 sets of data on
+    policy. Image sensors in the proposed experiment, are used to       ~~ each map by recording first‐view images of the race car and
+    obtain a 64x64 pixel first‐person view driving image as the              control commands (steering, throttle, and braking) as the
+    inputs of the algorithm, and both speed and radar sensors are      expert data, and then trained the IL network. Since the goal is
+    used to obtain the values of distance measurement for the               to train a high‐performance IL network with less data, the
+    reward function parameters. The data obtained by these sen-            DAgger algorithm is introduced, which enhances the general-
+    sors are shown in Table 1.                                                izability of IL by boosting the amount of data with each
+         Further, our algorithm simulates the controller to solve the  ~~ episode of self‐exploration.
+    mapping from environment‐aware data to driving actions.                    Training The authors allow a car to collect exploration
+    TORCS also can simulate damage models, collisions, tire and           ~~ data from each episode, and the episode ends when the car
+    wheel characteristics, aerodynamics, and environmental infor-       crashes into an obstacle or runs off the track.
+    mation, and has a wide range of car models and tracks. So it is           The return value is obtained by the reward function, and
+    a suitable platform for researching self‐driving car.               the penalty for hitting or running out of the lane is     −200
+                                                                         during training. The model receives images and processes them
+                                                                        into low‐dimensional vectors  by the perception        module.
+    4.2     |     Experimental setup                                    Furthermore, the low‐dimensional vectors are used as inputs to
+                                                                        the control module to generate the action.
+    Device configuration           The computer used is Ubuntu 16.04,       The action consists of    steering, throttle, and  braking
+16G of running RAM, a GTX1660super GPU, and an R5‐3600 ~~ commands, as detailed in Table 5.
+CPU.
+    DDPG Network Parameters Regular DDPG network
+parameters are used, and Table 3 shows all the parameters of ~ 4.3 | Performance analysis
+the DDPG network.
+           Exploration factors IL is used to initialize DDPG's actor‐          In accordance with the construction process of the DIRL
+    network before exploration begins, to supply DDPG with                  framework, we first need to build a perceptual model using
+    some initial performance. To further improve the model per-        imitation learning. Now 3000 sets of driving data are collected
+    formance, appropriate exploration factors are added to prevent             on each of the three maps of TORCS, and furthermore the
+    falling into a local optimum. Also, OU noise is used in equa-         DAgger algorithm is introduced to allow the agent to recover
+    tions like (11).                                                        from errors. Table 6 shows the amount of data collected at
+                                                                               each map and the performance with the DAgger algorithm.
+                                                                         The data show that with the training of the DAgger algorithm,
+        fr                            ea                                   the agent can complete the three maps under test and obtain
+        TORCS
+        [came Engine              i|                         cD         good performance using fewer label data.
+                                                             =          Now, the applicability of the reward function (6) is tested in
+        !                         i|:                                          the default map CG SN1 of TORCS, compared DIRL with the
+
+                                                                          gorithm is not competent for dealing with sharp corners when
+        i               sor       |      =                                  DDPG algorithm. It is found that the vision‐based DIRL al-
+        i                                                               the car is at high speeds, as shown in Figure 9.
+                                                                             We continue to use the reward function (6), but limit the
+                                                                          longitudinal speed to 50 (km/h). The total reward of the two
+                                                                           algorithms is shown on the top of Figure 10 and the perfor-
+        Client          Client                                            mance after the training is completed as shown on the bottom
+                                                                        of Figure 10.
+
+
+    F I G U R E 8   The structure of TORCS                             T A B L E 4 Parameters of OU noise
+                                                                       Action      θ        μ               σ
+    T A B L E 3    DDPG network parameters                             Steering    0.5                0.0   0.2
+     Buffer_size    Batch_size   Gramma       TAU     LRA      LRC     Throttle    1.0                0.5   0.1
+     100000         32           0.99         0.001   0.0001   0.001   Brake       1.0               ‐0.1   0.05
+
+
+
+
+
+
+
+
+
+
+    24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+500 -                                                                                   ZOU ET AL.
+Action     Range     Description                                                    T A B L E 5 Description of action
+                                                                                    parameters
+Steering   ½−1; 1�   Where −1 means maximum right turn and 1 means maximum left turn
+Throttle   ½0; 1�    The higher the value, the deeper the acceleration
+Brake      ½0; 1�    The higher the number, the deeper the braking
+
+
+T A B L E 6 Imitation learning training
+
+Map          Data collected            Episode of DAgger   Finish one lap or not   Total reward of 300 steps
+CG SN1       3000                      5                   yes                     16934.92
+
+CG T2        3000                      5                   yes                     17230.23
+
+A‐speedway   3000                      5                   yes                     16537.08
+
+
+                                                                         (@)
+                         (                                                °            — DDPG                         I
+                                                                          5                DIRL        |       1        [
+                                                                          =                                    |
+                                                                          Q
+
+                                                                          ©                             |
+F I G U R E 9 Driving scenarios for sharp corners                         a                             il                                    |
+                                                                          °                                             |
+                                                                        © 20000                         LY        |     i                   I
+          The results in Figure 10 show that after limiting the lon-      2                                               il
+gitudinal speed, the vision‐based DIRL has a faster learning              3  0000                                 ll    [
+speed and better performance in shorter training episodes                 2
+using the reward function (6).                                                                                            A Li  i           [|
+                 However, we want agents to learn human‐like driving                                      wm
+habits that allow them to accelerate on straight roads and slow
+down during turns to ensure safe and stability of driving. We                                                Nodᴱᵖⁱˢᵒᵈᵉ
+then verified the feasibility and performance comparison of the         (b)                                       og two algorithms
+reward function (7) in our DIRL algorithm.                                  16000    | —— 700Episode   DOPG
+                In three maps from TORCS, we tested and compared our                   —— 400 Episode  Deep Imitation Reinforcement Learning
+algorithm with the other two algorithms and collected the                   14000
+average  rewards per       episode    as an evaluation    metric for
+learning efficiency. The       red line     indicates the   proposed
+algorithm, the   black line       indicates aggregated    multi‐deep      £ 10000
+deterministic policy gradient (AMDDPG) [31], and the green
+line indicates the traditional DDPG in Fig. 11. AMDDPG is                 H  8000
+based on DDPG and centralized empirical replay to aggregate
+multiple sub‐policies, which are aggregated to save learning
+time and ultimately converge to the best strategy.                      4000
+        From the training process and test results, the advantage of
+AMDDPG is that it takes less time to explore the model in the                          00,             0       es                             4%
+same number of exploration steps because it uses multiple sub‐
+policies simultaneously. AMDDPG requires a common initial                              Comparison of the performance of the two
+                                                                            algorithms under speed limit conditions.
+weight, which is why it has performance upfront, but the initial
+weight is difficult to obtain in reality.        F I G U R E 1 0                           Comparison of the two algorithms under the speed limit
+              Due to the disadvantage of the CNN model, the learning    ~~ condition: (a) and (b) are the convergence and performance comparisons,
+efficiency of DIRL is limited. Therefore, we used improved IL     respectively
+network generalizability to reduce this effect by using DAgger.                            the testing, the total number of steps and the total reward
+After training, the first two maps, the performance of the                             obtained is recorded, also including whether the car is able to
+algorithms and the results are shown in Table 7.                                            complete the entire map. It can be concluded that the pro-
+           In Table 7, we count the total number of episodes of each    posed  algorithm     can       achieve     high performance           in short
+algorithm trained on the different maps and test the perfor-                           training episodes, and has an excellent track completion due to
+mance of the final model with the completed training. During                       the good control of the curve scene.
+
+
+
+
+
+
+
+
+
+
+24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+    ZOU ET AL.    - 501
+
+
+
+
+
+
+
+
+
+
+                     (a)Overhead view of Map 1                   (b) Overhead view of Map 2                          (c) Overhead view of Map 3
+     Bw         |      ed   2%               3         2₅    NE                                                  ™
+     gw         Wa,         WP                         2     |   DOPG          1   ¥                         °BSw                                5
+                Sod                             4      &                           h                         H
+     Yaw                                                                                           pd!       4          itbo  Aᵒᵈᵉˢ
+                                                                                                     |       H                                add
+     8°         tia                             rt                Sri  aba                                   FE      ood
+     uw
+     cow       3¥              on                      wc=     8      1POH                       SiN         &                HE
+     2      i                                                                                    Hi          conf         le
+               |p        +: DDPG                       g,                                                    83                   !           DRL
+                                              AMDDPG                                                         =,          130                  AMDDPG
+            Tm me                                                     me                         we
+                Episode                                            Episode                                                    Episode
+            (d) Comparison of the convergence                (€) Comparison of the convergence                   (f) Comparison of the convergence of
+         of Map 1    of the three algorithms                 of Map 2 of the three algorithms                    Map 3 of the three algorithms
+
+    F I G U R E 1 1    Learning curve of three algorithms in three maps. (a), (b), and (c) are overhead views of the three maps; (d), (e), and (f) are the corresponding
+    learning curves of the three algorithms in the three maps
+
+    T A B L E 7     Comparison of performances    ~~  Algorithm   Map      Episode                      Test steps   Finish one lap or not     Total reward
+    of three algorithms
+                                                      DIRL        CG SN1   350                          301          Yes                       27900.56
+
+                                                      AMDDPG      CG SN1   700                          188          No                        15740.64
+
+                                                      DDPG        CG SN1   700                          173          No                        15490.42
+
+                                                      DIRL        CG T2    500                          515          Yes                       41096.54
+
+                                                      AMDDPG      CG T2    700                          150          No                        12575.98
+
+                                                      DDPG        CG T2    600                          99           No                        11852.73
+
+
+        The results show that in the three maps, DIRL improves the
+        = imitation Learning performance by 40%, 30% and 60% compared to IL, respec-
+   35000 Deep imitation reinforcement learning tively. Figure 13 shows the driving trajectories of the car, the
+        red indicates the DIRL algorithm, and the green is the IL al-
+        gorithm. The DIRL algorithm trained the car to drive closer to
+   25000 the center of the lane. From the experimental results, it can be
+        seen that our proposed vision‐based DIRL algorithm is able to
+2 35000 make the car learn to drive safely faster by inputting only the
+8 15000 first‐view image.
+
+   10000
+
+    5000 4.4 | Experimental analysis
+      0 map map2 map3 During the experiment, the performance of the IL model has
+        an impact on the learning rate of DIRL. Although we only
+F I G U R E 1 2 Comparison of performances of DIRL and IL collected a small amount of data to train the IL, it still showed
+        the excellent learning speed and performance of DIRL.
+    After IL and DIRL training were completed, the total re- Traditional DRL has the large search space, which causes it
+turn obtained after running the model for 300 steps is to to converge slowly and limits its application. We adopt a new
+observe the performance improvement, as shown in Figure 12. way to resolve this problem. The DIRL organizes IL, the
+
+
+
+
+
+
+
+
+
+
+    24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+    502   -                                                                                                                                 ZOU ET AL.
+                                                                       with a sequential model that predicts smaller oscillations. In
+                                                                       the future, some new data would be added as an adjunct to
+                                                                       the image data to further enhance the scope of the algorithm's
+                                                                       use.
+                                                                       ACKNOWLEDGEMENTS
+                                                                       This research was supported by the Liaoning Provincial Nat-
+                                                                       ural Science Foundation project, No.: 2019‐zd‐0578; Research
+                                                                       on Abnormal Driving Behavior recognition and Cooperative
+                                                                       control Mechanism for intelligent Driving System.
+
+                                                                       ORCID
+                                                                       Kang Xiong ® https://orcid.org/0000-0002-8716-6809
+
+                                                                       REFERENCES
+               map1        map2      map3                               1.   LeCun Y., Bengio Y., Hinton G.: Deep learning. Nature. 521(7553),
+                                                                             436‐444 (2015)
+    F I G U R E 1 3    Car driving track in three maps                  2.   Mnih V.,  et al.: Human‐level control through   deep        reinforcement
+                                                                             learning. Nature. 518(7540), 529‐533 (2015)
+          supervised learning, with the unsupervised DRL, to improve    3.   Bojarski M., et al.: End to end learning for self‐driving cars. (2016). arXiv
+    the learning efficiency. The specific summary is as follows:        4.   preprint arXiv:1604.07316.
+                                                                             Bansal M., Krizhevsky A., Ogale A.: Chauffeurnet: learning to drive by
+        (1) Compared with DRL, the DIRL initialized by IL, keeps the         imitating the best and synthesizing the worst. In Robotics: Science and
+                                                                             Systems (2018). arXiv preprint arXiv:1812.03079.
+          car driving in the centre of the lane with an average per-    5.   Arulkumaran K., et al.: Deep reinforcement learning: A brief survey.
+          formance improvement of 50%.                                       IEEE Signal Proc. Mag. 34(6), 26‐38 (2017)
+        (2) The DIRL algorithm has a faster learning efficiency than    6.   Chae H,, et al.: Autonomous braking system via deep reinforcement
+                 the traditional DDPG and AMDDPG algorithms, and can         learning. In: 2017 IEEE 20th International conference on intelligent
+          achieve     higher   performance through     short episode    7.   transportation systems (ITSC), pp. 1‐6. IEEE (2017)
+                                                                             Kaushik M., et al.: Overtaking maneuvers in simulated highway driving
+            training, boasting an average 50% efficiency gain on the         using deep reinforcement learning. In:2018 IEEE intelligent vehicles
+          training episode.                                                  symposium (iv), pp. 1885‐1890. IEEE (2018)
+     (3) The applicability of the new reward function, Formula 7, is    8.   Shi T., et al.: Driving decision and control for automated lane change
+             verified closer to human driving habits than Formula 6.         behavior based on deep reinforcement learning. In:2019 IEEE intelligent
+          Our trajectory is smoother.                                   9.   transportation systems conference (ITSC), pp. 2895‐2900 (2019)
+                                                                             Shi B., Fang Y.: Deep reinforcement learning based decision making
+            (4) The other conclusion shows that the DAgger algorithm         method for unmanned vehicle convergence. Electron. Meas. Technol.
+            has a very positive impact on DIRL performance, so as to         41(19), 44‐49 (2018)
+                the DIRL could gain the excellent learning speed and   10.   Zhu B., et al.: Deep reinforcement learning‐based vehicle following
+               performance by a small amount of data. In our experi-   11.   control. Chin. J. Highw. 32(6), 53‐60 (2019)
+           ments we collected only 3000 sets of experimental data in         Xia W., Li H.: Deep reinforcement learning‐based approach for learning
+                                                                             automatic driving strategies. Integrat. Technol. 6(3), 29‐40 (2017)
+          each map to achieve excellent performance.                   12.   Chen J., Yuan B., Tomizuka M.: Model‐free deep reinforcement learning
+                                                                             for urban autonomous driving. In:2019 IEEE intelligent transportation
+                                                                             systems conference (ITSC), pp. 2765‐2771 (2019)
+    5     |    CONCLUSIONS                                             13.   Liang X., et al.: Cirl: Controllable imitative reinforcement learning for
+                                                                             vision‐based self‐driving. In:Proceedings of the European conference on
+                                                                             computer vision (ECCV), pp. 584‐599 (2018).
+            The authors proposed a vision‐based DIRL framework. DIRL   14.   Hester T., et al.: Learning from demonstrations for real world rein-
+           combines IL with reinforcement learning in a new way. The         forcement learning (2017). arXiv preprint arXiv:1704.03732.
+      self‐driving control is divided into a perception module and a   15.   Zhang B.: Improved DDPG algorithm in automatic driving. Comput.
+       control module, while the perception model was trained by IL,   16.   Eng. Appl. 55(10), 264‐270 (2019)
+                and control model was based on DDPG. We validate and         Yi M.,    et al.: Deep imitation reinforcement  learning with      expert
+                                                                             demonstration data. J. Eng. 2018(16), 1567‐1573 (2018)
+         compare the feasibility and performance of the proposed al-   17.   Lillicrap T. P., et al.: Continuous control with deep       reinforcement
+        gorithm in TORCS. From the results, it can be concluded that         learning. CoRR (2015). arXiv preprint arXiv:1509.02971.
+        the proposed algorithm is more efficient in learning and can   18.   Lillicrap T. P., et al.: Continuous control with deep       reinforcement
+    drive safely by relying only on the first view image.              19.   learning. Google Deepmind (2016)
+          However, there are still some limitations to our approach.         Wymann B., et al.: TORCS, The Open Racing Car Simulator (2014).
+        https://www.torcs.org
+The predicted oscillations of the CNN network make it diffi- ~~ 20. Pan Y., et al.: Agile autonomous driving using end‐to‐end deep imitation
+            cult for the control model to output the correct control         learning. In Robotics:  Science  and Systems    (2017). arXiv    preprint
+             commands, which limit the performance of the model. The   21.   arXiv:1709.07174.
+    solution to this problem is to increase the training data of the         Xu H., et al.: End‐to‐end learning of driving models from large‐scale
+        IL to make it more generalized; the second is to replace CNN         video datasets. In:Proceedings of the IEEE Conference on Computer
+                                                                             Vision and Pattern Recognition, pp. 2174‐2182 (2017)
+
+
+
+
+
+
+
+
+
+
+    24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+
+ZOU ET AL.                                                                                     -                                                                   503
+
+22.   Zhang J., Cho K.: Query‐efficient imitation learning for end‐to‐end            28.   Youssef F., Houda B.: Deep reinforcement learning with external control:
+      simulated driving. In: Thirty‐First AAAI Conference on Artificial Intelli-           self‐driving car application. In: Proceedings of the 4th international
+      gence (2017).                                                                        conference on smart city applications, pp. 1‐7 (2019)
+23.   Codevilla F., et al.: End‐to‐end driving via conditional imitation learning.   29.   Ross S., Gordon G. J., Bagnell J. A.: No‐regret reductions for imitation
+      In: 2018 IEEE international conference on Robotics and Automation                    learning and structured prediction. In: AISTATS (2011)
+      (ICRA), pp. 1‐9 (2018)                                                         30.   Loiacono D., Cardamone L., Lanzi P. L.: Simulated Car Racing Cham-
+24.   Sauer  A., Savinov     N., Geiger A.: Conditional affordance   learning              pionship: Competition Software Manual. (2013).     arXiv           preprint
+      for  driving  in     urban  environments.  In   Conference on     Robot              arXiv:1304.1672.
+      Learning  (pp.   237‐252).  PMLR (2018).   arXiv  preprint  arXiv:1806.        31.   Wu J, Li H. Aggregated multi‐deep deterministic policy gradient for self‐
+      06498.                                                                               driving policy. In: International conference on internet of vehicles, Cham,
+25.   Chen J, Yuan B, Tomizuka M.: Deep imitation learning for autonomous                  pp. 179‐192. Springer (2018)
+      driving in generic urban scenarios with enhanced safety. In Conference
+      on Intelligent Robots and Systems (IROS), Macau, China, pp. 2884‐2890
+      (2019). https://doi.org/10.1109/IROS40897.2019.8968225                              How to cite this article: Zou, Q., et al.: Deep imitation
+26.   Heess N, Silver D, Teh Y W.: Actor‐Critic Reinforcement Learning with               reinforcement learning for self‐driving by vision. CAAI
+      Energy‐Based Policies, In Proceedings of the Tenth European Workshop                Trans. Intell. Technol. 6(4), 493–503 (2021). https://doi.
+27.   on Reinforcement Learning pp. 43‐58. EWRL (2012).                                   org/10.1049/cit2.12025
+      Wang Z, et al.: Sample efficient actor‐critic with experience replay (2016).
+      arXiv preprint arXiv:1611.01224.
+
+
+
+
+
+
+
+
+
+
+24682322, 2021, 4, Downloaded from https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cit2.12025, Wiley Online Library on [11/05/2025]. See the Terms and Conditions (https://onlinelibrary.wiley.com/terms-and-conditions) on Wiley Online Library for rules of use; OA articles are governed by the applicable Creative Commons License
+

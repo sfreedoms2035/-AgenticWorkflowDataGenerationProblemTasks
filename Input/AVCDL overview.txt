@@ -1,0 +1,1403 @@
+Autonomous Vehicle
+Cybersecurity Development
+Lifecycle (AVCDL)
+
+ Charles Wilson version 4
+ Principal Engineer, Cybersecurity Development Lifecycle Practice 2022-02-22
+
+
+
+This work was created by Motional and is licensed under the Creative Commons Attribution-Share Alike (CC BY-SA-4.0) License.
+                                                                       https://creativecommons.org/licenses/by/4.0/legalcode
+
+Speaker Bio
+                 Charles is a Principal Engineer at Motional responsible for developing
+3                their cybersecurity development lifecycle practice. He has over 37
+    years of professional experience across a broad range of domains
+    including aerospace, publishing, software development, technical
+
+    prin         illustrations, networking, embedded wireless hardware and software,
+    3     4      distributed image scaling, enterprise scale distributed systems, medical
+    A        7   devices, and autonomous vehicles. He first worked on security
+=         =      software  in 1983. He holds a  BSCS (Computer  Science), MSEE
+The      y=      (Electrical and Computer Engineering), and is CSSLP certified. His
+          —      masters work in 1992 was in anti-viral computer architecture. He has
+    =            been threat modeling for over 10 years. Charles has participated on
+    7,           several ISO standards committees. His most recent activities included
+    f            staffing at the FDA/MITRE/MDIC medical device  threat modeling
+    :            training bootcamps and working on the development ISO/SAE 21434
+    \            (Road vehicles — Cybersecurity engineering) and its related standards.
+    3            He is the vice-chair of the SAE Cybersecurity Maturity Model Task
+    Force (TEVEES18A3). He is the primary author and editor of the
+    Autonomous Vehicle Cybersecurity Development Lifecycle (AVCDL).
+
+
+                                                                2
+
+ISO/SAE 21434 is Here
+
+    Downloaded from SAE International by Charles Wilson, Friday, September 17, 2021
+
+    SA SURFACE VEHICLE                                                             ISO/SAE 21434
+    STANDARD                                                                       Issued  2021-09
+
+
+Road Vehicles - Cybersecurity Engineering
+
+
+
+                              Foreword
+
+                              ISO (the International Organization for Standardization) is a worldwide federation of national standards
+                              bodies (ISO member bodies). The work of preparing International Standards is normally carried out
+                              through ISO technical committees. Each member body interested in a subject for which a technical
+                              committee has been established has the right to be represented on that committee. International
+                              organizations, governmental and non-governmental, in liaison with ISO, also take part in the work.
+                              ISO collaborates closely with the International Electrotechnical Commission (IEC) on all matters of
+                              electrotechnical standardization.
+                              SAE International is a global association of more than 128,000 engineers and related technical experts
+Road Vehicles –               in the aerospace, automotive and commercial-vehicle industries. Standards from SAE International
+                              are used to advance mobility engineering throughout the world. The SAE Technical Standards
+                              Development Program is among the organization's primary provisions to those mobility industries
+                              it serves aerospace, automotive, and commercial vehicle. These works are authorized, revised, and
+                              maintained by the volunteer efforts of more than 9,000 engineers, and other qualified professionals
+                              from around the world. SAE subject matter experts act as individuals in the standards process, not
+Cybersecurity Engineering     as representatives of their organizations. Thus, SAE standards represent optimal technical content
+                              developed in a transparent, open, and collaborative process.
+                              The procedures used to develop this document and those intended for its further maintenance are
+                              described in the ISO/IEC Directives, Part 1 and the SAE Technical Standards Board Policy. In particular,
+                              the different approval criteria needed for the different types of ISO documents should be noted. This
+                              document was drafted in accordance with the editorial rules of the ISO/IEC Directives, Part 2 (see www
+                              .iso. org/directives).
+                              Attention is drawn to the possibility that some of the elements of this document may be the subject of
+                              patent rights. ISO and SAE International shall not be held responsible for identifying any or all such
+                              patent rights. Details of any patent rights identified during the development of the document will be in
+                              the Introduction and/or on the ISO list of patent declarations received (see www. iso. org/patents).
+
+
+
+
+
+__________________________________________________________________________________________________________________________________________
+© ISO/SAE International 2021
+All rights reserved. Unless otherwise specified, or required in the context of its implementation, no part of this publication may be reproduced or utilized
+otherwise in any form or by any means, electronic or mechanical, including photocopying, or posting on the internet or an intranet, without prior written
+permission. Permission can be requested from either ISO or SAE International the respective address below or ISO’s member body in the country of the
+requester.
+ISO copyright office            SAE International
+CP 401 • Ch. de Blandonnet 8    Tel: 877-606-7323 (inside USA and Canada)
+CH-1214 Vernier, Geneva         Tel: +1 724-776-4970 (outside USA)
+Phone: +41 22 749 01 11         Fax: 724-776-0790
+Fax: +41 22 749 09 47           Email: CustomerService@sae.org
+Email: copyright@iso.org        SAE WEB ADDRESS: http://www.sae.org
+Website: www.iso.org
+
+Published in Switzerland and USA
+
+
+
+                                                                                   3
+
+    How Will We Attain Compliance?
+
+        Downloaded from SAE International by Charles Wilson, Friday, September 17, 2021
+
+        SA SURFACE VEHICLE                                                             ISO/SAE 21434  |
+        STANDARD                                                                       Issued  2021-09
+
+
+    Road Vehicles - Cybersecurity Engineering
+
+
+
+                                                           Foreword
+
+                                                           ISO (the International Organization for Standardization) is a worldwide federation of national standards
+                                                           bodies (ISO member bodies). The work of preparing International Standards is normally carried out
+                                                           through ISO technical committees. Each member body interested in a subject for which a technical
+                                                           committee has been established has the right to be represented on that committee. International
+                                                           organizations, governmental and non-governmental, in liaison with ISO, also take part in the work.
+                                                           ISO collaborates closely with the International Electrotechnical Commission (IEC) on all matters of
+                                                           electrotechnical standardization.
+                                                           SAE International is a global association of more than 128,000 engineers and related technical experts
+                                                           in the aerospace, automotive and commercial-vehicle industries. Standards from SAE International
+Autonomous Vehicle Cybersecurity Development Lifecycle     are used to advance mobility engineering throughout the world. The SAE Technical Standards
+                                                           Development Program is among the organization's primary provisions to those mobility industries
+                       (AVCDL)                             it serves aerospace, automotive, and commercial vehicle. These works are authorized, revised, and
+                                                           maintained by the volunteer efforts of more than 9,000 engineers, and other qualified professionals
+                                                           from around the world. SAE subject matter experts act as individuals in the standards process, not
+                                                           as representatives of their organizations. Thus, SAE standards represent optimal technical content
+                                                           developed in a transparent, open, and collaborative process.
+                                                           The procedures used to develop this document and those intended for its further maintenance are
+                                                           described in the ISO/IEC Directives, Part 1 and the SAE Technical Standards Board Policy. In particular,
+    RR                                                     the different approval criteria needed for the different types of ISO documents should be noted. This
+                                                           document was drafted in accordance with the editorial rules of the ISO/IEC Directives, Part 2 (see www
+                                                           .iso. org/directives).
+                                                           Attention is drawn to the possibility that some of the elements of this document may be the subject of
+                                                           patent rights. ISO and SAE International shall not be held responsible for identifying any or all such
+                                                           patent rights. Details of any patent rights identified during the development of the document will be in
+                                                           the Introduction and/or on the ISO list of patent declarations received (see www. iso. org/patents).
+
+
+
+
+
+                                                                         __________________________________________________________________________________________________________________________________________
+                                                                         © ISO/SAE International 2021
+    Charles Wilson                                                       All rights reserved. Unless otherwise specified, or required in the context of its implementation, no part of this publication may be reproduced or utilized
+    Principal Engineer, Cybersecurity Development Lifecycle Practice     otherwise in any form or by any means, electronic or mechanical, including photocopying, or posting on the internet or an intranet, without prior written
+                                                                         permission. Permission can be requested from either ISO or SAE International the respective address below or ISO’s member body in the country of the
+                                                                         requester.
+    Version 43                                                                                           SAE International
+    2/8/2022 7:00:00 PM                                                  ISO copyright office
+                                                                         CP 401 • Ch. de Blandonnet 8    Tel: 877-606-7323 (inside USA and Canada)
+                                                                         CH-1214 Vernier, Geneva         Tel: +1 724-776-4970 (outside USA)
+                                                                         Phone: +41 22 749 01 11         Fax: 724-776-0790
+                                                                         Fax: +41 22 749 09 47           Email: CustomerService@sae.org
+                                                                         Email: copyright@iso.org        SAE WEB ADDRESS: http://www.sae.org
+                                                                         Website: www.iso.org
+
+                                                                         Published in Switzerland and USA
+
+
+
+                                                                                                         4
+
+    Autonomous Vehicle Cybersecurity Development Lifecycle
+
+    Downloaded from SAE International by Charles Wilson, Friday, September 17, 2021
+
+    SE SURFACE VEHICLE                                                             ISO/SAE 21434  |
+    STANDARD                                                                       Issued  2021-09
+
+
+    Road Vehicles - Cybersecurity Engineering
+
+
+
+                                                           Foreword
+
+                                                           ISO (the International Organization for Standardization) is a worldwide federation of national standards
+                                                           bodies (ISO member bodies). The work of preparing International Standards is normally carried out
+                                                           through ISO technical committees. Each member body interested in a subject for which a technical
+                                                           committee has been established has the right to be represented on that committee. International
+                                                           organizations, governmental and non-governmental, in liaison with ISO, also take part in the work.
+                                                           ISO collaborates closely with the International Electrotechnical Commission (IEC) on all matters of
+                                                           electrotechnical standardization.
+                                                           SAE International is a global association of more than 128,000 engineers and related technical experts
+                                                           in the aerospace, automotive and commercial-vehicle industries. Standards from SAE International
+Autonomous Vehicle Cybersecurity Development Lifecycle     are used to advance mobility engineering throughout the world. The SAE Technical Standards
+                                                           Development Program is among the organization's primary provisions to those mobility industries
+                       (AVCDL)                             it serves aerospace, automotive, and commercial vehicle. These works are authorized, revised, and
+                                                           maintained by the volunteer efforts of more than 9,000 engineers, and other qualified professionals
+                                                           from around the world. SAE subject matter experts act as individuals in the standards process, not
+                                                           as representatives of their organizations. Thus, SAE standards represent optimal technical content
+                                                           developed in a transparent, open, and collaborative process.
+                                                           The procedures used to develop this document and those intended for its further maintenance are
+                                                           described in the ISO/IEC Directives, Part 1 and the SAE Technical Standards Board Policy. In particular,
+                                                           the different approval criteria needed for the different types of ISO documents should be noted. This
+                                                           document was drafted in accordance with the editorial rules of the ISO/IEC Directives, Part 2 (see www
+                                                           .iso. org/directives).
+                                                           Attention is drawn to the possibility that some of the elements of this document may be the subject of
+                                                           patent rights. ISO and SAE International shall not be held responsible for identifying any or all such
+                                                           patent rights. Details of any patent rights identified during the development of the document will be in
+                                                           the Introduction and/or on the ISO list of patent declarations received (see www. iso. org/patents).
+
+
+
+
+
+                                                                         __________________________________________________________________________________________________________________________________________
+                                                                         © ISO/SAE International 2021
+    Charles Wilson                                                       All rights reserved. Unless otherwise specified, or required in the context of its implementation, no part of this publication may be reproduced or utilized
+    Principal Engineer, Cybersecurity Development Lifecycle Practice     otherwise in any form or by any means, electronic or mechanical, including photocopying, or posting on the internet or an intranet, without prior written
+                                                                         permission. Permission can be requested from either ISO or SAE International the respective address below or ISO’s member body in the country of the
+                                                                         requester.
+    Version 43                                                                                           SAE International
+    2/8/2022 7:00:00 PM                                                  ISO copyright office
+                                                                         CP 401 • Ch. de Blandonnet 8    Tel: 877-606-7323 (inside USA and Canada)
+                                                                         CH-1214 Vernier, Geneva         Tel: +1 724-776-4970 (outside USA)
+                                                                         Phone: +41 22 749 01 11         Fax: 724-776-0790
+                                                                         Fax: +41 22 749 09 47           Email: CustomerService@sae.org
+                                                                         Email: copyright@iso.org        SAE WEB ADDRESS: http://www.sae.org
+                                                                         Website: www.iso.org
+
+                                                                         Published in Switzerland and USA
+
+
+
+                                                                                                         5
+
+Lifecycle Basics
+
+
+  Policy Why
+
+
+
+
+
+
+
+
+
+
+  6
+
+Lifecycle Basics
+
+
+  Policy    Why
+
+  Process   What / Who / When
+
+
+
+
+
+
+
+            7
+
+Lifecycle Basics
+
+
+  Policy      Why
+
+  Process     What / Who / When
+
+  Procedure   How
+
+
+
+
+              8
+
+Lifecycle Basics
+
+
+  Policy                 Why
+
+  Lifecycle    Process   What / Who / When
+
+      Procedure          How
+
+
+
+
+                         9
+
+Lifecycles Have Assumptions
+        ISO 15288 System Development Life Cycle (SDLC)
+        ISO 12207 Software Development Life Cycle (SDLC)
+        ISO 26262 Road Vehicles - Functional Safety
+        ISO 21434 Road Vehicles - Cybersecurity Engineering
+UNECE WP.29 R155 Cyber Security Management Systems (CSMS)
+
+
+
+
+
+
+
+
+
+    10
+
+How the Standards Line Up
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     11
+
+How the Standards Line Up
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     12
+
+How the Standards Line Up
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     13
+
+How the Standards Line Up
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     14
+
+How the Standards Line Up
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     15
+
+                                                                         AVPDL – Autonomous Vehicle Product Development Lifecycle
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+                                                                                                                               16
+
+                                                                         AVPDL – Autonomous Vehicle Product Development Lifecycle
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+                                                                                                                               17
+
+AVPDL – Governance Processes
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     18
+
+AVPDL – Lifecycle Phases
+
+ AVPDL      15288 (SDLC system)     12207 (SDLC software)                            26262 (safety)               21434 (cybersecurity)
+
+                                                                            management of functional safety  overall cybersecurity management
+organization processes technical processes  technical processes  supporting processes                        project dependent cybersecurity
+                                                                                                                        management
+foundation phase               N/A                       N/A                         concept phase                       concept
+
+requirements phase   requirements definition   requirements definition            safety requirements           cybersecurity requirements
+                      requirements analysis  system requirements analysis  hazard analysis / risk assessment     cybersecurity assessment
+
+ design phase          architectural design  system architectural design          architectural design             cybersecurity design
+
+                          implementation            implementation                   implementation                    development
+implementation phase
+                           integration            system integration
+
+                           verification      system qualification testing
+verification phase                              software installation  integration and verification  integration and verification
+     transition
+
+     software acceptance support
+ release phase              validation        production                                                                production
+
+                            operation             software operation                                       continuous cybersecurity activities
+operation phase            maintenance           software maintenance            operation, service and         operation and maintenance
+     decommissioning
+ decommissioning phase       disposal             software disposal                                                  decommissioning
+   supplier processes  agreement processes       agreement processes              supporting processes     distributed cybersecurity activities
+
+     19
+
+ISO 21434 Work Products and Requirements
+                Activity                                                       AVCDL Phase      Work Product                                                                                       Dependencies
+€             3 84       Cybersecurity Event Assessment                        operation        WP-08-04  Cybersecurity event assessment                                                           RQ-08-04
+3                85     Vulnerability Analysis                                 operation        WP-08-05  Vulnerability analysis                                                                   RQ-08-05  RQ-08-06
+                 86                    Management                              design           WP-08-06  Vulnerability management                                                                 RQ-08-07
+                                                                               design           WP-08-X1  Apply incident response protocols                                                        'RQ-08-08
+Concept and Product Development Phases
+                 93      Item Definition                                       requirements     WP-09-01  Item definition                                                                          RQ-09-01  RQ-09-02
+     §                                                                         design           WP-09-02  Threat analysis and risk assessment                                                      RQ-09-03  RQ-09-04
+                 94                    Goals                                   design           WP-09-03  Cybersecurity goals                                                                      RQ-09-05
+        3S                                                                     design           WP-09-04 Cybersecurity claims                                                                      RQ-09-06
+                                                                               design           WP-09-05  Verification report                                                                      RQ-09-07
+                 95                    Concept                                 design           WP-09-06 Cybersecurity concept                                                                     RQ-09-08 RQ-09-09  RQ-09-10
+                                                                               design           WP-09-07 Verification report of cybersecurity concept                                              RQ-09-11
+                                                                               design                     Refined cybersecurity specification                                                      RQ-10-01  RQ-10-02
+ 1ᴴ   =          10.4.1  Refinement of Cybersecurity Requirements and          requirements     WP-10-02 Cybersecurity requirements for post-development                                           RQ-10-03
+                     Architectural Design                                      foundation       WP-10-03  Documentation of the modelling, design, or programming languages and coding guidelines   RQ-10-04 RQ-10-05
+      £                                                                        verification     WP-10-04 Verification report for the refined cybersecurity specification                           RQ-10-08
+ iᵃ              10.4.2  Integration and Verification                          verification     WP-10-05 Vulnerability analysis     report                                                         RQ-10-07  RC-10-12  RQ-10-13
+                                                                                implementation  WP-10-06  Integration and verification specification                                               RQ-10-10
+      3          110     Cybersecurity Validation of the Item at Vehicle Level  implementation  WP-10-07  Integration and verification reports                                                     RQ-10-09 RQ-10-11 RC-10-12 RQ-10-13
+                                                                               verification     WP-11-01  Validation report                                                                        RQ-11-01  RQ-11-02
+Post-Development Phases.
+              3  120     Production                                            operation:       WP-12-01  Production control plan                                                                  RQ-12-01  RQ-12-02
+                         cybersecurity Incident Response                       foundation       WP-12:X1  Production control plan implementation                                                    RQ-12-03
+                                                                               operation        WP-13.01  Cybersecurity incident response plan                                                     RQ-13-01
+         i       134     Updates                                               operation        WP-13-X2  Cybersecurity incident response plan implementation
+                                                                                                          Update plan
+              §  143     End of Cybersecurity Support                                           WP-14-01  Procedures to communicate end of cybersecurity support                                   RQ-14-01
+              2  a Decommissioning                                             foundation       WP-14-X1 Decommissioning implications                                                               RQ-14-02
+‘Threat Analysis and Risk Assessment Methods                                   design
+                 153     |asseridentiication                                                    WP-15-02  Identified assets and cybersecurity properties                                           RQ-15-02
+ H                                                                             design           WP-15-01  Damage scenarios                                                                         RQ-15-01
+                 15.4    Threat Scenario Identification                        design           WP-15-03  Threat scenarios                                                                         RQ-15-03
+                 15.5    Impact Rating                                         design           WP-15-04  Impact rating, including the associated impact categories of the damage scenarios        RQ-15-04 RQ-15-05   RQ-15-06
+ <2              15.6    Attack Path Analysis                                  design           WP-15-05  Identified attack paths                                                                  RQ-15-08 RQ-15-09
+                 15.7    Attack Feasibility Rating                             design           WP-15-06  Attack feasibility rating                                                                RQ-15-10
+                 158     RiskDetermination                                     design           WP-15-07  Risk values                                                                              RQ-15-15  RQ-15-16
+                 159     RiskTreatment Decision                                design           WP-15-08  Risk treatment decision per threat scenario                                              RQ-15-17
+                                                                                                                                                                                                                           20
+
+Reference Sources
+:              Microsott
+THE SECURITY   (                                                                                                                                                                                                                         pre
+DEVELOPMENT                                                                                                                                                                          INTERNATIONAL                       150     :
+LIFECYCLE                                                                                                                                                                            STANDARD                         262621  ||     Re     EEod            icon
+                                                                                                                                                                                                                          En         be                sto to sm
+    E
+               Mitigating the Risk of Software
+               Vulnerabilities byAdopting a Secure                                                                                                                                   EE |
+    3 )   ,    Software Development Framework (SSDF)                             Downloaded from SAE International by Charles Wilson, Friday, September 17, 2021                     Roadrt 1:vehicles — Functional Safety—   ||v,   had ber curityte    ttt wih
+                                                                                                                                                                                                                                         ys
+          :
+          3        SAE                                                           SURFACE VEHICLE                                                                  ISO/SAE 21434  | fomₛᵣₜ                                                TER
+
+                                                                                     Road Vehicles - Cybersecurity Engineering
+          ay       Sect Pubcon                                                   STANDARD                                                                         Issued  2021-09                                               H|                    @
+          [Rr      -National     NIST      00181                                                                                                                                                                                        mmo
+                            Initiative for Cybersecurity   Foreword
+          J                             Education (NICE)   ISO (the International Organization for Standardization) is a worldwide federation of national standards
+                                                           bodies (ISO member bodies). The work of preparing International Standards is normally carried out
+                       Cybersecurity Workforce Framework   through ISO technical committees. Each member body interested in a subject for which a technical                                                                                          st    et
+                                                           committee has been established has the right to be represented on that committee. International
+                                                           organizations, governmental and non-governmental, in liaison with ISO, also take part in the work.
+                                                           ISO collaborates closely with the International Electrotechnical Commission (IEC) on all matters of                                                                                                es
+                                                           electrotechnical standardization.
+                                                           SAE International is a global association of more than 128,000 engineers and related technical experts
+                                                           in the aerospace, automotive and commercial-vehicle industries. Standards from SAE International
+                                                      wn   are used to advance mobility engineering throughout the world. The SAE Technical Standards
+                                                           Development Program is among the organization's primary provisions to those mobility industries
+                                                           it serves aerospace, automotive, and commercial vehicle. These works are authorized, revised, and
+                                                           maintained by the volunteer efforts of more than 9,000 engineers, and other qualified professionals
+                                                           from around the world. SAE subject matter experts act as individuals in the standards process, not
+                                                           as representatives of their organizations. Thus, SAE standards represent optimal technical content
+                                                           developed in a transparent, open, and collaborative process.
+
+                                                           described in the ISO/IEC Directives, Part 1 and the SAE Technical Standards Board Policy. In particular,
+               ST        ppcsai                       or   The procedures used to develop this document and those intended for its further maintenance are
+                                                           the different approval criteria needed for the different types of ISO documents should be noted. This
+                                                           document was drafted in accordance with the editorial rules of the ISO/IEC Directives, Part 2 (see         www                 den
+                                                           .iso. org/directives).
+                                                           Attention is drawn to the possibility that some of the elements of this document may be the subject of                     <0
+                                                           patent rights. ISO and SAE International shall not be held responsible for identifying any or all such                     =
+                                                           patent rights. Details of any patent rights identified during the development of the document will be in
+                                                           the Introduction and/or on the ISO list of patent declarations received (see www. iso. org/patents).
+
+
+
+
+__________________________________________________________________________________________________________________________________________
+© ISO/SAE International 2021
+All rights reserved. Unless otherwise specified, or required in the context of its implementation, no part of this publication may be reproduced or utilized
+otherwise in any form or by any means, electronic or mechanical, including photocopying, or posting on the internet or an intranet, without prior written
+permission. Permission can be requested from either ISO or SAE International the respective address below or ISO’s member body in the country of the
+requester.
+ISO copyright office            SAE International
+CP 401 • Ch. de Blandonnet 8    Tel: 877-606-7323 (inside USA and Canada)
+CH-1214 Vernier, Geneva         Tel: +1 724-776-4970 (outside USA)
+Phone: +41 22 749 01 11         Fax: 724-776-0790
+Fax: +41 22 749 09 47           Email: CustomerService@sae.org
+Email: copyright@iso.org        SAE WEB ADDRESS: http://www.sae.org
+Website: www.iso.org
+Published in Switzerland and USA
+
+
+
+
+                                                                                                                                                                                                                                     21
+
+How Standards Inform the AVCDL
+
+     |
+     HF A
+     4  5        =
+     ARN     1 —        al
+
+ som |
+[ores]  |
+
+
+
+ Genera |
+ |
+
+
+
+ 22
+
+Phases and Requirements
+
+
+
+
+
+
+
+
+
+
+  Security Requirements  Secure Design             Use Approved Tools      Penetration Testing  Final Review  Identify /  Confirm  Decommissioning
+                         Security Design Review | | Configure Secure Build Threat Model Review  Archive      Vulnerabilities           Process
+                             Assess/                                                                                      Prioritize
+                         Attack Surface Analysis  Use Secure Settings           ASA Review                        Remediation
+                         Threat Modeling Reuse Secure Software                                                     Root Cause
+                                                                                                                Vulnerabilities
+                             Code Securely        Secure Deployment
+                             Deprecate     Unsafe
+                            Functions
+                         Static Analysis
+                         Dynamic Analysis
+                             Fuzz     Testing
+                                                          Code Review
+                                                               Secure
+
+
+                                                                                                                          23
+
+Cyclic View
+
+    Release    Operation    Decommissioning
+
+
+
+
+
+
+
+
+
+Verification    Foundation    Requirements
+
+
+
+
+
+
+
+
+
+
+Implementation    Design
+
+
+24
+
+Compliance to Standards
+
+H
+ii  EE  EE EE   EE  EEE  Ed
+1  (ls  a  a
+I  Z [Title  3
+[RolesandResponsibiities  rr er rr rr rer rr rrr rr rr rr rr  rr rr
+TTT rrr rr rr re rr rr rr rrr rr rr rr
+rr rr rr re  rr  rr
+ff§₅   |  [TT TT  A rrr  rr rr
+TC  rrr rr rr  rs
+©  [TTTTT  TT  TT TTT  TT
+|  TT  rr rrr rr  PTT TTT  Te  TTT]
+[security  rr  PP
+Security  Requirements and Risk nformationtoesign  [TT TT  TT  el  rrr  EE
+IE] Ee  A  3  5  rr rrr rrI  |  9 I ES  EA EY
+|ᴵ  [Configure the Compilation and Build Process  | EE[  [IT EE  rr  rr rrr rrr
+§  Existing,   Well-secured Software When Feasible Instead TTT TT TT  TT  rrr rT rr  rT  TT  TT]
+lcosesecwey  of  Duplicating Functionality | [| |  1 T [TI  TT [TT TTT
+unsafefunctions  TTT TT TT  rr er rr rr rrr rr rr rrr rr rr rr  rr  rrr
+HH  rr rrr  rr  rr  TT]
+rr rr rr rr  rr rr rrr rr rr  rr
+rr rr rr  rr rr rrr rr rr rr  rr rr
+I  EE  EE  rr rr rr  rr rrr rr rr rrr  rr rr  rr  TT
+rrr  rr rer  rrr
+TTT  TT
+
+
+rrr
+g  |  [LTT TT  EEE  rrr  TTT
+25
+
+Requirements / Roles / RACI / Dependent Inputs
+ow  inputs
+i
+EH]§  and  Tie  role  i  | |  | nesses
+1
+systems  pamer  |  |  [tof phase requrements  |]
+[3[Toolchain Supportof  information systems security developer  |  [list  of security tools  criteria  [component tracking system  lst of development tools  I
+| C |   |  C |  [gobo  gots/ tool security
+security Reaurements  stems  pamer  |[Cc  |   |  7|  /  taonomy
+§  [R||  |  |code  /  |  |
+credential management
+deployment infrastructure  needed / integrity  |
+Release integrity  information systems security developer  C  R  C  secure credential management recommendations  signing  /  check  |
+8  Response plan  partner integration   planner  racking
+Plan  |R[c|c|
+Plan  Pian  information  |  |  system  [decommissioning / RMA process/  listof data stored on systems  1
+Fas Testing Pan  Verityˢʸˢᵗᵉᵐˢ security developer  C  C  |  deployment recommendations  [Geployment infrastructure process  ist material to be deployed|]
+TR]  1  |
+Security architect  [RR] [il pase recurement provers  |hgh level  hg  evel  ||
+Design  review  —
+§  Security  and Risk Information to Design  [software  [R|  |  functional requirements  1
+§  [software  | R| || R||  | —
+Approved Tools  developer| |  |  [all   phase requirement products  ©of
+[tool selection criteria  [component tracing comparison system  stof  tools used  |
+[3[Use   the Compilation and Build Process to Improve Executable Security   information systems security developer  C  |  secure  setting recommendations  [ist adopted secure build settings
+Secure Settings  [secure configuration
+Well bySecured  —
+§  using,cote  Default  of  security architect  |  recommendations
+Duplicating   sofware developer  elem ©
+Ahan Sofware When Fesibie stead  |  |__|
+§5  Unsafe Functions  cure cor racic  software developer  Tc|  |  |  unsafe functions  J  of  deprecatedunctiomsinwse
+amass  information systems security  |] secure static anlyss seting recommendations  Setings tacking  stof adopted security-related
+Program  Analysis  software developer  TR] Jc  |  security elated settings
+ode Review  Asemment  anaiysis tool   recommendations  analysis testing Infrastructure  lst  adopted  tools
+Gate  software  |  [uur  recommendations   [uaz estingprocess  |]
+testing  assessor  | [ |  |  [il  phase requirsment products  EE
+Assesment  updated element detailed
+architect  At  sung proces  [operon  |__|
+Review  m= os design  1
+>  | R| | |  all  phase requirement products  |__|
+|  design documentation  1
+—
+matras deployment  1
+|  |  |   [ol  pase  fiat  for
+Jc]
+|]  and Conf  onofan Ongoing Bass  Defense Forensics Analyst  |  ©  wading system  |
+ana  teoer  her okai Css  or Defense Forensics Anat  racking  system
+br Defense Forensics  |  |  |  secure deployment  /
+[information systems security developer | C  |   R| C  |  recommendations  [Geptoyment infrastructure  process  materials for deployment
+Z  Decommissioning Protocol  formation systems security developer  |  /  AWAprocess  of  data stored on systems  1
+26
+
+    AVCDL Document Set
+
+Process Overview     Process Detail                    Procedure                     i   Supporting Material
+   (primary)         (secondary)                       (tertiary)                    |
+                     Threat Prioritization Plan        Threat Prioritization Plan         =
+               cd                                  cd                                =a
+                                                                                     -   —
+    ee Cn ri   ro                                  ro                                !
+
+
+
+
+
+
+
+What / Who / When            How
+(company agnostic)    (company specific)
+
+                                                                                          27
+
+Phase Requirement Page Sample (1 of 2)
+
+1 9.3.4 Threat Modeling [AVCDL-Design-4]
+® Owner
+                                          Item                                                                                      Section                 Description
+    NCWF Role: Security Architect                                                                                                                           The title of the phase requirements and its ID.
+ Administration                                                                                                                1                            Each AVCDL phase requirement has a unique ID
+ _seourityR  devops      development                         risk                                                                   Title                   comprised of ‘AVCDL’, the phase (here
+                             R            R                                                                                                                 ‘requirements’) and a sequence number.
+                         (® Threat modeling is an exercise which may be done at any stage of development. It realizes    an                                 The group accountable for the activity and the
+ abstraction of the                        system as a set of interacting processes managing resources passing data between                                 NCWF role. These link to a summary of the
+ them. It is on these data flows that automated threat modeling tools reason.                                                  2    Owner Group / Role      particular group’s accountable phase
+ In that     same way that                        security  requirements should be considered at   multiple levels in order                                 requirements and the NIST SP 800-181 workforce
+ provide a complete landscape, so to do threat models.                                                                   to                                 job description.
+ Note:       Threat   modeling                       is  a  team exercise, encompassing program/project       managers,                                     RACI information for the various groups possibly
+             developers,                      and testers,  and represents the primary security analysis task performed        3
+             during the software design stage.                                                                                      RACI                    involved in the activity
+ Note:       The threat modeling AVCDL work products are generated through application of the                                  4                            A general description of the activity and its
+             threat   prioritization  plan     set            out    in      [AVCDL-Foundation-9] Threat Prioritization
+             Plan.                                                                                                                  Description             application
+                                                                                                                               5    Training                Whether training is provided for the activity
+
+ Training
+    ining Provided
+             Provide                                                                                                           6    Internal Dependencies   Predecessor AVCDL phase requirements
+8 Phase Requirement Dependencies                                                                                               7    External Dependencies   Non-security group dependent materials
+ [AVCDL-Foundation-9]                 Threat Prioritization Plan
+ [AVCDL-Design-1]                     Apply Security Requirements and Risk Information to Design
+
+2 External Group Product Dependencies
+ [Group                                   |
+                         Element detailed design                                                                                                                28
+
+Phase Requirement Page Sample (2 of 2)
+
+
+  8 AVCDL Products
+       Threat Modeling Report
+   .   Ranked /  Risked Threat Report
+   +   Threat Report
+
+              9 1SO 21434 Required Work Products
+   [WP-09-02]    Threat analysis and risk assessment
+   [WP-09-03]    Cybersecurity goals
+   [WP-09-04]    Cybersecurity claims                 Item                                                      Section               Description
+   [WP-15-01]    Damage scenarios
+   [WP-15-03]    Threat scenarios                                                                                                     Products created as a result of the activity. These
+   [WP-15-04]    Impact rating                                                                            8                           are linked to secondary documents providing
+   [WP-15-05]    Attack paths
+   [WP-15-06]    Attack feasibility rating                                                                      Phase Products        more specific information into the process
+   [WP-15-07]    Risk values                                                                                                          needed to create them.
+   [WP-15-08]    Risk treatment decision per threat scenario                                              9                           Specific ISO 21434 work products / requirements
+   WP.29 CSMS Requirements
+   [7.22.2(b)]   The     processes  used for the  identification                                                21434 Work Products   satisfied by the activity.
+                                                  Lo of risks to vehicle types. Within these
+                 processes,    the  threats in Annex 5, Part     A, and other relevant threats shall be   10                          Specific WP.29 CSMS (R155) requirements
+                 considered.
+   [7.222(c)]    The processes used      for the  assessment, categorization  and treatment of the risks        WP.29 Requirements    satisfied by the activity.
+                 identified.                                                                              11    CMMC Practices        CMMC best practices applicable to the activity.
+                 11 CMMC Applicable Practices
+  [Level                  [Practice             |
+  1 [nome
+  2 |
+                                        |]
+  [5s                                           |
+
+
+                                                                                                                                      29
+
+           Process Flows
+
+     |  |           |  |    |          |  |    |          |  |  |        |  |
+development  threat modeling    threat modeling    threat modeling  development
+    SME              SME              SME                SME            SME
+
+
+
+
+
+
+
+
+
+
+system | triaged to threat
+design threat model threat model threat model threat
+        creation analysis candidates triage areal poᴬ
+
+
+   from
+ ranking
+ risking
+ slicing
+processes
+
+    threat model report
+
+
+
+
+    model creation    analysis    triaging
+        30
+
+  Traceability
+
+  -  Foundaton    Requirements
+
+  Plan
+
+
+
+
+  Listot
+
+      |
+
+
+  rar
+  Plan        Buid Process
+  Deployment Flan    UJ    Secureecure Setings
+      oe
+
+                     1
+
+
+
+Training Catalog  =
+0  po3 |  7  Prod Cross-5  |  |
+Requiregn
+Secu  Global Secu  reac   J₉  Seculty Goalsᵀ  Productlevel⁷ ©₄ ca  CJ Design Showing   Secuty Desi 7  Designˢ Gate  PY.  Currenty Used’
+Theat  0  :₄  AD  RD  —  ol of   |  w
+Report  8
+Cypersecurty⁷  0  T  oynamic
+Threat Report
+
+g
+ident uv  oven Summary
+Response Plan  J  ‘Secure Code
+5
+
+=  m
+5  ol  Fuzz Testing
+=
+
+0  0
+
+
+                                                                                                                                                      31
+
+    Training
+
+                 a        -   AVCDL phase  requirement
+ security              G               (non-spacitic)
+onboarding                -   foundation phase
+                       R      requirensnts phase
+    [                                      phase
+  AVCDL
+        overview -     5      release  phase
+
+
+    or                                     =
+vulnerability        I  oF          |              I
+identification     secure     requirements secure design  traceabilit
+                 deployment      taxonomy      principles      y
+
+vulnerability      secure   x    security        apply
+  assessment  decommissioning  requirements  secure design handling9 PII
+      |        7 —
+vulnerability        secure   oz
+        design             threat
+  root cause                    review        prioritization
+                                  |        |I
+                               B                      53
+                   final        secure       attack surface  threat
+              security review  settings         analysis    modeling
+                                  |
+                                  I
+                               =                       w
+                                secure     code reuse
+                                coding
+
+                    — — ED    — FY     — 1     — 1     0
+    static        dynamic        fuzz      penetration    secure code
+   analysis       analysis     testing     testing           review
+
+                                           32
+
+AVCDL on GitHub
+
+
+  nutonomy / AVCDL  Public    3 +  Fork 1  fy Star
+
+  Issues            11 Pull requests ® Actions 0 wiki © security | Insights © Settings
+
+
+      main      1branch     © 59 tags        Goto file     Add file +                                                     About        @
+
+                                                                                                                          This repository contains material related
+       Motional-Charles-Wilson added Code Signing secondary document      ..      22059 4daysago             89 commits   to the Autonomous Vehicle
+                                                                                                                          Cybersecurity Development Lifecycle
+       background_material               added supplier cybersecurity maturity blog post                     last month   (AVCDL)
+
+       distribution                      added Code Signing secondary document / updated Code Protection...  4 days ago
+
+  source                                 added Code Signing secondary document / updated Code Protection...  4 days ago   development-lifecycle    is021434
+
+  0    .gitignore                        created .gitignore                                                4 months ago   OJ  Readme
+
+       LICENSE.md                        moved license up a level                                          8 months ago           license
+                                                                                                                              15 stars
+       README.md                         added note for Windows users and long FQPNs                        14 days ago
+                                                                                                                          ®
+  DO   document status.md                added Code Signing secondary document / updated Code Protection...  4 days ago
+
+       mentions.md                       added mentions page        2                                        months ago
+
+
+                                                                                                                          Releases 50
+  =    README.md                             z
+                                                                                                                          © 243
+                                                                                                                          4 days ago
+    AvCDL                                                                                                                 + 5 leases
+
+    Overview                                                                                                              Packages
+
+    The AVCDL is a set of identified processes, requirements of those processes, generated products, and mappings         No packages published
+    from the generated products to their corresponding certification standard (ISO/SAE 21434, UNECE WP.29 R155-           Publish your fiest package
+    7 work products: for the purpose of ensuring the creation of secure systems.
+
+                                                                                                                                  33
+
+AVCDL Posts
+
+
+
+  AVCDL Introductory Blog Posts
+
+
+  The following is a blog series introducing the AVCDL and the concepts behind it.
+
+
+      Title                                                Description
+  Purpose-driven Security [PDF]                        how we have chosen to apply security in a way that supports
+                                                       vehicle safety
+
+  Certifiably Secure:. Does it Matter?² [PDF]          you can make thing secure without getting outside approval, so
+                                                       why bother?
+
+  Policy - Process - Procedure [PDF]                   coming to terms with the terms
+
+  Aligning the Organization with the AVPDL [PDF]       how do you bring the multitude of development practices
+                                                       together?
+
+  Traceability: Making the Case for Security [PDF]     how do you ensure follow through?
+
+  Ui AVCDL: Autonomous Vehicle
+      icl     Cybersecurityⁱ     Development|
+  Lifecycle [PDF]                                      an overview of the AVCDL
+
+
+
+
+                                                       34
+
+AVCDL Document Status
+
+       The AVCDL documents are mostly complete. The majority of the secondary documents have been written and reviewed internally. Internally
+       reviewed documents will be released soon after they have received certification body review.
+
+
+    Secondary Document Status
+
+
+    The following table shows the status of the various AVCDL elements.
+
+
+        Secondary (process) Document Status
+
+General
+
+security requirements taxonomy complete
+
+understanding the phase products dependencies graph complete
+
+secure design principles complete
+
+understanding workflow graphs complete
+
+AVCDL phase requirement product ISO 21434 work product fulfillment summary complete
+
+AVCDL phase requirement product ISO 26262 work product fulfillment summary complete
+
+AVCDL Phase Requirement Product UNECE WP.29 R155 Work Product Fulfillment draft
+
+code signing complete
+
+        35
+
+AVCDL Documents Available
+
+
+
+
+
+
+
+
+
+
+  https://github.com/nutonomy/AVCDL
+
+AVCDL Documents Available – Primary Document
+
+
+
+
+
+
+
+
+
+
+  https://github.com/nutonomy/AVCDL
+
+AVCDL Documents Available – Reference Material
+
+
+
+
+
+
+
+
+
+
+  https://github.com/nutonomy/AVCDL
+
+AVCDL Documents Available – Secondary Documents
+
+
+
+
+
+
+
+
+
+
+  Global Security Goals
+
+
+
+
+                 Understanding the Phase Product
+  SEED ptr   frost  Revi  Dependencies Graph
+             Mot   Abstr  Revision
+                             fr
+                      pe   Author      Global Security Requirements
+             eZ |
+             Lien     EE                  we    Understanding Workflow Graphs.
+             ie       on
+
+
+
+
+  | =           FEE     ome
+  =     = = =   Docu       Comm te
+
+
+
+
+  ==
+  =
+ https://github.com/nutonomy/AVCDL
+
+ AVCDL Documents Available – Supplier Materials
+
+
+
+
+
+
+                                 Understanding Cybersecurity Interface
+                                 Agreements
+                                 Ruin
+
+                                 aor
+
+                                 os
+
+       Global Security Goals     License
+   Rou                           per     Cybersecurity Interface Agreement for
+                                     [supplier company     name]
+   SME  Understanding the Phase Product
+               Dependencies Graph
+
+
+   Fan          Grou         Security Requirements Taxonomy                     in
+                Wo       Abstr     Author      Global Security Requirements     er —             RE
+
+                ean      =                 SME     Understanding Workflow Graphs
+                         Licens                    Revision
+                                                   En                           I=
+
+                                           —                                                    =
+                                           Motia   ot
+   i=     =                                        mt pm eo A ey ne                              =.
+   ==     ==                               =           ee me rm                 EE fo Veilmee   -
+   =     ii         i                                                           ee
+                                           pe                                   -
+
+
+   Em
+
+                                                                                                |
+https://github.com/nutonomy/AVCDL                                                              -_
+
+AVCDL Documents Available – Introductory Blog Posts
+
+
+  pha     Security                       Understanding Cybersecurity Interface
+  az 0                                   Agreements
+
+      Certifiably Secure: Does it Matter?
+
+
+.  JH  Policy Process - Procedure: What's  ome
+ps  =)  inaName?
+
+Global Security Goals  License
+ae  pon  Aligning the Organization with the  per  Cybersecurity Interface Agreement for
+AVRDL  {supplier company name]
+swe  Understanding the Phase Product  fo  —
+Dependencies Graph  py  ‘Traceability:   Making the Case for
+en  Abstr  Re  en]  Certification  oot  me te chm ct  gre
+f=  cou  SecurityhdRequirements Taxonom  =  md  Spb  Acton cen
+Moti  Revision  =  AVCDL: The Autonomous Vehicle
+Cybersecurity Development Lifecycle  GER
+£5  aor  Global  Reauirements
+Docu  =
+Lien  =  License  SME  Understanding Workflow Graphs  Nd
+pee  Aosta  Revs  ICT
+ES  cen  fers  -  son  jou
+ow.
+pubes  ne  mm  i=  |
+i
+po
+— ==  j=
+I=  =  i  ohms ct  Emenee  —
+Len  ||
+|
+fe
+==  ei  eet
+i  a  =
+SHE)  ||
+https://github.com/nutonomy/AVCDL  41
+
+References (1 of 2)
+
+Systems and software engineering - Software life cycle processes
+https://en.wikipedia.org/wiki/ISO/IEC_12207
+
+Systems and software engineering - System life cycle processes
+https://en.wikipedia.org/wiki/ISO/IEC_15288
+
+Road vehicles – Functional safety
+https://en.wikipedia.org/wiki/ISO_26262
+
+Secure Software Development for Autonomous Vehicles
+https://www.sae.org/standards/content/iso/sae21434/
+
+Microsoft Security Development Lifecycle (SDL) - simplified implementation
+
+http://download.microsoft.com/download/F/7/D/F7D6B14F-0149-4FE8-A00F-0B9858404D85/Simplified
+Implementation of the SDL.doc
+
+NHTSA Cybersecurity Best Practices for the Safety of Modern Vehicles
+https://www.nhtsa.gov/staticfiles/nvs/pdf/812333_CybersecurityForModernVehicles.pdf
+
+NICE Cybersecurity Workforce Framework (NCWF)
+https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-181r1.pdf
+
+
+42
+
+References (2 of 2)
+
+Secure Software Development Framework (SSDF)
+https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.04232020.pdf
+
+AVCDL (GitHub)
+https://github.com/nutonomy/AVCDL
+
+AVCDL Introductory Blog Post
+https://github.com/nutonomy/AVCDL/tree/main/background_material/blog_posts
+
+UN Regulation No. 155 - Cyber security and cyber security management system
+https://unece.org/transport/documents/2021/03/standards/un-regulation-no-155-cyber-security-and-cyber-
+security
+
+
+
+
+
+
+
+
+
+
+43
+
