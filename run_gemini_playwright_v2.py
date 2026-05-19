@@ -925,29 +925,28 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
         log("Hiding left sidebar to prevent chat history overlay issues...")
         try:
             page.evaluate("""() => {
-                // Find the hamburger menu button (usually has mat-icon 'menu')
+                // Find the sidebar toggle button (usually has mat-icon 'menu')
                 const buttons = Array.from(document.querySelectorAll('button'));
-                let hamburger = null;
+                let sidebarBtn = null;
                 for (const b of buttons) {
                     const aria = (b.getAttribute('aria-label') || '').toLowerCase();
-                    if (aria.includes('menü') || aria.includes('menu') || aria.includes('collapse')) {
-                        hamburger = b;
+                    if (aria.includes('seitenleiste') || aria.includes('sidebar') || aria.includes('menü') || aria.includes('menu') || aria.includes('collapse')) {
+                        sidebarBtn = b;
                         break;
                     }
                     const icon = b.querySelector('mat-icon');
                     if (icon && icon.textContent.trim() === 'menu') {
-                        hamburger = b;
+                        sidebarBtn = b;
                         break;
                     }
                 }
                 
-                // If sidebar has visible "Neuer Chat" text or similar, it's expanded.
-                const isExpanded = Array.from(document.querySelectorAll('*')).some(e => 
-                    (e.textContent === 'Neuer Chat' || e.textContent === 'New chat') && e.offsetParent !== null
-                );
+                // Check if sidebar is expanded via the side-navigation component width
+                const sideNav = document.querySelector('side-navigation-v2, bard-sidenav');
+                const isExpanded = sideNav ? sideNav.offsetWidth > 100 : false;
                 
-                if (hamburger && isExpanded) {
-                    hamburger.click();
+                if (sidebarBtn && isExpanded) {
+                    sidebarBtn.click();
                 }
             }""")
             page.wait_for_timeout(500)
@@ -983,6 +982,7 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
         try:
             # Click the model dropdown
             dropdown_selectors = [
+                'button.input-area-switch',
                 'button[aria-label*="Model"]',
                 'button[aria-label*="Modell"]',
                 'button[data-test-id*="model"]',
@@ -1002,6 +1002,7 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
             if dropdown_clicked:
                 # Select Pro option — try multiple patterns
                 pro_patterns = [
+                    ('gem-menu-item:has-text("Pro")', "Gemini-pro"),
                     ('text="3.1 Pro"',      "Gemini-3.1-pro"),
                     ('span:has-text("3.1 Pro")', "Gemini-3.1-pro"),
                     ('div:has-text("3.1 Pro")',  "Gemini-3.1-pro"),
@@ -1098,9 +1099,10 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
                         
                         # Native locators based on screenshot "+ | Tools"
                         tools_selectors = [
+                            'button[aria-label*="Tools"]',
+                            'button[aria-label*="Uploads"]',
                             'button:has-text("Tools")',
                             'button:has-text("Werkzeuge")',
-                            'button[aria-label*="Tools"]',
                             'button[aria-label*="Werkzeuge"]',
                             'button.tool-button',
                             'button[data-test-id="tools-button"]'
@@ -1269,9 +1271,9 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
             # 1. Primary injection: Use Playwright's evaluate to safely pass the string and trigger React
             log("  Injecting Mega-Prompt via JS...")
             page.evaluate("""(text) => {
-                const box = document.querySelector('rich-textarea p') || document.querySelector('rich-textarea div[contenteditable="true"]');
+                const box = document.querySelector('rich-textarea .ql-editor') || document.querySelector('rich-textarea p') || document.querySelector('rich-textarea div[contenteditable="true"]');
                 if (box) {
-                    box.innerHTML = '';  // Clear existing content
+                    box.textContent = '';  // Clear existing content (innerHTML blocked by TrustedHTML policy)
                     box.innerText = text;
                     box.dispatchEvent(new Event('input', {bubbles: true}));
                 }
@@ -1319,7 +1321,7 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
             if not generation_started:
                 # Double-check: is the textarea still full? If so, try sending again
                 textarea_content = page.evaluate("""() => {
-                    const box = document.querySelector('rich-textarea p') || document.querySelector('rich-textarea div[contenteditable="true"]');
+                    const box = document.querySelector('rich-textarea .ql-editor') || document.querySelector('rich-textarea p') || document.querySelector('rich-textarea div[contenteditable="true"]');
                     return box ? box.innerText.trim().length : 0;
                 }""")
                 if textarea_content > 100:
@@ -1363,6 +1365,8 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
             finished_selectors = [
                 'button[aria-label*="Good response"]',
                 'button[aria-label*="Gute Antwort"]',
+                'button[aria-label="Kopieren"]',
+                'button[aria-label="Copy"]',
                 'button[aria-label*="Copy answer"]',
                 'button[aria-label*="Antwort kopieren"]'
             ]
@@ -1738,13 +1742,16 @@ CRITICAL AVOIDANCE: DO NOT use "Canvas" mode, "Gems", or any interactive coding 
             
             # 2. Try the general "Copy answer" button
             copy_selectors = [
+                 'button[aria-label="Kopieren"]',
+                 'button[aria-label="Copy"]',
                  'button[aria-label*="Copy answer"]',
                  'button[aria-label*="Antwort kopieren"]',
                  'button[mattooltip*="Copy answer"]',
                  'button[mattooltip*="Antwort kopieren"]',
                  'button[mattooltip*="content_copy"]',
                  'button[aria-label*="Copy text"]',
-                 'button:has(mat-icon:has-text("content_copy"))'
+                 'button:has(mat-icon:has-text("content_copy"))',
+                 'copy-button button'
             ]
             copy_clicked = False
             for copy_sel in copy_selectors:
