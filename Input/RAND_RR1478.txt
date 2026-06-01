@@ -1,0 +1,816 @@
+    C O R P O R A T I O N   Driving to Safety
+
+                            How Many Miles of Driving Would It Take to Demonstrate
+                            Autonomous Vehicle Reliability?
+
+                            Nidhi Kalra, Susan M. Paddock
+
+
+
+
+        more than two million injured in crashes every year (Bureau
+      Key findings In the United States, roughly 32,000 people are killed and
+        of Transportation Statistics, 2015). U.S. motor vehicle
+• Autonomous vehicles would have to be driven hundreds crashes as a whole can pose economic and social costs of more
+  of millions of miles and sometimes hundreds of billions than $800 billion in a single year (Blincoe et al., 2015). And,
+  of miles to demonstrate their reliability in terms of fatali- more than 90 percent of crashes are caused by human errors
+  ties and injuries. (National Highway Traffic Safety Administration, 2015)—such
+• Under even aggressive testing assumptions, existing as driving too fast and misjudging other drivers’ behaviors, as
+  fleets would take tens and sometimes hundreds of years well as alcohol impairment, distraction, and fatigue.
+  to drive these miles—an impossible proposition if the Autonomous vehicles have the potential to significantly
+  aim is to demonstrate their performance prior to releas- mitigate this public health crisis by eliminating many of the
+  ing them on the roads for consumer use. mistakes that human drivers routinely make (Anderson et al.,
+        2014; Fagnant and Kockelman, 2015). To begin with, autono-
+• Therefore, at least for fatalities and injuries, test-driving mous vehicles are never drunk, distracted, or tired; these fac-
+  alone cannot provide sufficient evidence for demonstrat- tors are involved in 41 percent, 10 percent, and 2.5 percent of
+  ing autonomous vehicle safety. all fatal crashes, respectively (National Highway Traffic Safety
+• Developers of this technology and third-party testers Administration, 2011; Bureau of Transportation Statistics,
+  will need to develop innovative methods of demonstrat- 2014b; U.S. Department of Transportation, 2015).¹ Their
+  ing safety and reliability. performance may also be better than human drivers because of
+        better perception (e.g., no blind spots), better decisionmaking
+• Even with these methods, it may not be possible to (e.g., more-accurate planning of complex driving maneuvers
+  establish with certainty the safety of autonomous like parallel parking), and better execution (e.g., faster and
+  vehicles. Uncertainty will persist. more-precise control of steering, brakes, and acceleration).
+        However, autonomous vehicles might not eliminate all
+• In parallel to creating new testing methods, it is impera- crashes. For instance, inclement weather and complex driving
+  tive to develop adaptive regulations that are designed environments pose challenges for autonomous vehicles, as well
+  from the outset to evolve with the technology so that as for human drivers, and autonomous vehicles might perform
+  society can better harness the benefits and manage the worse than human drivers in some cases (Gomes, 2014). There
+  risks of these rapidly evolving and potentially transfor- is also the potential for autonomous vehicles to pose new and
+  mative technologies.
+
+        1 This does not mean that 53.5 percent of all fatal crashes are caused by
+        these factors because a crash may involve, but not be strictly caused by,
+        one of these factors, and because more than one of these factors may
+        be involved in a single crash.
+
+2
+
+
+serious crash risks, e.g., crashes resulting from cyberattacks               1.3 million miles in autonomous mode and was involved in
+(Anderson et al., 2014). Clearly, autonomous vehicles present                11 crashes from 2009 to 2015.⁴ Blanco et al. (2016) recently
+both enormous potential benefits and enormous potential risks.               compared Google’s fleet performance with human-driven per-
+Given the high stakes, policymakers, the transportation                      formance. They found that Google’s fleet might result in fewer
+industry, and the public are grappling with a critical concern:              crashes with only property damage, but they could not draw
+How safe should autonomous vehicles be before they are                       conclusions about the relative performance in terms of two
+allowed on the road for consumer use? For the answer to be                   critical metrics: injuries and fatalities. Given the rate of human
+meaningful, however, one must also be able to address a second               and autonomous vehicle failures, there were simply not enough
+concern: How safe are autonomous vehicles?                                   autonomously driven miles to make statistically significant
+Perhaps the most logical way to assess safety is to test-drive               comparisons.
+autonomous vehicles in real traffic and observe their perfor-                             In this report, we answer the next logical question: How
+mance. Developers of autonomous vehicles rely upon this                      many miles would be enough? In particular, we first ask:
+approach to evaluate and improve their systems,² almost always                 1.   How many miles would autonomous vehicles have to be
+with trained operators behind the wheel who are ready to take                       driven without failure to demonstrate that their failure
+control in the event of an impending failure incident.³ They                        rate is below some benchmark?
+can analyze the failure incident after the fact to assess what the                 This provides a lower bound on the miles that are needed.
+autonomous vehicle would have done without intervention, and                 However, autonomous vehicles will not be perfect and failures
+whether it would have resulted in a crash or other safety issue              will occur. Given imperfect performance, we next ask:
+(Google, 2015). Developers have presented data from test driv-                 2.   How many miles would autonomous vehicles have to
+ing to Congress in hearings about autonomous vehicle regula-                        be driven to demonstrate their failure rate to a particular
+tion (Urmson, 2016).                                                                degree of precision?
+But is it practical to assess autonomous vehicle safety                        3.   How many miles would autonomous vehicles have to be
+through test-driving? The safety of human drivers is a critical                     driven to demonstrate that their failure rate is statisti-
+benchmark against which to compare the safety of autonomous                         cally significantly lower than the human driver failure
+vehicles. And, even though the number of crashes, injuries, and                     rate?
+fatalities from human drivers is high, the rate of these failures is
+low in comparison with the number of miles that people drive.                               We answer each of these questions with straightforward
+Americans drive nearly 3 trillion miles every year (Bureau of                statistical approaches. Given that fatalities and injuries are rare
+Transportation Statistics, 2015). The 2.3 million reported inju-             events, we will show that fully autonomous vehicles⁵ would
+ries in 2013 correspond to a failure rate of 77 reported injuries            have to be driven hundreds of millions of miles and sometimes
+per 100 million miles. The 32,719 fatalities in 2013 correspond
+to a failure rate of 1.09 fatalities per 100 million miles.                  4 Two of these crashes involved injury and none involved a fatality.
+   For comparison, Google’s autonomous vehicle fleet, which                  Seven of the crashes did not reach a level of severity that would warrant
+currently has 55 vehicles, was test-driven approximately                     a Department of Motor Vehicles report (Blanco et al., 2016).
+                                                                             5 Note that the term “autonomous vehicle” can refer to different
+                                                                             degrees of autonomy. The Society for Automotive Engineers Interna-
+                                                                             tional (2014), for example, defines three levels of automated driving.
+2 Extensive testing on public roads is essential for developing and          Vehicles with “conditional automation” can drive themselves in certain
+evaluating autonomous vehicles, given their great complexity and the         conditions but may request human intervention. Vehicles with “high
+diversity and unpredictability of conditions in which they need to           automation” can drive themselves in certain conditions without requir-
+operate. In contrast, typical automobile components are significantly        ing human intervention. Vehicles with “full automation” can drive
+simpler and their operating conditions can be well defined and recre-        under all roadway and environmental conditions in which a human
+ated in controlled settings, which enables laboratory testing and verifi-    can drive. The numerical results in this report assess the miles needed
+cation. Curtain-style air bags, for example, are tested with a combina-      to demonstrate the reliability of this last class of fully autonomous
+tion of component tests to assess inflation time, fill capacity, and other   vehicles. Therefore, we use the total fatality, injury, and crash rates of
+responses in a range of temperature conditions and impact configura-         human drivers in the United States as benchmarks against which to
+tions, as well as laboratory crash testing to evaluate their performance     compare autonomous vehicle performance. However, the statistical
+in collisions (Kaleto et al., 2001).                                         approaches described in this report can be used to compare the reli-
+3 Some states, such as California, require trained drivers to be behind      ability for any autonomy mode. Doing so would require changing the
+the wheel of any autonomous vehicle driving on public roads (Califor-        human performance benchmarks against which these other modes are
+nia Vehicle Code, 2012).                                                     compared.
+
+    3
+
+
+hundreds of billions of miles to demonstrate their reliability in C = 1− R ⁿ . (Eq. 1)
+terms of fatalities and injuries. Under even aggressive testing
+assumptions, existing fleets would take tens and sometimes
+hundreds of years to drive these miles—an impossible proposi- This is useful if, for example, a developer has driven
+tion if the aim is to demonstrate their performance prior to autonomous vehicles for a certain number of failure-free miles
+releasing them on the roads for consumer use. and wishes to know the reliability (or, equivalently, the failure
+     These results demonstrate that developers of this technol- rate) that can be claimed at a particular level of confidence.
+ogy and third-party testers cannot simply drive their way to Alternatively, for a given confidence C and reliability R we can
+safety. Instead, they will need to develop innovative methods of solve for n, the number of miles required with no failures:
+demonstrating safety and reliability. This is a rapidly growing ln(1−C )
+area of research and development. We hope the data and figures n = ln(R) . (Eq. 2)
+in this paper will serve as a useful reference in developing those
+alternative methods, and a benchmark and method for assess- This equation is usually used to show the survival of a
+ing their efficiency. product based on duration of use (Kleyner, 2014).
+     The next three sections provide an explanation, analysis, To demonstrate that fully autonomous vehicles have
+and results for each of these questions. We end with a sum- a fatality rate of 1.09 fatalities per 100 million miles
+mary and discussion of results and draw conclusions about their (R=99.9999989%) with a C=95% confidence level, the
+implications for stakeholders of autonomous vehicle technology. vehicles would have to be driven 275 million failure-free miles.
+        With a fleet of 100 autonomous vehicles being test-driven
+        24 hours a day, 365 days a year at an average speed of 25 miles
+H OW M ANY M ILES WOU LD per hour, this would take about 12.5 years.
+AUTO N OMOUS VEH IC LES HAVE TO Figure 1 shows how many failure-free miles fully autono-
+BE DRIVEN WITH OUT FAILU RE TO mous vehicles would have to be driven to demonstrate maxi-
+DEMO NSTR ATE THAT TH E IR FAILU RE mum failure rates to different levels of confidence. We chose a
+R ATE IS BELOW SOM E BEN C HM ARK? range of 1 to 400 failures per 100 million miles to include the
+        range of fatality, injury, and crash rates for human drivers. For
+We can answer this question by reframing failure rates as reference, we show the failure rate of human drivers as dashed
+reliability rates and using success run statistics based on the vertical lines.⁸ Reference lines are shown for fatalities (1.09),
+binomial distribution (O’Connor and Kleyner, 2012). If the
+per-mile failure rate of a vehicle is F, then the reliability R is 2010). Once data are observed and u is estimated, then u is no longer
+1–F and can be interpreted as the probability of not having a random, and the interval [1−u, 1] either does or does not contain the
+failure in any given mile. In practice, unless the technology true failure rate. Thus, the interval is described in terms of a confidence
+is truly perfect, there likely will be failures during testing.⁶ level rather than a probability (Martz and Waller, 1982).
+However, a simple “no failures” scenario (see Equation 1) can 8 These rates reflect failures from all motor vehicles, including cars and
+be used to estimate a lower bound on the number of failure-free light trucks, motorcycles, large trucks, and buses. One could restrict
+        comparisons to only some subsets of these data, e.g., omitting motor-
+miles, n, that would be necessary to establish the reliability of cycle fatalities, which occur at a rate that is 20 times higher than the
+driverless cars with confidence level C:
+        7 overall fatality rate (about 23 fatalities per 100 million miles driven)
+        (Bureau of Transportation Statistics, 2014a). This would not change
+        the statistical methods shown here, but the miles needed to demon-
+6 In the case of an imperfect vehicle, the probability C of a driverless strate comparative levels of performance would change. For example,
+car with reliability R having k failures while driving N miles is: by omitting motorcycle fatalities, the remaining human-driven fatality
+        rate would decrease and so the miles needed to demonstrate comparable
+        C = 1− ∑ᵏ N ! R ᴺ−i (1− R )ⁱ autonomous vehicle performance would increase. We use overall failure
+        i=0 i !(N −i)! rates because there is the potential for all travel to occur in autonomous
+        vehicles and for autonomous vehicles to affect the safety of all road
+7 In reliability testing, the confidence level of 100(1-α)% is the prob- users. It is possible, for example, that current motorcyclists may in the
+ability that the true failure rate is within some range [0, U], where U is future choose to travel by autonomous passenger vehicles for safety or
+a random variable for the upper bound; or, equivalently, the prob- other reasons, or that autonomous passenger vehicles may lead to fewer
+ability of the true success rate (reliability) is within [1−U, 1] (Darby, motorcycle fatalities, even if motorcycles remain human driven.
+
+    4
+
+
+    Figure 1. Failure-Free Miles Needed to Demonstrate Maximum Failure Rates
+
+       C = 99%
+       C = 95%  275 million miles
+       C = 75%
+    100
+       C = 50%
+
+
+
+    10
+
+
+
+
+    1
+
+
+
+
+        0.1
+        1 10 100
+        Failure rate (failures per 100 million miles)
+        SOURCE: Authors’ analysis.
+        NOTE: The four colored lines show results for different levels of confidence. The five dashed vertical reference lines
+        indicate the failure rates of human drivers in terms of fatalities (1.09), reported injuries (77), estimated total injuries
+        (103), reported crashes (190), and estimated total crashes (382).
+        RAND RR1478-1
+
+reported injuries (77), and reported crashes (190) per 100 mil- retical lower bound, based on perfect performance of vehicles.
+lion miles. It is also known that injuries and crashes may be In reality, autonomous vehicles will have failures—not only
+significantly underreported; one study suggests by 25 percent commonly occurring injuries and crashes in which autonomous
+and 60 percent, respectively (Blincoe et al., 2015). Therefore, vehicles have already been involved, but also fatalities. Our sec-
+we have also shown reference lines that could reflect a truer ond and third questions quantify the miles needed to demon-
+estimate of human-driven injuries (103) and crashes (382) per strate reliability through driving given this reality.
+100 million miles. The 275-million mile data point corre-
+sponding to the 95% confidence level is annotated in Figure 1.
+We assess sensitivity to different levels of confidence because
+different fields use different standards that result in large dif- H OW M ANY M ILES WOU LD
+ferences in the number of required miles. While 95% and 99% AUTO N OMOUS VEH IC LES HAVE TO
+confidence levels are widely used, the automotive industry BE DRIVEN TO DEMO NSTR ATE TH E IR
+sometimes uses a 50% confidence level for vehicle components FAILU RE R ATE TO A PARTICU L AR
+(Misra, 2008). The blue, orange, green, and red lines represent DEGREE O F PREC ISIO N?
+C=50%, 75%, 95%, and 99%, respectively.
+    This analysis shows that for fatalities it is not possible to To estimate the true autonomous vehicle failure rate, we must
+test-drive autonomous vehicles to demonstrate their safety to count the number of events (failures) that occur for a given
+any plausible standard, even if we assume perfect performance. distance driven. The failure rate is estimated as λˆ = x /n ,
+In contrast, one could demonstrate injury and crash reliability where x is the number of observed failures observed over n
+to acceptable standards based on driving vehicles a few million miles driven. We can describe the precision of the failure rate
+miles. However, it is important to recognize that this is a theo- estimate using the width of a 100(1 – α)% confidence interval
+
+
+
+
+
+
+
+
+
+
+    Miles needed to be driven (millions)
+
+
+
+
+
+1.09
+
+
+
+
+
+
+
+
+
+
+ 77
+ 103
+
+ 190
+
+
+ 382
+
+5
+
+
+(CI).⁹ If the number of failures is expected to be greater than           autonomous vehicle fleet had a true fatality rate of 1.09 per 100
+30, then a normal approximation to the Poisson distribution               million miles. We could use this information to determine the
+can be used. An approximate CI for the failure rate is:                   sample size (number of miles) required to estimate the fatality
+                ⎛⎜⎜⎜x − z1−α/2   x , x + z1−α/2      x ⎞⎟⎟                rate of the fleet to within 20% of the assumed rate using a 95%
+                                                                          CI. We apply Equation 4 to estimate the number of fatalities
+                ⎝⎜      n                        n     ⎟⎠⎟    (Eq. 3)     we would need to observe before having this level of precision
+where z1−α/2    is 100(1−α/2)th quantile of standard normal               zin the fatality rate estimate: (1.96/.20)² = 96. (Here, 1.96 is the
+distribution.¹⁰ The half-width of the CI, (z1−α/2     x ) /n, provides    -score associated with a two-sided 95% CI for the standard
+an estimate of the precision of the failure rate estimate,                normal distribution.) We apply Equation 5 to determine how
+λˆ = x /n . We can calculate the precision relative to the failure        many miles of driving this would require:
+rate estimate:      (z                       x )/n                        n = ⎛⎜⎝⎜⎜1.96 ⎞⎟⎠⎟²
+                                  1-a(/2x/n )     ,                           1.09    0.2 ⎟    = 8,811,009,174 .
+                                                                              ×10−8
+
+which simplifies to                                                       This is approximately 8.8 billion miles. With a fleet of
+                                 ⎛⎜⎜⎜⎝z1−αx/2 ⎞⎟⎟⎠⎟ .                     100 autonomous vehicles being test-driven 24 hours a day, 365
+                                                                          days a year at an average speed of 25 miles per hour, this would
+If δ is our desired degree of precision (e.g., if we wish to esti-        take about 400 years.
+mate the failure rate to within 20%, δ = 0.2) then the number             Figure 2 shows how many miles fully autonomous vehicles
+of failures one must observe to estimate the failure rate with a          would have to be driven to estimate the failure rate to differ-
+precision of δ is:                                                        ent degrees of precision with 95% confidence. The number of
+                                                                          the failure rate estimate decreases as the failure rate increases.
+                    x = ⎛⎜⎜⎜ z1−α ⎞⎟⎟²                                    miles that must be driven to achieve a given level of precision in
+                                  ⎜
+                                  ⎜⎝⎜   δ 2 ⎟⎟⎟⎟⎠⎟     .    (Eq. 4)       The blue, orange, and green lines represent 5%, 10%, and 20%
+                                                                          precision. As in Figure 1, we show for reference the failure rate
+If the assumed failure rate (prior to data collection) is     λ∗          of human drivers as dashed vertical lines for fatalities (1.09),
+(Mathews, 2010), then Equation 5 implies the number of miles              reported injuries (77), estimated total injuries (103), reported
+that must be driven is:                                                   crashes (190), and estimated total crashes (382) per 100 million
+                                                                          miles. The 8.8-billion mile data point corresponding to this
+                                  ⎛⎜⎜⎜⎜⎜z1−α₂ ⎞⎟⎟⎟⎟⎟²       (Eq. 5)       example is annotated in Figure 2.
+                                                                          These results show that it may be impossible to demon-
+                    n = ⎜⎝              λδ   ⎟⎠⎟     .                    strate the reliability of high-performing autonomous vehicles
+                                        ∗                                 (i.e., ones with failure rates comparable to or better than human
+We can demonstrate this as follows. Given some initial data               failure rates) to any reasonable degree of precision. For instance,
+on its safety performance, suppose we assume that a fully                 even if the safety of autonomous vehicles is low—hundreds of
+                                                                          failures per 100 million miles, which is akin to human-driven
+                                                                          injury and crash rates—demonstrating this would take tens or
+9 In this context, a 100(1 − α)% CI is an estimate of the random          even hundreds of millions of miles, depending on the desired
+interval (L, U) that contains the true failure rate λ with probability    precision. For low failure rates—1 per 100 million miles, which
+(1− α). If l and u are the estimates of random variables L and U,         is akin to the human-driven fatality rate—demonstrating per-
+then (l, u) is called the CI for λ with confidence coefficient (1− α)
+(DeGroot, 1986). A 100(1− α)% CI can be interpreted as follows:           formance to any degree of precision is impossible—requiring
+If one were to run the experiment that generated the data and             billions to hundreds of billions of miles. These results show that
+conduct the analysis repeatedly, in 100(1− α)% of the samples the         as autonomous vehicles perform better, it becomes harder—if
+100(1− α)% CIs calculated in each of those experiments would con-
+tain the true mean.                                                       not impossible—to assess their performance with accuracy
+10 If the number of events is fewer than 30, an exact CI could alterna-   because of the extreme rarity of failure events.
+tively be calculated (Ulm, 1990).
+
+    6
+
+
+    Figure 2. Miles Needed to Demonstrate Failure Rates to a Particular Degree of Precision
+
+          δ = 5%
+100,000
+
+         δ = 10%
+
+ 10,000  δ = 20%  8.8 billion
+                     miles
+
+
+    1,000
+
+
+
+
+    100
+
+
+
+
+        1 10 100
+        Failure rate (failures per 100 million miles)
+        SOURCE: Authors’ analysis.
+        NOTE: These results use a 95% CI. The three colored lines show results for different levels of precision δ, defined as
+        the size of the CI as a percent of the failure rate estimate. The five dashed vertical reference lines indicate the
+        failure rates of human drivers in terms of fatalities (1.09), reported injuries (77), estimated total injuries (103),
+        reported crashes (190), and estimated total crashes (382).
+        RAND RR1478-2
+
+        true—in other words, a false positive. In the context of autono-
+H OW M ANY M ILES WOU LD mous vehicles, a false positive would occur if data suggest that
+AUTO N OMOUS VEH IC LES HAVE TO autonomous vehicles perform better than human drivers, when
+BE DRIVEN TO DEMO NSTR ATE THAT in fact they do not—a dangerous proposition for policymakers,
+TH E IR FAILU RE R ATE IS STATISTICALLY technology developers, the insurance industry, and of course
+SI GN IFICANTLY LOWER THAN TH E consumers.
+H UM AN DRIVER FAILU RE R ATE? To be able to test the null hypothesis with significance level
+Setting up the statistical significance test requires that we α, one can examine the upper confidence bound from Equa-
+specify the null hypothesis that we are testing, which is that tion 3 for whether the estimated failure rate is lower than the
+the failure rate, λ, is greater than or equal to λ₀. Here, we set human driver rate, i.e.,(x¹² )
+λ₀ = H, the human driver failure rate.¹¹ We also must specify + z1−α x < H .
+an alternative hypothesis, which we specify as λ < H. In the n
+context of significance testing, α is the significance level, or If so, then the null hypothesis can be rejected at the αth
+Type 1 error rate of the test, which is defined as the probability significance level. To assess when the confidence bound
+of rejecting the null hypothesis when the null hypothesis is would be expected to be less than H requires a guess of the
+11 We assume H is a known benchmark rather than an estimate of autonomous vehicle failure rate we expect, λₐₗₜ. We set
+some unknown quantity. This gives us the best-case estimate number
+of miles that need to be driven. We discuss the implications of this 12 The subscript on z is 1− α here because this is a one-sided hypoth-
+choice after Figure 4. esis test.
+
+
+
+
+
+
+
+
+
+
+    Miles needed to be driven (millions)
+
+
+
+
+
+1.09
+
+
+
+
+
+
+
+
+
+
+ 77
+ 103
+
+ 190
+
+
+ 382
+
+    7
+
+
+
+    Figure 3. Miles Needed to Demonstrate with 95% Confidence that the Autonomous Vehicle
+    Failure Rate Is Lower than the Human Driver Failure Rate
+
+    100,000
+
+
+    10,000
+        5 billion miles
+
+     1,000
+
+
+    100
+
+       Fatality
+     10
+
+
+         1
+                                                                                                                   Reported injury
+                                                                                                                   Total injury
+       0.1                                                                                                         Reported crash
+                                                                                                                   Total crash
+          0     10             20     30                        40      50       60 70 80     90                   100
+                                  Percentage improvement over human drivers
+
+     SOURCE: Authors’ analysis.
+     NOTE: The results depend upon the estimated failure rate of autonomous vehicles. This is shown on the horizontal
+     axis and defined as a percent improvement over the human driver failure rate. The comparison can be made to the
+     human driver fatality rate (blue line), reported injury rate (purple line), estimated total injury rate (green line),
+     reported crash rate (red line), and estimated total crash rate (orange line).
+     RAND RR1478-3
+
+          λₐₗₜ= (1−A) H.¹³ To determine how many failures (and miles)            driven to demonstrate with 95% confidence that this difference
+    would be required to show this, we can solve for x and n:                    is statistically significant:
+      x = ⎛⎜⎜⎜⎜λₐₗₜ z₁−α      ⎞⎟⎟⎟⎟²                       (Eq. 6)               n = 0.872×10−8⎛⎜⎜⎜⎝1.09×10−81.645 −8 ⎞⎟⎟⎟2    = 4,965,183,486 .
+          ⎝     λ₀ −λₐₗₜ ⎠                                                           −0.872×10                     ⎠
+                                                                                      It would take approximately 5 billion miles to demonstrate
+      n = λₐₗₜ ⎛⎜⎜⎜⎜⎝λ z1−α   ⎞⎟⎟²                         (Eq. 7)               this difference. With a fleet of 100 autonomous vehicles test-
+          0 −λalt ⎟⎟⎠                                                            driven 24 hours a day, 365 days a year at an average speed of
+    We can demonstrate this as follows. Suppose a fully                          25 miles per hour, this would take about 225 years.
+    autonomous vehicle fleet had a true fatality rate that was                           Figure 3 shows how many miles fully autonomous vehicles
+    A=20% lower than the human driver fatality rate of 1.09 per                  would have to be driven to demonstrate that their failure
+    100 million miles, or 0.872 per 100 million miles. We apply                  rate is statistically significantly lower than the human driver
+    Equation 7 to determine the number of miles that must be                     failure rate with 95 percent confidence, given different values
+                                                                                 of A. The different lines represent performance relative to the
+                                                                                 human driver fatality (blue), reported injury (purple), estimated
+    13 If we were interested in testing the alternative hypothesis that λ > H,   total injury (green), reported crash (red), and estimated total
+    then we would compare the lower confidence bound with H:                     crash (orange) rates. Note that the miles needed to be driven
+                                   (ₓ − zₙ1−α x ) >H .                           approaches infinity as the difference between the human rate
+                                                                                 and autonomous vehicle rate approaches 0, i.e., as A→0. The
+
+
+
+
+
+
+
+
+
+
+Miles needed to be driven (millions)
+
+8
+
+
+5-billion mile data point for this example is annotated in                   β = 0.2) that their failure rate is 20% better than the human
+Figure 3.                                                                    driver fatality rate:
+Setting the significance level, α , accounts for one of the
+two types of errors we could make in significance testing:                   n = 0.872×10−8⎛⎜⎝⎜⎜1.09 1.645+ 0.842 ⎞⎟⎟²  = 11,344,141,710.
+rejecting the null hypothesis when in fact it is true (Type I                    ×10−8 −0.872×10−8 ⎠⎟
+error). A limitation of determining the sample size as shown
+above is that it does not take into consideration Type II error, β,          Autonomous vehicles would have to be driven more than
+which is the second type of error that might occur: not reject-              11 billion miles to detect this difference. With a fleet of 100
+ing the null hypothesis when the alternative is true. In the                 autonomous vehicles being test-driven 24 hours a day, 365 days
+context of autonomous vehicles, a Type II error would mean                   a year at an average speed of 25 miles per hour, this would take
+that data suggest that autonomous vehicles do not perform bet-               518 years—about a half a millennium.
+ter than human drivers, when in fact they do. While perhaps                            Figure 4 shows how many miles fully autonomous vehicles
+less concerning to stakeholders, this also would be a serious                would have to be driven to demonstrate with 95% confidence
+error as it could delay the introduction of potentially beneficial           and 80% power that their failure rate is A% better than the
+technology and needlessly perpetuate the risks posed by human                human driver failure rate. The different lines represent perfor-
+drivers.                                                                     mance relative to the human driver fatality (blue), reported
+         The power of the test, 100(1 − β)%, is the probability of           injury (purple), estimated total injury (green), reported crash
+correctly rejecting the null hypothesis in favor of the alterna-             (red), and estimated total crash (orange) rates. The 11-billion
+tive. The power of the test for a given number of miles, n, and              mile data point for this example is annotated in Figure 4.
+hypothesized and assumed rates, λ₀ and λₐₗₜ, respectively, is:               These results show that the closer autonomous vehicles are
+                                                                             to human performance, the more miles are required to dem-
+               ⎛⎜⎜⎜                 ⎞⎟⎟                                      onstrate that the differences are statistically significant. This
+    Power = Φ ⎜⎜⎜⎜λ⁰ −λᵃˡᵗ − z     ⎟⎟⎟⎟    (Eq. 8)                           makes sense—the closer two population means are to each
+               ⎜⎜⎝  λnₐₗₜ    1−α ⎟⎟⎟⎟⎠⎟                                      other, the more samples will be needed to determine if they
+                                                                             are significantly different. For example, if autonomous vehicles
+                                                                             improve fatality rates by 5% rather than 20%, the number
+                                                                             of miles required to demonstrate a statistically significant
+where Φ(.) is the cumulative standard normal distribution.¹⁴                 improvement with 95% confidence and 80% power is almost
+Building upon our running example, a study with a signifi-                   ludicrous: 215 billion miles. It would take a fleet of 100 vehicles
+cance level of α=0.05 and a requirement to drive approxi-                    nearly 10,000 years to achieve this. Indeed, for no improvement
+mately 5 billion miles would have 50% power to reject the null               in fatality rates between 5% and 90% would it be practical to
+hypothesis.                                                                  drive the requisite number of miles with 100-vehicle fleets. For
+               One may instead want to know how many miles autono-           injuries and crashes, until autonomous vehicles are substan-
+mous vehicles need to be driven to avoid Type I errors and Type              tially better than human drivers (25% or greater improvement),
+II errors with some probability. Using the normal approxima-                 the miles required to demonstrate significant differences over
+tion for the distribution of fatalities, the number of miles, n,             human drivers would be impractically large.
+required to achieve 100(1 − β)% power at the α significance is:                 It is possible that if the policy question were to differ from
+
+                                                                             examine the reliability of autonomous vehicles. For example,
+    n = λ      ⎛⎜⎜ z1−α + z1−β ⎞⎟⎟² .      (Eq. 9)                           how we have framed it that fewer miles could be driven to
+    alt        ⎝⎜⎜ λ₀ −λₐₗₜ     ⎟⎠⎟                                          suppose there was a consensus that autonomous vehicles should
+Continuing our example, we apply Equation 9 to determine                     be allowed on the roads, provided their performance was no
+the number of miles that autonomous vehicles must be driven                  more than some (small) amount worse than human-driven cars,
+to determine with 95% confidence and 80% power (i.e.,                        but that it was expected that their performance was actually
+                                                                             better than human-driven cars. In this case, a test of non-
+                                                                             inferiority could be conducted and the sample size planned
+14 For a one-sided test in the other direction, the numerator of the first   accordingly (Chow, Shao, and Wang, 2008).
+component of Φ(.) would be λₐₗₜ − λ₀.
+
+    9
+
+
+    Figure 4. Miles Needed to Demonstrate with 95% Confidence and 80% Power that the
+    Autonomous Vehicle Failure Rate Is Lower than the Human Driver Failure Rate
+
+
+    100,000
+
+     10,000    11 billion miles
+
+
+    1,000
+
+
+    100    Fatality
+
+     10
+
+
+          1                                                                                      Reported injury
+                                                                                                 Total injury
+                                                                                                 Reported crash
+                                                                                                 Total crash
+        0.1    0  10     20    30                              40     50 60     70 80     90     100
+         Percentage improvement over human drivers
+     SOURCE: Authors’ analysis.
+     NOTE: The results depend upon the estimated failure rate of autonomous vehicles. This is shown on the horizontal
+     axis and defined as a percent improvement over the human driver failure rate. The comparison can be made to the
+     human driver fatality rate (blue line), reported injury rate (purple line), estimated total injury rate (green line),
+     reported crash rate (red line), and estimated total crash rate (orange line).
+     RAND RR1478-4
+
+        Yet even these results are optimistic. We have intention-  fatality rates have fallen in the past several decades. In 1994,
+    ally framed this analysis to calculate the fewest number of      there were 1.73 fatalities per 100 million miles compared with
+    miles that would need to be driven to demonstrate statisti-     1.09 fatalities per 100 million miles in 2013 (Bureau of Trans-
+    cally significant differences between autonomous vehicles and   portation Statistics, 2015). Much of the decline can be attrib-
+    human drivers. Recall that we treat H as a known benchmark        uted to improvements in vehicle designs (Farmer and Lund,
+    against which we can do a one-sample test. Yet H is not a          2015), which could continue. Thus, the benchmark of human
+    known benchmark for three key reasons. First, the performance     driver performance is a moving target. So, if we compare the
+    of human drivers in 2013 or any particular year is not the      performance of human drivers against autonomous vehicles
+    benchmark of concern. The concern is whether autonomous           in some time frame, there is uncertainty about whether the
+    vehicle performance is better than human driver performance,     comparison would hold moving into the future. For all of these
+    and a single year’s failure data is only an estimate of the true  reasons, it would be appropriate to treat H as uncertain and use
+    rate of human driver failures. Second, injuries and crashes are   a two-sample hypothesis test, which would require even more
+    significantly underreported and there is conflicting evidence   failures to be observed and miles to be driven. This suggests it
+    about the rate of underreporting. Experiments in which injuries  is not possible to drive our way to answers to one of the most
+    and crashes are accurately recorded could yield different rates.  important policy questions about autonomous vehicles: Are
+    Third, human driver performance is changing. Motor vehicle     they safer than human drivers?
+
+
+
+
+
+
+
+
+
+
+Miles needed to be driven (millions)
+
+    10
+
+
+                                                                            hundreds of years to drive these miles—an impossible proposi-
+    DISCUSSIO N AN D CO N C LUSIO NS                                        tion if the aim is to demonstrate their performance prior to
+                                                                            releasing them on the roads. Only crash performance seems
+    This report frames three different questions about the number           possible to assess through statistical comparisons of this kind,
+    of miles that autonomous vehicles would have to be driven as            but this also may take years. Moreover, as autonomous vehicles
+    a method of statistically demonstrating their reliability. We           improve, it will require many millions of miles of driving to
+    lay out the formulas for answering these questions and present          statistically verify changes in their performance.
+    results for fully autonomous vehicles that can serve as a refer-        Our results confirm and quantify that developers of this
+    ence for those interested in statistically testing their reliability.   technology and third-party testers cannot drive their way to
+     Table 1 provides illustrative results from our analysis. The           safety. Our findings support the need for alternative methods
+    three numbered rows show sample results for each of our three           to supplement real-world testing in order to assess autonomous
+    statistical questions about the miles needed to demonstrate             vehicle safety and shape appropriate policies and regulations.
+    safety. Sample results are shown for each of three benchmark            These methods may include but are not limited to accelerated
+    failures rates noted in the lettered columns. These correspond          testing (Nelson, 2009), virtual testing and simulations (Chen
+    to human-driven (A) fatality rates, (B) reported injury rates,          and Chen, 2010; Khastgir et al., 2015; Olivares et al., 2015);
+    and (C) reported crash rates. The results also show in paren-           mathematical modeling and analysis (Hojjati-Emami,
+    theses the number of years it would take to drive those miles           Dhillon, and Jenab, 2012; Kianfar, Falcone, and Fredriksson,
+    with a fleet of 100 autonomous vehicles driving 24 hours a day,         2013); scenario and behavior testing (California Department
+    365 days a year, at an average speed of 25 miles per hour. For          of Motor Vehicles, 2015; Sivak and Schoettle, 2015); and pilot
+    example, one can ask, “How many miles (years) would autono-             studies (ANWB, 2015), as well as extensive focused testing of
+    mous vehicles have to be driven (row 2) to demonstrate with             hardware and software systems.
+    95% confidence their failure rate to within 20% of the true             And yet, even with these methods, it may not be possible
+    rate of (column A) 1.09 fatalities per 100 million miles?” The          to establish the safety of autonomous vehicles prior to mak-
+    answer is 8.8 billion miles, which would take 400 years with            ing them available for public use. Uncertainty will remain.
+    such a fleet.                                                           This poses significant liability and regulatory challenges for
+     The results show that autonomous vehicles would have                   policymakers, insurers, and developers of the technology,
+    to be driven hundreds of millions of miles and sometimes                and it would be a cause for concern among the public. It also
+    hundreds of billions of miles to demonstrate their reliability in       suggests that pilot studies may be an essential intermediate
+    terms of fatalities and injuries. Under even aggressive testing         step for understanding autonomous vehicle performance prior
+    assumptions, existing fleets would take tens and sometimes              to widespread use. Such pilot studies would need to involve
+
+    Table 1. Examples of Miles and Years Needed to Demonstrate Autonomous Vehicle Reliability
+                                                                                Benchmark Failure Rate
+      How many miles (yearsᵃ) would                     (A) 1.09 fatalities per   (B) 77 reported         (C) 190 reported
+      autonomous vehicles have to be                    100 million miles?        injuries per 100        crashes per 100
+      driven…                                                                     million miles?          million miles?
+      (1) without failure to demonstrate with 95%       275 million miles         3.9 million miles       1.6 million miles
+      confidence that their failure rate is at most…    (12.5 years)              (2 months)              (1 month)
+
+      (2) to demonstrate with 95% confidence their      8.8 billion miles         125 million miles       51 million miles
+      failure rate to within 20% of the true rate of…   (400 years)               (5.7 years)             (2.3 years)
+      (3) to demonstrate with 95% confidence and        11 billion miles          161 million miles       65 million miles
+      80% power that their failure rate is 20% better   (500 years)               (7.3 years)             (3 years)
+      than the human driver failure rate of…
+
+     a We assess the time it would take to compete the requisite miles with a fleet of 100 autonomous vehicles (larger than any known existing fleet) driving 24 hours
+     a day, 365 days a year, at an average speed of 25 miles per hour.
+
+
+
+
+
+
+
+
+
+
+Statistical Question
+
+    11
+
+
+public-private partnerships in which liability is shared among Such regulation is designed from the outset to generate
+developers, insurers, the government, and consumers. new knowledge (e.g., through pilot studies), review that knowl-
+    Simultaneously, the technology will evolve rapidly, as will edge (e.g., through scheduled safety review boards), and use
+the social and economic context in which it is being intro- that knowledge to evolve with the technology (e.g., by modify-
+duced. In fast-changing contexts such as these, regulations and ing safety requirements). This can help society better harness
+policies cannot take a one-shot approach. Therefore, in paral- the benefits and manage the risks of these potentially transfor-
+lel to creating new testing methods, it is imperative to begin mative technologies.
+developing approaches for planned adaptive regulation (Eichler
+et al., 2015; Walker, Marchau, and Swanson, 2010).
+
+    12
+
+
+
+        Chen, Suren, and Feng Chen, “Simulation-Based Assessment of
+REFEREN C ES Vehicle Safety Behavior under Hazardous Driving Conditions,”
+Anderson, James M., Nidhi Kalra, Karlyn D. Stanley, Paul Sorensen, Journal of Transportation Engineering, Vol. 136, No. 4, 2010, pp.
+Constantine Samaras, and Oluwatobi A. Oluwatola, Autonomous 304–315. As of March 3, 2016:
+Vehicle Technology: A Guide for Policymakers, Santa Monica, Calif: http://dx.doi.org/10.1061/(ASCE)TE.1943-5436.0000093
+RAND Corporation, RR-443-2-RC, 2016. As of January 24, 2016: Chow, Shein-Chung, Jun Shao, and Hansheng Wang, Sample Size
+http://www.rand.org/pubs/research_reports/RR443-2.html Calculations in Clinical Research, 2nd ed., Boca Raton, Fla.: Chapman
+ANWB, Experiments on Autonomous and Automated Driving: An & Hall/CRC Biostatistics Series, 2008.
+Overview 2015, 2015. As of March 3, 2016: Darby, John L., Sample Sizes for Confidence Limits for Reliability,
+http://www.anwb.nl/bestanden/content/assets/anwb/pdf/over-anwb/ Albuquerque, N.M.: Sandia National Laboratories, SAND2010-
+persdienst/rapport_inventarisatie_zelfrijdende_auto.pdf 0550, 2010. As of March 3, 2016:
+Blanco, Myra, Jon Atwood, Sheldon Russell, Tammy Trimble, http://prod.sandia.gov/techlib/access-control.cgi/2010/100550.pdf
+Julie McClafferty, and Miguel Perez, Automated Vehicle Crash DeGroot, Morris H., Probability and Statistics, 2nd ed., Reading,
+Rate Comparison Using Naturalistic Data, Virginia Tech Transport Mass.: Addison-Wesley Publishing Company, Inc., 1986.
+Institute, January 2016. As of March 3, 2016:
+http://www.apps.vtti.vt.edu/PDFs/Automated%20Vehicle%20 Eichler, H. G., L. G. Baird, R. Barker, B. Bloechl-Daum, F.
+Crash%20Rate%20Comparison%20Using%20Naturalistic%20 Borlum-Kristensen, J. Brown, R. Chua, S. Del Signore, U. Dugan,
+Data_Final%20Report_20160107.pdf J. Ferguson, S. Garner, W. Goettsch, J. Haigh, P. Honig, A.
+Blincoe, Lawrence, Ted R. Miller, Eduard Zaloshnja, and Bruce A. Hoos, P. Huckle, T. Kondo, Y. Le Cam, H. Leufkens, R. Lim, C.
+Lawrence, The Economic and Societal Impact of Motor Vehicle Crashes Longson, M. Lumpkin, J. Maraganore, B. O’Rourke, K. Oye, E.
+2010 (Revised), Washington, D.C.: National Highway Traffic Safety Pezalla, F. Pignatti, J. Raine, G. Rasi, T. Salmonson, D. Samaha,
+Administration, DOT HS 812 013, 2014, revised May 2015. As of S. Schneeweiss, P. D. Siviero, M. Skinner, J. R. Teagarden, T.
+March 3, 2016: Tominaga, M. R. Trusheim, S. Tunis, T. F. Unger, S. Vamvakas,
+http://www-nrd.nhtsa.dot.gov/pubs/812013.pdf and G. Hirsch, “From Adaptive Licensing to Adaptive Pathways:
+        Delivering a Flexible Life-Span Approach to Bring New Drugs to
+Bureau of Transportation Statistics, Motorcycle Rider (Operator) Patients,” Clinical Pharmacology & Therapeutics, Vol. 97, No. 3,
+Safety Data, Table 2–22, Washington, D.C.: U.S. Department of March 2015, pp. 234–246. As of April 1, 2016:
+Transportation, 2014a. As of March 3, 2016: http://dx.doi.org/10.1002/cpt.59
+http://www.rita.dot.gov/bts/sites/rita.dot.gov.bts/files/publications/ Fagnant, Daniel J., and Kara Kockelman, “Preparing a Nation
+national_transportation_statistics/html/table_02_22.html for Autonomous Vehicles: Opportunities, Barriers and Policy
+———, Occupant and Non-Motorist Fatalities in Crashes by Number Recommendations,” Transportation Research Part A: Policy and
+of Vehicles and Alcohol Involvement (Updated July 2014), Table 2–20, Practice, Vol. 77, July 2015, pp. 167–181. As of March 3, 2016:
+Washington, D.C.: U.S. Department of Transportation, 2014b. http://dx.doi.org/10.1016/j.tra.2015.04.003
+———, Motor Vehicle Safety Data, Table 2-17, Washington, Farmer, Charles M., and Adrian K. Lund, “The Effects of Vehicle
+D.C.: Research and Innovative Technology Administration, U.S. Redesign on The Risk of Driver Death,” Traffic Injury Prevention,
+Department of Transportation, 2015. As of March 3, 2016: October 2015. As of March 3, 2016:
+http://www.rita.dot.gov/bts/sites/rita.dot.gov.bts/files/publications/ http://www.iihs.org/bibliography/topic/2073
+national_transportation_statistics/html/table_02_17.html Gomes, Lee, Hidden Obstacles for Google’s Self-Driving Cars: Impressive
+California Department of Motor Vehicles, Express Terms Title 13, Progress Hides Major Limitations of Google’s Quest for Automated
+Division 1, Chapter 1 Article 3.7—Autonomous Vehicles, 2015. As of Driving, Massachusetts Institute of Technology, August 28, 2014. As
+March 3, 2016: of March 3, 2016:
+https://www.dmv.ca.gov/portal/wcm/connect/ed6f78fe-fe38-4100- https://www.technologyreview.com/s/530276/hidden-obstacles-for-
+b5c2-1656f555e841/AVExpressTerms.pdf?MOD=AJPERES googles-self-driving-cars/
+California Vehicle Code, “California Vehicle Code, Division 16.6,” Google, Google Self-Driving Car Testing Report on Disengagements of
+2012. As of November 25, 2013: Autonomous Mode, 2015. As of March 3, 2016:
+http://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?law https://www.dmv.ca.gov/portal/wcm/connect/dff67186-70dd-
+Code=VEH&sectionNum=38750 4042-bc8c-d7b2a9904665/GoogleDisengagementReport2014-15.
+        pdf?MOD=AJPERES
+
+    13
+
+
+
+Hojjati-Emami, Khashayar, Balbir Dhillon, and Kouroush Jenab, ———, Traffic Safety Facts, A Brief Statistical Summary: Critical
+“Reliability Prediction for the Vehicles Equipped with Advanced Reasons for Crashes Investigated in the National Motor Vehicle Crash
+Driver Assistance Systems (ADAS) and Passive Safety Systems (PSS),” Causation Survey, Washington, D.C.: National Center for Statistics
+International Journal of Industrial Engineering Computations, Vol. 3, and Analysis, U.S. Department of Transportation, DOT HS 812 115,
+No. 5, 2012, pp. 731–742. As of April 1, 2016: February 2015. As of March 3, 2016:
+http://dx.doi.org/10.5267/j.ijiec.2012.08.004 http://www-nrd.nhtsa.dot.gov/pubs/812115.pdf
+Kaleto, Helen, David Winkelbauer, Chris Havens, and Michael Nelson, Wayne B., Accelerated Testing: Statistical Models, Test Plans,
+Smith, “Advancements in Testing Methodologies in Response to the and Data Analysis, Hoboken, N.J.: John Wiley & Sons, 2009.
+FMVSS 201U Requirements for Curtain-Type Side Airbags,” Society O’Connor, Patrick, and Andre Kleyner, Practical Reliability
+of Automotive Engineers International, Technical Paper 2001-01- Engineering, 5th ed., Hoboken, N.J.: John Wiley & Sons, 2012.
+0470, 2001. As of April 1, 2016:
+http://dx.doi.org/10.4271/2001-01-0470 Olivares, Stephanie, Nikolaus Rebernik, Arno Eichberger, and Ernst
+Khastgir, Siddartha, Stewart A. Birrell, Gunwant Dhadyalla, and Stadlober, “Virtual Stochastic Testing of Advanced Driver Assistance
+Paul A. Jennings, “Development of a Drive-In Driver-In-The- Systems,” in Tim Schulze, Beate Müller, and Gereon Meyer, eds.,
+Loop Fully Immersive Driving Simulator for Virtual Validation Advanced Microsystems for Automotive Applications 2015: Smart Systems
+of Automotive Systems,” paper presented at IEEE 81st Vehicular for Green and Automated Driving, New York: Springer, 2015.
+Technology Conference, Glasgow, Scotland, May 11–14, 2015. As of Sivak, Michael, and Brandon Schoettle, Should We Require Licensing
+April 1, 2016: Tests and Graduated Licensing for Self-Driving Vehicles?, University
+http://dx.doi.org/10.1109/VTCSpring.2015.7145775 of Michigan: Transportation Research Institute, Technical Report
+Kianfar, R., P. Falcone, and J. Fredriksson, “Safety Verification of UMTRI-2015-33, 2015.
+Automated Driving Systems,” IEEE Intelligent Transportation Systems Society of Automotive Engineers International, Automated Driving:
+Magazine, Vol. 5, No. 4, Winter 2013, pp. 73–86. As of April 1, Levels of Driving Automation Are Defined in New SAE International
+2016: Standard J3016, 2014. As of March 3, 2016:
+http://dx.doi.org/10.1109/MITS.2013.2278405 http://www.sae.org/misc/pdfs/automated_driving.pdf
+Kleyner, Andre, “How Stress Variance in the Automotive U.S. Department of Transportation, Distracted Driving 2013:
+Environment Will Affect a ‘True’ Value of the Reliability Summary of Statistical Findings, DOT HS 812 132, April 2015.
+Demonstrated by Accelerated Testing,” Society of Automotive Engineers Ulm, Kurt, “A Simple Method to Calculate the Confidence-Interval
+International, Vol. 7, No. 2, April 1, 2014, pp. 552–559. As of March of a Standardized Mortality Ratio (SMR),” American Journal of
+3, 2016: Epidemiology, Vol. 131, No. 2, Feb. 1990, pp. 373–375.
+http://dx.doi.org/10.4271/2014-01-0722
+Martz, H.F., and R.A. Waller, Bayesian Reliability Analysis, Hoboken, Urmson, Chris, “Hands Off: The Future of Self-Driving Cars,”
+N.J.: John Wiley & Sons, 1982. testimony before the Senate Committee on Commerce, Science
+        and Technology hearing, Washington, D.C., March 15, 2016. As of
+Mathews, Paul, Sample Size Calculations: Practical Methods for March 22, 2016:
+Engineers and Scientists, Fairport Harbor, Ohio: Mathews, Malnar, http://www.commerce.senate.gov/public/_cache/
+and Bailey, Inc., 2010. files/5c329011-bd9e-4140-b046-a595b4c89eb4/
+Misra, Krishna B., ed., Handbook of Performability Engineering, New BEADFE023327834146FF4378228B8CC6.google-urmson-
+York: Springer, 2008. testimony-march152016.pdf
+National Highway Traffic Safety Administration, Traffic Safety Facts: Walker, Warren E., Vincent A. W. J. Marchau, and Darren Swanson,
+Crash Stats, Washington, D.C.: National Center for Statistics and “Addressing Deep Uncertainty Using Adaptive Policies: Introduction
+Analysis, DOT HS 811 449, March 2011. As of March 3, 2016: to Section 2,” Technological Forecasting and Social Change, Vol. 77,
+http://www-nrd.nhtsa.dot.gov/pubs/811449.pdf No. 6, July 2010, pp. 917–923. As of March 3, 2016:
+        http://dx.doi.org/10.1016/j.techfore.2010.04.004
+
+    About the Authors
+
+    Nidhi Kalra is a senior information scientist at the RAND Corporation, a codirector of RAND’s Center for Decision Making
+    under Uncertainty, and a professor at the Pardee RAND Graduate School. Her research addresses energy, environment,
+    and science and technology policy.
+
+    Susan M. Paddock is a senior statistician at the RAND Corporation and a professor at the Pardee RAND Graduate
+    School. Her research includes developing innovative statistical methods, with a focus on Bayesian methods, hierarchical
+    (multilevel) modeling, longitudinal data analysis, and missing data techniques.
+
+
+Acknowledgments
+
+We would like to acknowledge Anita Chandra and James Anderson for their advice and support, and for helping shepherd
+this work through the publication process efficiently. We thank Lance Tan and Jeffrey Chappelle for their administrative sup-
+port and edits on the draft. We are enormously grateful to Carolyn Rutter at RAND and Constantine Samaras at Carnegie
+Mellon University for their insightful reviews. We thank Bonnie Ghosh-Dastidar for connecting Nidhi and Susan for this work.
+
+About This Report
+
+RAND has a long history of research on intelligent systems. Since the 1950s, with work on chess-playing computers and the
+Logic Theory Machine, RAND has produced objective, evidence-based research to help inform how society can harness
+the benefits and manage the risks of intelligent, transformative technologies. RAND’s work on autonomous vehicles builds
+on this firm foundation. The 2009 study, “Liability and Regulation of Autonomous Vehicle Technologies,” and the flagship
+report, Autonomous Vehicle Technology: A Guide for Policymakers, in 2014 (revised in 2016) examined the policy landscape
+surrounding these technologies.
+     As the technology nears readiness, policymakers today face pressing questions about how safe autonomous vehicles
+should be before they are on the road for consumer use, how their safety can be determined, and by whom. This report
+directly informs this policy issue by evaluating whether it is possible and practical to test-drive autonomous vehicles as a
+method of assessing their safety.
+     Funding for this study was provided by philanthropic contributions from RAND supporters and income from opera-
+tions. We especially appreciate the support from the RAND Justice, Infrastructure, and Environment Advisory Board and the
+National Cooperative Highway Research Program.
+     During the development of this report and at the time of publication, Nidhi Kalra’s spouse served as Principal Engineer
+for Google’s driverless car project. Neither her spouse nor Google had any influence on the report.
+
+RAND Science, Technology, and Policy
+
+This research was conducted in the RAND Science, Technology, and Policy program, which focuses primarily on the role of
+scientific development and technological innovation in human behavior, global and regional decisionmaking as it relates to
+science and technology, and the concurrent effects that science and technology have on policy analysis and policy choices.
+The program covers such topics as space exploration, information and telecommunication technologies, and nano- and
+biotechnologies. Program research is supported by government agencies, foundations, and the private sector.
+     This program is part of RAND Justice, Infrastructure, and Environment, a division of the RAND Corporation dedicated
+to improving policymaking and decisionmaking in a wide range of policy domains, including civil and criminal justice,
+infrastructure protection and homeland security, transportation and energy policy, and environmental and natural resource
+policy.
+     Questions or comments about this report should be sent to the project leader, Nidhi Kalra (Nidhi_Kalra@rand.org).
+For more information about RAND Science, Technology, and Policy, see www.rand.org/jie/stp or contact the director at
+stp@rand.org.
+
+Limited Print and Electronic Distribution Rights
+
+This document and trademark(s) contained herein are protected by law. This representation of RAND intellectual property
+is provided for noncommercial use only. Unauthorized posting of this publication online is prohibited. Permission is given to
+duplicate this document for personal use only, as long as it is unaltered and complete. Permission is required from RAND
+to reproduce, or reuse in another form, any of our research documents for commercial use. For information on reprint and
+linking permissions, please visit www.rand.org/pubs/permissions.
+
+For more information on this publication, visit www.rand.org/t/RR1478.
+
+
+
+
+    © Copyright 2016 RAND Corporation
+
+    www.rand.org
+
+                            The RAND Corporation is a research organization that develops solutions to public policy challenges to help
+                            make communities throughout the world safer and more secure, healthier and more prosperous. RAND is
+                            nonprofit, nonpartisan, and committed to the public interest.
+                            RAND’s publications do not necessarily reflect the opinions of its research clients and sponsors. R® is a
+    C O R P O R A T I O N   registered trademark.
+
+                                RR-1478-RC
+
